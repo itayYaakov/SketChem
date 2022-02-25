@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "pwa-chrome",
+            "name": "debug chrome",
+            "request": "launch",
+            "url": "http://localhost:3000/"
+        }
+    ]
+}
