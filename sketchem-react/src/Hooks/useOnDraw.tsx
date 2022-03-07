@@ -24,14 +24,16 @@ function useOnDraw() {
     function setdivRef(ref: any) {
         if (!ref) return
         divRef.current = ref
+        // Setting mouse listeners
         setMouseDownListener()
         setMouseUpListener()
         setMouseMoveListener()
         console.log(divRef.current)
-
+        // Initialize rapahel paper
         paper = Raphael(divRef.current, 1500, 1000)
     }
 
+    // creating and drawing a line using rapahel's svg path
     function drawLine(startPoint: Point, endPoint: Point) {
         var start = startPoint
         var end = endPoint
@@ -57,6 +59,7 @@ function useOnDraw() {
         }
     }
 
+    // creating and drawing a circle using rapahel's svg path
     function drawCircle(start: Point, end: Point) {
         function calculateCenter(p1: Point, p2: Point) {
             return {
@@ -135,6 +138,7 @@ function useOnDraw() {
     }
 
     function onDraw(point: Point) {
+        // update the end location of the shape we curretly draw
         shape.updateEnd(point)
     }
 
@@ -165,6 +169,7 @@ function useOnDraw() {
         const MoveListener = (e: MouseEvent) => {
             console.log('mouse move')
             if (!isMousePressedRef) return
+            // call draw function - only when mouse is down.
             console.log({ x: e.screenX, y: e.screenY })
             onDraw(calculateLocation(e))
         }
