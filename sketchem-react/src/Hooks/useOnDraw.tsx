@@ -32,7 +32,7 @@ function useOnDraw() {
         paper = Raphael(divRef.current, 1500, 1000)
     }
 
-    function createline(startPoint: Point, endPoint: Point) {
+    function drawLine(startPoint: Point, endPoint: Point) {
         var start = startPoint
         var end = endPoint
         var getPath = function () {
@@ -144,11 +144,10 @@ function useOnDraw() {
             console.log('mouse down')
             isMousePressedRef = true
             var loc = calculateLocation(e)
-            shape = createline(loc, loc)
+            shape = drawCircle(loc, loc)
 
             console.log(shape)
         }
-        // paper.mousedown(downListener)
         divRef.current.addEventListener('mousedown', downListener)
     }
 
