@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux'
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
-import { useAppSelector, useAppDispatch } from '@app/hooks';
-import { actions } from './toolbarItemsSlice'
-import type ToolbarItem from './ToolbarItem'
+import { useAppSelector, useAppDispatch } from "@app/hooks";
+import { actions } from "./toolbarItemsSlice";
+import type ToolbarItem from "./ToolbarItem";
 
-import { Direction } from '@constants/enum.constants';
+import { Direction } from "@constants/enum.constants";
 
 // !!! need to convert to less
-import styles from './Counter.module.css';
+import styles from "./Counter.module.css";
 
 // handleEvent = (event) => {
 //     if (event.type === "mousedown") {
@@ -18,23 +18,24 @@ import styles from './Counter.module.css';
 //        }
 //    }
 
-
 // true === event.ctrlKey && 'b' === event.key (to detect ctrl+b)
 interface IToolbarItemsProps {
-    toolbarItemsList : ToolbarItem[],
-    direction : Direction,
-
+    toolbarItemsList: ToolbarItem[];
+    direction: Direction;
 }
 
-type Props = IToolbarItemsProps
+type Props = IToolbarItemsProps;
 
-export function ToolbarItems(props : Props) {
+export function ToolbarItems(props: Props) {
     // const count = useAppSelector(selectCount);
     const dispatch = useAppDispatch();
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
-    const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
+    const onToolbarClick = (
+        event: React.MouseEvent<HTMLButtonElement>,
+        toolbarItem: ToolbarItem
+    ) => {
         const button: HTMLButtonElement = event.currentTarget;
         dispatch(actions.press(toolbarItem.name));
         // setActiveToolbarItem(toolbarItem.name);
@@ -51,17 +52,17 @@ export function ToolbarItems(props : Props) {
 
     return (
         <div>
-            {props.toolbarItemsList.map((item) => (
+            {props.toolbarItemsList.map(item => (
                 <button
                     // className={styles.button}
-                    onClick={(e) => onToolbarClick(e, item)}
+                    onClick={e => onToolbarClick(e, item)}
                     key={item.name}
                 >
                     {item.name} Button
                 </button>
             ))}
         </div>
-    )
+    );
 }
 
 export type { IToolbarItemsProps };

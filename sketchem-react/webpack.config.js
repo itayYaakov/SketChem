@@ -1,11 +1,11 @@
-const path = require('path');
-const webpack = require('webpack'); // for development only?
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const path = require("path");
+const webpack = require("webpack"); // for development only?
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
 module.exports = {
-    entry: path.resolve(__dirname, './src/index.tsx'),
-    mode: 'development',
-    devtool: 'source-map',
+    entry: path.resolve(__dirname, "./src/index.tsx"),
+    mode: "development",
+    devtool: "source-map",
     module: {
         rules: [
             // {
@@ -15,30 +15,30 @@ module.exports = {
             // },
             {
                 test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
+                use: ["style-loader", "css-loader"],
             },
             {
                 test: /\.(png|svg|jpg|jpeg|gif)$/i,
-                type: 'asset/resource',
+                type: "asset/resource",
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf)$/i,
-                type: 'asset/resource',
+                type: "asset/resource",
             },
             {
                 test: /\.(csv|tsv)$/i,
-                use: ['csv-loader'],
+                use: ["csv-loader"],
             },
             {
                 test: /\.xml$/i,
-                use: ['xml-loader'],
+                use: ["xml-loader"],
             },
             {
                 test: /\.(j|t)s(x?)$/,
                 exclude: /node_modules/,
                 use: [
                     {
-                        loader: 'ts-loader',
+                        loader: "ts-loader",
                     },
                 ],
             },
@@ -53,19 +53,19 @@ module.exports = {
             // },
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             {
-                enforce: 'pre',
+                enforce: "pre",
                 test: /\.js$/,
-                loader: 'source-map-loader',
+                loader: "source-map-loader",
             },
         ],
     },
     resolve: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: [".js", ".jsx", ".ts", ".tsx"],
         plugins: [
             new TsconfigPathsPlugin({
                 // configFile: './tsconfig.json',
-                configFile: path.resolve(__dirname, './tsconfig.json'),
-                extensions: ['.js', '.jsx', '.ts', '.tsx'],
+                configFile: path.resolve(__dirname, "./tsconfig.json"),
+                extensions: [".js", ".jsx", ".ts", ".tsx"],
             }),
         ],
         fallback: {
@@ -74,7 +74,7 @@ module.exports = {
         },
         // extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
         alias: {
-            '@app/*': path.resolve(__dirname, './src/app'),
+            "@app/*": path.resolve(__dirname, "./src/app"),
             // "@app/*": ["./src/app/*"],
             // '@app/hooks': path.resolve(__dirname, './src/app/hooks'),
         },
@@ -90,10 +90,10 @@ module.exports = {
         // },
     },
     output: {
-        path: path.resolve(__dirname, './dist'),
-        filename: 'bundle.js',
+        path: path.resolve(__dirname, "./dist"),
+        filename: "bundle.js",
     },
     devServer: {
-        contentBase: path.resolve(__dirname, './dist'),
+        contentBase: path.resolve(__dirname, "./dist"),
     },
 };
