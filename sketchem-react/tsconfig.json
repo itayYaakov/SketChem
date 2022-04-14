@@ -1,45 +1,39 @@
 {
-  "compilerOptions": {
-    "target": "ES2021",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "sourceMap": true,
-    "baseUrl": "./",
-    "paths": {
-      "@src/*": ["./src/*"],
-      "@app/*": ["./src/app/*"],
-      "@constants/*": ["./src/_constants/*"],
-      // "@config/*": ["app/_config/*"],
-      // "@environment/*": ["environments/*"],
-      // "@shared/*": ["app/_shared/*"],
-      // "@helpers/*": ["helpers/*"]
-  },
-  },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "./node_modules/",
-    "src/features/counter/",
-    // !!! TEMP
-    "./src/features/counter/*",
-    "./src/features/to/",
-    "./src/_actions/user.action.ts",
-  ],
+    "compilerOptions": {
+        "target": "ES2021",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "sourceMap": true,
+        "baseUrl": "./",
+        "paths": {
+            "@src/*": ["./src/*"],
+            "@app/*": ["./src/app/*"],
+            "@constants/*": ["./src/_constants/*"]
+            // "@config/*": ["app/_config/*"],
+            // "@environment/*": ["environments/*"],
+            // "@shared/*": ["app/_shared/*"],
+            // "@helpers/*": ["helpers/*"]
+        }
+    },
+    "include": ["src"],
+    "exclude": [
+        "./node_modules/",
+        "src/features/counter/",
+        // !!! TEMP
+        "./src/features/counter/*",
+        "./src/features/to/",
+        "./src/_actions/user.action.ts"
+    ]
 }

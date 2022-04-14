@@ -5,13 +5,13 @@ module.exports = {
     singleQuote: true,
     printWidth: 100,
     useTabs: false,
-    Semicolons: true,
+    semi: true,
     proseWrap: 'always',
     quoteProps: 'as-needed',
-    jsxBracketSameLine: false,
+    bracketSameLine: false,
     jsxSingleQuote: false,
     bracketSpacing: true,
     bracketSameLine: false,
-    arrowParens: "avoid",
-    proseWrap: "never",
-}
+    arrowParens: 'avoid',
+    proseWrap: 'never',
+};

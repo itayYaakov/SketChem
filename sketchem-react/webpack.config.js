@@ -74,7 +74,7 @@ module.exports = {
         },
         // extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
         alias: {
-            "@app/*": path.resolve(__dirname, './src/app'),
+            '@app/*': path.resolve(__dirname, './src/app'),
             // "@app/*": ["./src/app/*"],
             // '@app/hooks': path.resolve(__dirname, './src/app/hooks'),
         },

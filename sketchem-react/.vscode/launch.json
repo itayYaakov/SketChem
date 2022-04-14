@@ -8,7 +8,7 @@
             "type": "chrome",
             "urlFilter": "http://localhost:3000/*", // use urlFilter instead of url!
             "webRoot": "${workspaceFolder}"
-        },        
+        },
         {
             "type": "pwa-chrome",
             "name": "debug chrome",
