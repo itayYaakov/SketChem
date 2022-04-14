@@ -32,7 +32,10 @@ export function ToolbarItems(props: Props) {
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
-    const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
+    const onToolbarClick = (
+        event: React.MouseEvent<HTMLButtonElement>,
+        toolbarItem: ToolbarItem
+    ) => {
         const button: HTMLButtonElement = event.currentTarget;
         dispatch(actions.press(toolbarItem.name));
         // setActiveToolbarItem(toolbarItem.name);
@@ -53,7 +56,7 @@ export function ToolbarItems(props: Props) {
                 <button
                     type="button"
                     // className={styles.button}
-                    onClick={(e) => onToolbarClick(e, item)}
+                    onClick={e => onToolbarClick(e, item)}
                     key={item.name}
                 >
                     {item.name} Button
