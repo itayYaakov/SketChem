@@ -18,12 +18,28 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "sourceMap": true,
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@app/*": ["./src/app/*"],
+      "@constants/*": ["./src/_constants/*"],
+      // "@config/*": ["app/_config/*"],
+      // "@environment/*": ["environments/*"],
+      // "@shared/*": ["app/_shared/*"],
+      // "@helpers/*": ["helpers/*"]
+  },
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "./node_modules/"
+    "./node_modules/",
+    "src/features/counter/",
+    // !!! TEMP
+    "./src/features/counter/*",
+    "./src/features/to/",
+    "./src/_actions/user.action.ts",
   ],
 }
