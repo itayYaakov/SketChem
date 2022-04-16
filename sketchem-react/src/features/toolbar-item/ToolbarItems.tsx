@@ -53,7 +53,7 @@ export function ToolbarItems(props: Props) {
                 <button
                     type="button"
                     // className={styles.button}
-                    onClick={e => onToolbarClick(e, item)}
+                    onClick={(e) => onToolbarClick(e, item)}
                     key={item.name}
                 >
                     {item.name} Button
