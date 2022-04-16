@@ -28,6 +28,7 @@ type Props = IToolbarItemsProps;
 export function ToolbarItems(props: Props) {
     // const count = useAppSelector(selectCount);
     const dispatch = useAppDispatch();
+    const { toolbarItemsList } = props;
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
@@ -48,10 +49,11 @@ export function ToolbarItems(props: Props) {
 
     return (
         <div>
-            {props.toolbarItemsList.map(item => (
+            {toolbarItemsList.map((item) => (
                 <button
+                    type="button"
                     // className={styles.button}
-                    onClick={e => onToolbarClick(e, item)}
+                    onClick={(e) => onToolbarClick(e, item)}
                     key={item.name}
                 >
                     {item.name} Button

@@ -20,16 +20,14 @@
         "paths": {
             "@src/*": ["./src/*"],
             "@app/*": ["./src/app/*"],
-            "@constants/*": ["./src/_constants/*"]
-            // "@config/*": ["app/_config/*"],
-            // "@environment/*": ["environments/*"],
-            // "@shared/*": ["app/_shared/*"],
-            // "@helpers/*": ["helpers/*"]
+            "@constants/*": ["./src/_constants/*"],
+            "@features/*": ["./src/features/*"]
         }
     },
-    "include": ["src"],
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
     "exclude": [
         "./node_modules/",
+        ".vscode",
         "src/features/counter/",
         // !!! TEMP
         "./src/features/counter/*",

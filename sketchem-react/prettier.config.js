@@ -11,7 +11,5 @@ module.exports = {
     singleAttributePerLine: false,
     jsxSingleQuote: false,
     bracketSpacing: true,
-    bracketSameLine: false,
-    arrowParens: "avoid",
-    proseWrap: "never",
+    arrowParens: "always",
 };
