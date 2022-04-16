@@ -1,17 +1,23 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
+import thunkMiddleware from "redux-thunk";
+
+import { RootReducer } from "./RootReducer";
+
+// import counterReducer from '../features/counter/counterSlice';
+
+const preloadedState = {};
 
 export const store = configureStore({
-  reducer: {
-    counter: counterReducer,
-  },
+    reducer: RootReducer,
+    // devTools: process.env.NODE_ENV !== 'production',
+    devTools: true,
+    preloadedState,
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
+    // middleware: (getDefaultMiddleware) =>
+    //   getDefaultMiddleware().concat(thunkMiddleware),
 });
 
-export type AppDispatch = typeof store.dispatch;
+// Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
-export type AppThunk<ReturnType = void> = ThunkAction<
-  ReturnType,
-  RootState,
-  unknown,
-  Action<string>
->;
+// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+export type AppDispatch = typeof store.dispatch;
