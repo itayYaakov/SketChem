@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Attach to Chrome",
+            "port": 9222,
+            "request": "attach",
+            // "type": "pwa-chrome",
+            "type": "chrome",
+            "urlFilter": "http://localhost:3000/*", // use urlFilter instead of url!
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "pwa-chrome",
+            "name": "debug chrome",
+            "request": "launch",
+            "urlFilter": "http://localhost:3000/*",
+            "url": "http://localhost:3000/"
+        }
+    ]
+}
