@@ -5,7 +5,12 @@ import l from "./left-toolbar-item/ToolbarItem";
 import r from "./right-toolbar-item/ToolbarItem";
 import t from "./top-toolbar-item/ToolbarItem";
 
-const toolbarItemsList = { ...b, ...l, ...r, ...t };
+const toolbarItemsList = {
+    ...b,
+    ...l,
+    ...r,
+    ...t,
+};
 const toolbarItemsDict = Object.assign({}, ...toolbarItemsList.map(x => ({ [x.name]: x })));
 
 const initialState = null;

@@ -1,7 +1,10 @@
 export default class ToolbarItem {
     readonly name: string;
+
     readonly onMouseEvent: (event: React.MouseEvent<HTMLButtonElement>) => void;
+
     readonly onButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+
     readonly keyboardKeys?: string[];
 
     constructor(

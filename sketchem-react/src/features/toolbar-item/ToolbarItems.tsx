@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector, useAppDispatch } from "@app/hooks";
+import { Direction } from "@constants/enum.constants";
 import { actions } from "./toolbarItemsSlice";
 import type ToolbarItem from "./ToolbarItem";
-
-import { Direction } from "@constants/enum.constants";
 
 // !!! need to convert to less
 import styles from "./Counter.module.css";
@@ -32,10 +31,7 @@ export function ToolbarItems(props: Props) {
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
-    const onToolbarClick = (
-        event: React.MouseEvent<HTMLButtonElement>,
-        toolbarItem: ToolbarItem
-    ) => {
+    const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
         const button: HTMLButtonElement = event.currentTarget;
         dispatch(actions.press(toolbarItem.name));
         // setActiveToolbarItem(toolbarItem.name);

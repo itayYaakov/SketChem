@@ -1,19 +1,49 @@
-import ToolbarItem from '../ToolbarItem';
-import type { IToolbarItemsProps } from '../ToolbarItems';
-import { Direction } from '@constants/enum.constants';
+import { Direction } from "@constants/enum.constants";
+import ToolbarItem from "../ToolbarItem";
+import type { IToolbarItemsProps } from "../ToolbarItems";
 
 const toolbarItemsList: ToolbarItem[] = [
-    new ToolbarItem("Clear", function noop() { }, function noop() { }, ["A"]),
-    new ToolbarItem("Bond", function noop() { }, function noop() { }, ["A"]),
-    new ToolbarItem("Atom", function noop() { }, function noop() { }, ["A"]),
-    new ToolbarItem("Double Bound", function noop() { }, function noop() { }, ["A"]),
-    new ToolbarItem("Triple Bound", function noop() { }, function noop() { }, ["A"]),
-    new ToolbarItem("Quatro Bound", function noop() { }, function noop() { }, ["A"]),
+    new ToolbarItem(
+        "Clear",
+        () => {},
+        () => {},
+        ["A"]
+    ),
+    new ToolbarItem(
+        "Bond",
+        () => {},
+        () => {},
+        ["A"]
+    ),
+    new ToolbarItem(
+        "Atom",
+        () => {},
+        () => {},
+        ["A"]
+    ),
+    new ToolbarItem(
+        "Double Bound",
+        () => {},
+        () => {},
+        ["A"]
+    ),
+    new ToolbarItem(
+        "Triple Bound",
+        () => {},
+        () => {},
+        ["A"]
+    ),
+    new ToolbarItem(
+        "Quatro Bound",
+        () => {},
+        () => {},
+        ["A"]
+    ),
 ];
 
-const props : IToolbarItemsProps = {
-    toolbarItemsList: toolbarItemsList,
+const props: IToolbarItemsProps = {
+    toolbarItemsList,
     direction: Direction.Right,
-}
+};
 
 export default props;
