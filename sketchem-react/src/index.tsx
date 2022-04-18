@@ -1,7 +1,10 @@
-import React from "react";
-import ReactDOM from "react-dom";
 import "./index.css";
+
+import React from "react";
+import ThemeProvider from "react-bootstrap/ThemeProvider";
+import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
+
 import App from "./App";
 import { store } from "./app/store";
 import * as serviceWorker from "./serviceWorker";
@@ -9,7 +12,11 @@ import * as serviceWorker from "./serviceWorker";
 ReactDOM.render(
     <React.StrictMode>
         <Provider store={store}>
-            <App />
+            {/* breakpoints={["xxxl", "xxl", "xl", "lg", "md", "sm", "xs", "xxs"]} */}
+            {/* !!! only xl for now */}
+            <ThemeProvider breakpoints={["xl"]}>
+                <App />
+            </ThemeProvider>
         </Provider>
     </React.StrictMode>,
     document.getElementById("root")

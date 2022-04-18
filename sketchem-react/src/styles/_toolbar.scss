@@ -1,0 +1,39 @@
+// @import "../toolbar";
+
+@mixin toolbar() {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    justify-content: center;
+    overflow: hidden;
+}
+
+@mixin horizontal-toolbar() {
+    @include toolbar;
+    flex-direction: row;
+}
+
+@mixin vertical-toolbar() {
+    @include toolbar;
+    flex-direction: column;
+}
+
+.toolbar-left {
+    // @include toolbar();
+    @include vertical-toolbar();
+}
+
+.toolbar-top {
+    // @include toolbar();
+    @include horizontal-toolbar();
+}
+
+.toolbar-right {
+    // @include toolbar();
+    @include vertical-toolbar();
+}
+
+.toolbar-bottom {
+    // @include toolbar();
+    @include horizontal-toolbar();
+}

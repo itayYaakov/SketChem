@@ -10,6 +10,16 @@
             "webRoot": "${workspaceFolder}"
         },
         {
+            "name": "Run Server and Attach to Chrome",
+            "port": 9222,
+            "request": "attach",
+            // "type": "pwa-chrome",
+            "type": "chrome",
+            "urlFilter": "http://localhost:3000/*", // use urlFilter instead of url!
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "yarn: debugchrome"
+        },
+        {
             "type": "pwa-chrome",
             "name": "debug chrome",
             "request": "launch",

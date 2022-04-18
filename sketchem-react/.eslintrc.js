@@ -13,8 +13,17 @@ module.exports = {
         ecmaVersion: "latest",
         sourceType: "module",
     },
-    plugins: ["react", "@typescript-eslint", "prettier"],
+    // !!! temp
+    ignorePatterns: [
+        "src/features/counter/",
+        "./src/features/counter/*",
+        "./src/features/to/",
+        "./src/_actions/user.action.ts",
+    ],
+    plugins: ["react", "@typescript-eslint", "prettier", "simple-import-sort"],
     rules: {
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
         "arrow-parens": "off",
         "no-console": "off",
         "import/prefer-default-export": "off",
@@ -24,8 +33,16 @@ module.exports = {
         "no-unused-vars": "warn",
         "@typescript-eslint/no-unused-vars": "warn",
         "react/no-unused-prop-types": "warn",
-        "react/jsx-props-no-spreading": "off", //!!! can be enable when deploying
+        "react/jsx-props-no-spreading": "off", //! !! can be enable when deploying
     },
+    overrides: [
+        {
+            files: ["**/index.ts"],
+            rules: {
+                "import/export": "off",
+            },
+        },
+    ],
     settings: {
         react: {
             version: "detect",

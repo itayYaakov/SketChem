@@ -19,17 +19,18 @@
         "baseUrl": "./",
         "paths": {
             "@src/*": ["./src/*"],
+            "@styles/*": ["./src/styles/*"],
             "@app/*": ["./src/app/*"],
             "@constants/*": ["./src/_constants/*"],
             "@features/*": ["./src/features/*"]
         }
     },
-    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "include": ["./src/**/*.ts", "./src/**/*.tsx", ".eslintrc.js", "prettier.config.js", "craco.config.js"],
     "exclude": [
         "./node_modules/",
         ".vscode",
-        "src/features/counter/",
         // !!! TEMP
+        "src/features/counter/",
         "./src/features/counter/*",
         "./src/features/to/",
         "./src/_actions/user.action.ts"

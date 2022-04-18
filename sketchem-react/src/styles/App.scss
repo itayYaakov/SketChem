@@ -1,10 +1,14 @@
+@import "~bootstrap/scss/bootstrap";
+
+
 .App {
     width: 100vw;
     height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+    justify-content: flex-start;
+    // justify-content: center;
+    // align-items: center;
+    // text-align: center;
 }
 
 .App-logo {

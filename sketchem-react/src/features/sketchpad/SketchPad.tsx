@@ -1,4 +1,10 @@
+/* eslint-disable react/default-props-match-prop-types */
+/* eslint-disable react/require-default-props */
+/* eslint-disable no-unused-vars */
+import styles from "@styles/index.module.scss";
+import clsx from "clsx";
 import React from "react";
+
 import { useOnDraw } from "./hooks/useOnDraw";
 
 interface Props {
@@ -11,11 +17,12 @@ function SketchPad(props: Props) {
 
     return (
         <div
-            style={{
-                height: 1000,
-                width: 1500,
-                border: "5px solid red",
-            }}
+            // style={{
+            //     height: 1000,
+            //     width: 1500,
+            //     border: "5px solid red",
+            // }}
+            className={clsx(styles.sketchpad)}
             id="Can"
             ref={setRef}
         />

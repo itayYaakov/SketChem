@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { IToolbarItemsProps } from "./ToolbarItems";
-import type ToolbarItem from "./ToolbarItem";
+
 import b from "./bottom-toolbar-item/ToolbarItem";
 import l from "./left-toolbar-item/ToolbarItem";
 import r from "./right-toolbar-item/ToolbarItem";
+import type ToolbarItem from "./ToolbarItem";
+import type { IToolbarItemsProps } from "./ToolbarItems";
 import t from "./top-toolbar-item/ToolbarItem";
 
 const toolbarItemsList: ToolbarItem[] = [
