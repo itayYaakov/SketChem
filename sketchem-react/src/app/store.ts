@@ -1,7 +1,7 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import thunkMiddleware from "redux-thunk";
 
-import { RootReducer } from "./RootReducer";
+import RootReducer from "./RootReducer";
 
 // import counterReducer from '../features/counter/counterSlice';
 

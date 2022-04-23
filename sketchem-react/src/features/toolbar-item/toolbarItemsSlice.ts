@@ -1,31 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { ToolbarItemState } from "@types";
 
-import b from "./bottom-toolbar-item/ToolbarItem";
-import l from "./left-toolbar-item/ToolbarItem";
-import r from "./right-toolbar-item/ToolbarItem";
 import type ToolbarItem from "./ToolbarItem";
 import type { IToolbarItemsProps } from "./ToolbarItems";
-import t from "./top-toolbar-item/ToolbarItem";
 
-const toolbarItemsList: ToolbarItem[] = [
-    ...b.toolbarItemsList,
-    ...l.toolbarItemsList,
-    ...r.toolbarItemsList,
-    ...t.toolbarItemsList,
-];
-const toolbarItemsDict = Object.assign({}, ...toolbarItemsList.map((x: ToolbarItem) => ({ [x.name]: x })));
-
-const initialState = null;
+const initialState = { selectedToolbarItem: "" } as ToolbarItemState;
 
 const slice = createSlice({
     name: "toolbar-item",
-    initialState: {
-        user: initialState,
-    },
+    initialState,
     reducers: {
         press: (state, action: PayloadAction<string>) => {
-            const item: ToolbarItem = toolbarItemsDict[action.payload];
-            console.log(`${item.name} was pressed with ${item.keyboardKeys}`);
+            console.log(`${action.payload} was pressed`);
+            state.selectedToolbarItem = action.payload;
             // state.user = action.payload;
             // localStorage.setItem('user', JSON.stringify(action.payload))
         },

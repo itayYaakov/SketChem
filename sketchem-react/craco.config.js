@@ -10,6 +10,7 @@ module.exports = {
             "@styles": path.resolve(__dirname, "src/styles"),
             "@constants": path.resolve(__dirname, "src/_constants"),
             "@features": path.resolve(__dirname, "src/features"),
+            "@types": path.resolve(__dirname, "src/types/index.ts"),
         },
     },
 };

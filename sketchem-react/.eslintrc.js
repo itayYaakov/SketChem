@@ -14,12 +14,7 @@ module.exports = {
         sourceType: "module",
     },
     // !!! temp
-    ignorePatterns: [
-        "src/features/counter/",
-        "./src/features/counter/*",
-        "./src/features/to/",
-        "./src/_actions/user.action.ts",
-    ],
+    ignorePatterns: ["build/*", "src/features/counter/*", "src/features/to/", "src/_actions/user.action.ts"],
     plugins: ["react", "@typescript-eslint", "prettier", "simple-import-sort"],
     rules: {
         "simple-import-sort/imports": "error",
@@ -27,6 +22,7 @@ module.exports = {
         "arrow-parens": "off",
         "no-console": "off",
         "import/prefer-default-export": "off",
+        "no-param-reassign": ["error", { props: true, ignorePropertyModificationsFor: ["state"] }],
         // "array-element-newline": ["error", { multiline: true, minItems: 3 }],
         "react/jsx-filename-extension": ["warn", { extensions: [".js", ".jsx", ".ts", ".tsx"] }],
         "prettier/prettier": "error",

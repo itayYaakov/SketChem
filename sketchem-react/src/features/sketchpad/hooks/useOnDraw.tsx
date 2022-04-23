@@ -4,7 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable func-names */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import Raphael from "raphael";
+import Raphael, { RaphaelPaper, RaphaelPath } from "raphael";
+// import { RaphaelPaper } from "raphael";
 import { useRef } from "react";
 
 interface Point {
@@ -17,8 +18,9 @@ function useOnDraw() {
     const divRef = useRef<HTMLDivElement>(null!);
 
     let isMousePressedRef = false;
-    let paper: any = null;
+    let paper: RaphaelPaper<"SVG" | "VML">;
     let shape: any = null;
+
     function calculateLocation(event: MouseEvent): Point {
         const rect = divRef.current.getBoundingClientRect();
         return {
@@ -36,6 +38,7 @@ function useOnDraw() {
         setMouseMoveListener();
         console.log(divRef.current);
         // Initialize rapahel paper
+        console.log("I'm here!!!");
         paper = Raphael(divRef.current, 1500, 1000);
     }
 
@@ -44,13 +47,103 @@ function useOnDraw() {
         let start = startPoint;
         let end = endPoint;
         const getPath = function () {
-            return ["M", start.x, start.y, "L", end.x, end.y];
+            return `M ${start.x},${start.y}, L ${end.x},${end.y}]`;
         };
 
         const path = paper.path(getPath());
         const redraw = function () {
             path.attr("path", getPath());
         };
+        return {
+            updateStart(point: Point) {
+                start = point;
+                redraw();
+                return this;
+            },
+            updateEnd(point: Point) {
+                end = point;
+                redraw();
+                return this;
+            },
+        };
+    }
+
+    // creating and drawing a line using rapahel's svg path
+    function drawLinesSeparate(startPoint: Point, endPoint: Point) {
+        let start = startPoint;
+        let end = endPoint;
+        const d = 8;
+
+        const getPaths = function () {
+            // return ["M", start.x, start.y, "L", end.x, end.y];
+
+            let dx: number = start.x - end.x;
+            let dy = start.y - end.y;
+            const dist: number = Math.sqrt(dx * dx + dy * dy) / 2;
+            const side: number = 1;
+            dx *= (side * d) / dist;
+            dy *= (side * d) / dist;
+
+            return [
+                `M ${start.x - dy},${start.y + dx}, L ${end.x - dy},${end.y + dx}]`,
+                `M ${start.x + dy},${start.y - dx}, L ${end.x + dy},${end.y - dx}]`,
+            ];
+        };
+
+        const paths: RaphaelPath<"SVG" | "VML">[] = [];
+        getPaths().forEach((item, i) => {
+            // paths[i] = paper.path(item);
+            paths[i] = paper.path(item);
+        });
+
+        const redraw = function () {
+            getPaths().forEach((item, i) => {
+                paths[i].attr("path", item);
+                paths[i].attr("stroke-dasharray", "-.");
+            });
+        };
+        return {
+            updateStart(point: Point) {
+                start = point;
+                redraw();
+                return this;
+            },
+            updateEnd(point: Point) {
+                end = point;
+                redraw();
+                return this;
+            },
+        };
+    }
+
+    function drawLines(startPoint: Point, endPoint: Point) {
+        let start = startPoint;
+        let end = endPoint;
+        const d = 8;
+
+        const getPath = function () {
+            // return ["M", start.x, start.y, "L", end.x, end.y];
+
+            let dx: number = start.x - end.x;
+            let dy = start.y - end.y;
+            const dist: number = Math.sqrt(dx * dx + dy * dy) / 2;
+            const side: number = 1;
+            dx *= (side * d) / dist;
+            dy *= (side * d) / dist;
+
+            return (
+                `M ${start.x - dy},${start.y + dx}, L ${end.x - dy},${end.y + dx}]` +
+                `M ${start.x + dy},${start.y - dx}, L ${end.x + dy},${end.y - dx}]`
+            );
+        };
+
+        const path = paper.path(getPath());
+
+        const redraw = function () {
+            path.attr("path", getPath());
+            path.attr("stroke-dasharray", "-.");
+        };
+
         return {
             updateStart(point: Point) {
                 start = point;
@@ -86,13 +179,13 @@ function useOnDraw() {
 
         const getPath = function () {
             console.log(params);
-            return [
-                ["M", params.center.x, params.center.y],
-                ["m", 0, -params.radius.h],
-                ["a", params.radius.w, params.radius.h, 0, 1, 1, 0, 2 * params.radius.h],
-                ["a", params.radius.w, params.radius.h, 0, 1, 1, 0, -2 * params.radius.h],
-                ["z"],
-            ];
+            return (
+                `M ${params.center.x},${params.center.y}] ` +
+                `m 0,${-params.radius.h}] ` +
+                `a ${params.radius.w},${params.radius.h},0,1,1,0,${+2 * params.radius.h}] ` +
+                `a ${params.radius.w},${params.radius.h},0,1,1,0,${-2 * params.radius.h}] ` +
+                `z`
+            );
         };
         console.log(getPath());
         const redraw = function () {
@@ -126,17 +219,23 @@ function useOnDraw() {
     }
 
     function onDraw(point: Point) {
-        // update the end location of the shape we curretly draw
+        // update the end location of the shape we currently draw
         shape.updateEnd(point);
     }
 
     function setMouseDownListener() {
         if (!divRef.current) return;
+
+        // const toolbarname = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
+        // console.log(`toolbarname=${toolbarname} inside useOnDraw!!`);
+
         const downListener = (e: MouseEvent) => {
             console.log("mouse down");
             isMousePressedRef = true;
             const loc = calculateLocation(e);
-            shape = drawCircle(loc, loc);
+            // shape = drawCircle(loc, loc);
+            shape = drawLines(loc, loc);
+            // shape = drawLine(loc, loc);
 
             console.log(shape);
         };
