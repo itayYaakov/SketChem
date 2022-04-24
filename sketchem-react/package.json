@@ -24,6 +24,7 @@
         "react-scripts": "5.0.0",
         "redux": "^4.1.2",
         "redux-thunk": "^2.4.1",
+        "two.js": "^0.8.5",
         "typescript": "^4.6.2",
         "web-vitals": "^2.1.4"
     },

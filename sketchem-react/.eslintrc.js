@@ -29,6 +29,7 @@ module.exports = {
         "no-unused-vars": "warn",
         "@typescript-eslint/no-unused-vars": "warn",
         "react/no-unused-prop-types": "warn",
+        "prefer-const": "warn", //! !! can be enable when deploying
         "react/jsx-props-no-spreading": "off", //! !! can be enable when deploying
     },
     overrides: [

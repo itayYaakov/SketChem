@@ -1,0 +1,70 @@
+* {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body,
+  input,
+  button {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 25px;
+    color: #222;
+  }
+  
+  input + label,
+  label + input,
+  label + select,
+  select + label,
+  button + button {
+    margin-left: 5px;
+  }
+  
+  input[type="checkbox"],
+  label {
+    cursor: pointer;
+    text-transform: capitalize;
+  }
+  
+  input[type="number"] {
+    padding-left: 1ch;
+  }
+  
+  button {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 2.5px;
+    cursor: pointer;
+  }
+  
+  svg,
+  canvas {
+    z-index: -1;
+  }
+  
+  .actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    background: #efefef;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  }
+  
+  .actions li {
+    flex-grow: 1;
+    list-style: none;
+    padding: 10px;
+  }
+  .actions li + li {
+    border-left: 1px solid rgba(0, 0, 0, 0.5);
+  }
+  .note {
+    font-size: 66%;
+  }
+  
