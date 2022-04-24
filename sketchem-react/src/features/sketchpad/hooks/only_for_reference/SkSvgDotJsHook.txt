@@ -1,0 +1,339 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import "./main.css";
+
+import React, { useEffect, useRef, useState } from "react";
+import Two from "two.js";
+const radius = 25;
+
+const references = {
+    triangle: new Two.Polygon(0, 0, radius, 3),
+    circle: new Two.Circle(0, 0, radius),
+    square: new Two.Rectangle(0, 0, radius * 2, radius * 2),
+    pentagon: new Two.Polygon(0, 0, radius, 5),
+    star: new Two.Star(0, 0, radius * 0.5, radius, 6),
+};
+
+function mod(v:number, l:number) {
+    while (v < 0) {
+        v += l;
+    }
+    return v % l;
+}
+
+export default function SkSvgDotJsHook() {
+    const refs = useRef({
+        type: Two.Types.svg,
+        increment: false,
+        decrement: false,
+        active: null,
+        count: 0,
+        velocity: new Two.Vector(2, 0),
+        spin: Math.PI / 30,
+    });
+    const domElement = useRef();
+
+    const [type, setType] = useState(Two.Types.svg);
+    const [active, setActive] = useState({
+        shapes: {
+            triangle: true,
+            circle: false,
+            square: false,
+            pentagon: false,
+            star: false,
+        },
+        operations: {
+            position: false,
+            rotation: false,
+            scale: false,
+            vertices: false,
+        },
+    });
+    const [count, setCount] = useState(0);
+
+    useEffect(setup, []);
+    useEffect(() => {
+        // Keep a reference to our state object
+        refs.current.type = type;
+        refs.current.active = active;
+        refs.current.count = count;
+    }, [type, active, count]);
+
+    function setup() {
+        let frameCount = 0;
+        let playing = true;
+        let two = new Two({
+            fullscreen: true,
+        }).appendTo(domElement.current);
+
+        window.addEventListener("pointerup", ignore, false);
+
+        requestAnimationFrame(animate);
+
+        return unmount;
+
+        function unmount() {
+            playing = false;
+            window.removeEventListener("pointerup", ignore, false);
+            const parent = two.renderer.domElement.parentElement;
+            if (parent) {
+                parent.removeChild(two.renderer.domElement);
+            }
+        }
+
+        function animate() {
+            update(frameCount++);
+            two.render();
+            if (playing) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        function update(frameCount) {
+            if (refs.current.type !== two.type) {
+                change(refs.current.type);
+            }
+
+            if (refs.current.increment) {
+                setCount(increment);
+            }
+            if (refs.current.decrement) {
+                setCount(decrement);
+            }
+
+            const { count, active, velocity, spin } = refs.current;
+
+            if (count > two.scene.children.length) {
+                add();
+            } else if (count < two.scene.children.length) {
+                remove();
+            }
+
+            let needsUpdate = false;
+            for (const operation in active.operations) {
+                if (active.operations[operation]) {
+                    needsUpdate = true;
+                }
+            }
+
+            if (!needsUpdate) {
+                return;
+            }
+
+            const theta = frameCount / 30;
+
+            for (let i = 0; i < two.scene.children.length; i++) {
+                const child = two.scene.children[i];
+                const direction = i % 2 ? 1 : -1;
+
+                if (active.operations.position) {
+                    if (direction > 0) {
+                        child.position.add(velocity);
+                    } else {
+                        child.position.sub(velocity);
+                    }
+                    child.position.x = mod(child.position.x, two.width);
+                    child.position.y = mod(child.position.y, two.height);
+                }
+                if (active.operations.rotation) {
+                    child.rotation += spin * direction;
+                }
+                if (active.operations.scale) {
+                    child.scale = 0.25 * Math.sin(theta * direction) + 1;
+                }
+                if (active.operations.vertices) {
+                    modify(child);
+                }
+            }
+        }
+
+        function change(type) {
+            const parent = two.renderer.domElement.parentElement;
+            if (parent) {
+                parent.removeChild(two.renderer.domElement);
+            }
+
+            const index = Two.Instances.indexOf(two);
+            if (index >= 0) {
+                Two.Instances.splice(index, 1);
+            }
+
+            two = new Two({
+                type,
+                fullscreen: true,
+            }).appendTo(domElement.current);
+        }
+
+        function modify(child: any) {
+            for (let i = 0; i < child.vertices.length; i += 1) {
+                const v = child.vertices[i];
+                v.x = v.origin.x + Math.random() * 5;
+                v.y = v.origin.y + Math.random() * 5;
+            }
+        }
+
+        function increment(my_count: number) {
+            return my_count + 1;
+        }
+
+        function decrement(my_count: number) {
+            my_count = Math.max(my_count - 1, 0);
+            return my_count;
+        }
+
+        function add() {
+            const shapes = filter(refs.current.active.shapes);
+            const index = Math.floor(Math.random() * shapes.length);
+            const shape = shapes[index];
+            two.add(generate(shape));
+        }
+
+        function remove() {
+            const child = two.scene.children[0];
+            if (child) {
+                child.remove();
+                two.release(child); // Dispose of any references
+            }
+        }
+
+        function generate(name: string) {
+            const { vertices } = references[name];
+            const points = [];
+            for (let i = 0; i < vertices.length; i++) {
+                const v = vertices[i];
+                const p = new Two.Anchor().copy(v);
+                p.origin = v;
+                points.push(p);
+            }
+            const path = new Two.Path(points, true);
+            path.position.x = two.width * Math.random();
+            path.position.y = two.height * Math.random();
+            path.rotation = Math.random() * Math.PI * 2;
+            path.fill = getRandomColor();
+            path.stroke = "white";
+            return path;
+        }
+
+        function getRandomColor() {
+            const red = Math.floor(Math.random() * 255);
+            const green = Math.floor(Math.random() * 255);
+            const blue = Math.floor(Math.random() * 255);
+            return `rgb(${red}, ${green}, ${blue})`;
+        }
+
+        function filter(obj: any) {
+            const result = [];
+            // eslint-disable-next-line no-restricted-syntax
+            for (const k in obj) {
+                if (obj[k]) {
+                    result.push(k);
+                }
+            }
+            return result;
+        }
+    }
+
+    //
+
+    function onTypeChange(e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        setType(e.target.value);
+    }
+
+    function toggleShape(e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        const { id } = e.target;
+        setActive((active) => {
+            const result = { ...active };
+            result.shapes[id] = !!e.target.checked;
+            return result;
+        });
+    }
+
+    function toggleOperation(e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        const { id } = e.target;
+        setActive((active) => {
+            const result = { ...active };
+            result.operations[id] = !!e.target.checked;
+            return result;
+        });
+    }
+
+    function listen(e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        const { id } = e.target;
+        refs.current[id] = true;
+    }
+
+    function ignore() {
+        refs.current.increment = false;
+        refs.current.decrement = false;
+    }
+
+    function onCountChange(e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        let { value } = e.target;
+        value = Math.max(value, 0);
+        setCount(value);
+    }
+
+    return (
+        <div>
+            <div className="stage" ref={domElement} />
+            <ul className="actions">
+                <li>
+                    <label htmlFor="two-type">Renderer:</label>
+                    <select id="two-type" value={type} onChange={onTypeChange}>
+                        <option value={Two.Types.svg}>SVG</option>
+                        <option value={Two.Types.canvas}>Canvas 2D</option>
+                        <option value={Two.Types.webgl}>WebGL</option>
+                    </select>
+                </li>
+                <li>
+                    <p>Shapes:</p>
+                    {Object.keys(active.shapes).map((shape, i) => (
+                        <p key={`shape${shape}`}>
+                            <input id={shape} type="checkbox" checked={active.shapes[shape]} onChange={toggleShape} />
+                            <label htmlFor={shape}>{shape}s</label>
+                        </p>
+                    ))}
+                </li>
+                <li>
+                    <p>Operations:</p>
+                    {Object.keys(active.operations).map((operation, i) => (
+                        <p key={`operation_${operation}`}>
+                            <input
+                                id={operation}
+                                type="checkbox"
+                                checked={active.operations[operation]}
+                                onChange={toggleOperation}
+                            />
+                            <label htmlFor={operation}>{operation}</label>
+                        </p>
+                    ))}
+                </li>
+                <li>
+                    <p>
+                        Object Count:{" "}
+                        <input
+                            type="number"
+                            value={count}
+                            onChange={onCountChange}
+                            style={{ width: `${count.toString().length + 2}ch` }}
+                        />
+                    </p>
+                    <p className="note">Press and hold to:</p>
+                    <p>
+                        <button type="button" id="increment" onPointerDown={listen}>
+                            + Add
+                        </button>
+                        <button type="button" id="decrement" onPointerDown={listen}>
+                            - Remove
+                        </button>
+                    </p>
+                </li>
+            </ul>
+        </div>
+    );
+}
