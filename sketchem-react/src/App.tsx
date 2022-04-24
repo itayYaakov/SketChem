@@ -1,13 +1,13 @@
 // import { Counter } from './features/counter/Counter';
 import "@styles/App.scss";
 
+// import SketchPad from "@features/sketchpad/hooks/only_for_reference/SketchPadRaphael";
+import SketchPad from "@features/sketchpad/SketchPad";
 import b from "@features/toolbar-item/bottom-toolbar-item/ToolbarItem";
 import l from "@features/toolbar-item/left-toolbar-item/ToolbarItem";
 import r from "@features/toolbar-item/right-toolbar-item/ToolbarItem";
 import { ToolbarItems } from "@features/toolbar-item/ToolbarItems";
 import t from "@features/toolbar-item/top-toolbar-item/ToolbarItem";
-// import SketchPad from "@src/features/sketchpad/hooks/only_for_reference/SketchPadRaphael";
-import SketchPad from "@src/features/sketchpad/Sketchpad";
 import React from "react";
 // import Container from "react-bootstrap/Container";
 // import Row from "react-bootstrap/Row";

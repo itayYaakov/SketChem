@@ -36,7 +36,7 @@ function getBackgroundColor(stringInput: string): string {
     return `hsl(${stringUniqueHash % 360}, 95%, 35%)`;
 }
 
-function SkSvgDotJs(props: Props) {
+function SketchPad(props: Props) {
     interface Point {
         x: number;
         y: number;
@@ -165,16 +165,16 @@ function SkSvgDotJs(props: Props) {
     useEffect(setup, []);
 
     const toolbarname = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
-    console.log(`toolbarname=${toolbarname?.name} inside SkSvgDotJs!!`);
+    console.log(`toolbarname=${toolbarname?.name} inside SketchPad!!`);
     twoRef?.current?.update();
     color.current = getBackgroundColor(toolbarname?.name ?? "");
     console.log(color.current);
     return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
 }
 
-SkSvgDotJs.defaultProps = {
+SketchPad.defaultProps = {
     // width: 1000,divDomElement
     // height: 1500,
 };
 
-export default SkSvgDotJs;
+export default SketchPad;
