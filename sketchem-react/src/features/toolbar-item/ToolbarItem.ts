@@ -1,21 +1,13 @@
-export default class ToolbarItem {
+import { MouseEventCallBackProperties } from "@types";
+
+export default interface ToolbarItem {
     readonly name: string;
 
-    readonly onMouseEvent: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    readonly onMouseDown?: (e: MouseEventCallBackProperties) => void;
 
-    readonly onButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    readonly onMouseMove?: (e: MouseEventCallBackProperties) => void;
+
+    readonly onMouseUp?: (e: MouseEventCallBackProperties) => void;
 
     readonly keyboardKeys?: string[];
-
-    constructor(
-        name: string,
-        onMouseEvent: (event: React.MouseEvent<HTMLButtonElement>) => void,
-        onButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void,
-        keyboardKeys?: string[]
-    ) {
-        this.name = name;
-        this.onMouseEvent = onMouseEvent;
-        this.onButtonClick = onButtonClick;
-        this.keyboardKeys = keyboardKeys;
-    }
 }

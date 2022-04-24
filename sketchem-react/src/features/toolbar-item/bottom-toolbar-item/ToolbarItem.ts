@@ -4,30 +4,27 @@ import ToolbarItem from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
 
 const toolbarItemsList: ToolbarItem[] = [
-    new ToolbarItem(
-        "Clear",
-        () => {},
-        () => {},
-        ["A"]
-    ),
-    new ToolbarItem(
-        "Clear 2",
-        () => {},
-        () => {},
-        ["A"]
-    ),
-    new ToolbarItem(
-        "Clear 3",
-        () => {},
-        () => {},
-        ["A"]
-    ),
-    new ToolbarItem(
-        "Clear 4",
-        () => {},
-        () => {},
-        ["A"]
-    ),
+    {
+        name: "Clear",
+        onMouseDown: () => {},
+        onMouseMove: () => {},
+        onMouseUp: () => {},
+        keyboardKeys: ["A"],
+    } as ToolbarItem,
+    {
+        name: "Clear 2",
+        onMouseDown: () => {},
+        onMouseMove: () => {},
+        onMouseUp: () => {},
+        keyboardKeys: ["A"],
+    } as ToolbarItem,
+    {
+        name: "Clear 3",
+        onMouseDown: () => {},
+        onMouseMove: () => {},
+        onMouseUp: () => {},
+        keyboardKeys: ["A"],
+    } as ToolbarItem,
 ];
 
 const props: IToolbarItemsProps = {

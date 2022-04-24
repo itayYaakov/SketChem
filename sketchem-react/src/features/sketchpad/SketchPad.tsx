@@ -2,17 +2,19 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-unused-vars */
 import { getToolbarItem } from "@app/selectors";
+import { Direction, MouseButtons } from "@constants/enum.constants";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import styles from "@styles/index.module.scss";
+import { MouseEventCallBackProperties } from "@types";
 import clsx from "clsx";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import Two from "two.js";
-// import { Vector } from 'two.js/src/vector';
 import { Anchor } from "two.js/src/anchor";
 import { Collection } from "two.js/src/collection";
 import { Path } from "two.js/src/path";
 import { Rectangle } from "two.js/src/shapes/rectangle";
+import { Vector } from "two.js/src/vector";
 
 interface Props {
     // width: number;
@@ -37,79 +39,81 @@ function getBackgroundColor(stringInput: string): string {
 }
 
 function SketchPad(props: Props) {
-    interface Point {
-        x: number;
-        y: number;
-    }
-
     const divDomElement = useRef<HTMLDivElement>(null!);
     const svgDomElement = useRef<HTMLDivElement>(null!);
-    let MouseIsPressed = false;
-    const mouse = new Two.Vector();
+    const activeToolBar = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
+
     const color = useRef<string>(getBackgroundColor(""));
 
     let line: Path | null;
 
     const twoRef = useRef<Two>(null!);
 
-    function calculateLocation(e: MouseEvent): Point {
-        if (!svgDomElement.current) return { x: 0, y: 0 };
-        const rect = svgDomElement.current.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.x,
-            y: e.clientY - rect.y,
-        };
-    }
+    const mouseEventsSetListeners = (function mouseEventsHandler() {
+        let mouseDownLocation: Vector | undefined;
 
-    function makePoint(x: number, y: number) {
-        const v = new Two.Anchor(x, y);
-        // v.position = new Two.Vector().copy(v);
-
-        return v;
-    }
-
-    function handleMouseDown(e: MouseEvent) {
-        e.preventDefault();
-
-        MouseIsPressed = true;
-        line = null;
-        const { x, y } = calculateLocation(e);
-        // console.log("down x=", x, "y=", y);
-        mouse.set(x, y);
-        // const loc = calculateLocation(e);
-    }
-    function handleMouseMove(e: MouseEvent) {
-        e.preventDefault();
-
-        if (!MouseIsPressed) return;
-
-        const { x, y } = calculateLocation(e);
-        // console.log("move x=", x, "y=", y);
-        if (line == null) {
-            const v1 = makePoint(mouse.x, mouse.y);
-            const v2 = makePoint(x, y);
-            line = makeCurve(twoRef.current, [v1, v2], true);
-            line.noFill().stroke = color.current;
-            line.linewidth = 10;
-            line.vertices.forEach((v: Anchor) => {
-                v.addSelf(line?.translation);
-            });
-            line.translation.clear();
-        } else {
-            const v1 = makePoint(x, y);
-            line.vertices.push(v1);
+        function calculateLocation(e: MouseEvent): Vector {
+            if (!svgDomElement.current) return new Two.Vector(0, 0);
+            const rect = svgDomElement.current.getBoundingClientRect();
+            return new Two.Vector(e.clientX - rect.x, e.clientY - rect.y);
         }
-        mouse.set(x, y);
-        twoRef?.current?.update();
-    }
 
-    function handleMouseUp(e: MouseEvent) {
-        e.preventDefault();
+        function handleMouseDown(e: MouseEvent) {
+            e.preventDefault();
 
-        // const mouseClickUpPoint = calculateLocation(e);
-        MouseIsPressed = false;
-        twoRef?.current?.update();
-    }
+            line = null;
+            mouseDownLocation = calculateLocation(e);
+            const args = { e, mouseDownLocation, mouseUpLocation: undefined } as MouseEventCallBackProperties;
+        }
+
+        function handleMouseMove(e: MouseEvent) {
+            e.preventDefault();
+
+            if (e.buttons !== MouseButtons.Left) return;
+            if (!mouseDownLocation) return;
+
+            const { x, y } = calculateLocation(e);
+            if (line == null) {
+                const v1 = new Two.Anchor(mouseDownLocation.x, mouseDownLocation.y);
+                const v2 = new Two.Anchor(x, y);
+                line = makeCurve(twoRef.current, [v1, v2], true);
+                line.noFill().stroke = color.current;
+                line.linewidth = 10;
+                line.vertices.forEach((v: Anchor) => {
+                    v.addSelf(line?.translation);
+                });
+                line.translation.clear();
+            } else {
+                const v3 = new Two.Anchor(x, y);
+                line.vertices.push(v3);
+            }
+            twoRef?.current?.update();
+        }
+
+        function handleMouseUp(e: MouseEvent) {
+            e.preventDefault();
+
+            const mouseUpLocation = calculateLocation(e);
+            const args = { e, mouseDownLocation, mouseUpLocation } as MouseEventCallBackProperties;
+
+            mouseDownLocation = undefined;
+            twoRef?.current?.update();
+        }
+
+        function setListeners(object: any, enable: boolean) {
+            if (enable) {
+                svgDomElement.current.addEventListener("mousedown", handleMouseDown);
+                svgDomElement.current.addEventListener("mousemove", handleMouseMove);
+                svgDomElement.current.addEventListener("mouseup", handleMouseUp);
+            } else {
+                svgDomElement.current.removeEventListener("mousedown", handleMouseDown);
+                svgDomElement.current.removeEventListener("mousemove", handleMouseMove);
+                svgDomElement.current.removeEventListener("mouseup", handleMouseUp);
+            }
+        }
+
+        return setListeners;
+    })();
 
     function setup() {
         let rect: Rectangle;
@@ -148,15 +152,10 @@ function SketchPad(props: Props) {
         function unmount() {
             two.clear();
             two.unbind("update");
-            svgDomElement.current.removeEventListener("mousedown", handleMouseDown);
-            svgDomElement.current.removeEventListener("mousemove", handleMouseMove);
-            svgDomElement.current.removeEventListener("mouseup", handleMouseUp);
+            mouseEventsSetListeners(svgDomElement.current, false);
             divDomElement.current.removeChild(two.renderer.domElement);
         }
-
-        svgDomElement.current.addEventListener("mousedown", handleMouseDown);
-        svgDomElement.current.addEventListener("mousemove", handleMouseMove);
-        svgDomElement.current.addEventListener("mouseup", handleMouseUp);
+        mouseEventsSetListeners(svgDomElement.current, true);
 
         two.update();
         return unmount;
@@ -164,10 +163,9 @@ function SketchPad(props: Props) {
 
     useEffect(setup, []);
 
-    const toolbarname = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
-    console.log(`toolbarname=${toolbarname?.name} inside SketchPad!!`);
+    console.log(`toolbarname=${activeToolBar?.name} inside SketchPad!!`);
     twoRef?.current?.update();
-    color.current = getBackgroundColor(toolbarname?.name ?? "");
+    color.current = getBackgroundColor(activeToolBar?.name ?? "");
     console.log(color.current);
     return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
 }

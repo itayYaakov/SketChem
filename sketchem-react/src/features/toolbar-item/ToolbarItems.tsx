@@ -45,7 +45,7 @@ export function ToolbarItems(props: Props) {
         dispatch(actions.press(toolbarItem.name));
         // setActiveToolbarItem(toolbarItem.name);
 
-        toolbarItem.onButtonClick?.(event);
+        // toolbarItem.onButtonClick?.(event);
 
         event.stopPropagation();
     };
