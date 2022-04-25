@@ -4,8 +4,9 @@
 import { getToolbarItem } from "@app/selectors";
 import { Direction, MouseButtons } from "@constants/enum.constants";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
+import ToolbarItem from "@features/toolbar-item/ToolbarItem";
 import styles from "@styles/index.module.scss";
-import { MouseEventCallBackProperties } from "@types";
+import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
 import clsx from "clsx";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
@@ -21,17 +22,6 @@ interface Props {
     // height: number;
 }
 
-function makeCurve(two: Two, points: Anchor[], close_flag?: boolean): Path {
-    const last = close_flag;
-    const curve = new Path(points, !(typeof last === "boolean" ? last : undefined), true);
-    const rect = curve.getBoundingClientRect();
-    curve.center().translation.set(rect.left + rect.width / 2, rect.top + rect.height / 2);
-
-    two.scene.add(curve);
-
-    return curve;
-}
-
 function getBackgroundColor(stringInput: string): string {
     // eslint-disable-next-line no-bitwise
     const stringUniqueHash = [...stringInput].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
@@ -41,11 +31,10 @@ function getBackgroundColor(stringInput: string): string {
 function SketchPad(props: Props) {
     const divDomElement = useRef<HTMLDivElement>(null!);
     const svgDomElement = useRef<HTMLDivElement>(null!);
-    const activeToolBar = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
+    const activeToolBar = useRef<ToolbarItem>(null!);
+    activeToolBar.current = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
 
     const color = useRef<string>(getBackgroundColor(""));
-
-    let line: Path | null;
 
     const twoRef = useRef<Two>(null!);
 
@@ -61,9 +50,14 @@ function SketchPad(props: Props) {
         function handleMouseDown(e: MouseEvent) {
             e.preventDefault();
 
-            line = null;
             mouseDownLocation = calculateLocation(e);
-            const args = { e, mouseDownLocation, mouseUpLocation: undefined } as MouseEventCallBackProperties;
+            const args = {
+                e,
+                mouseDownLocation,
+                mouseCurrentLocation: mouseDownLocation,
+                mouseUpLocation: undefined,
+            } as MouseEventCallBackProperties;
+            activeToolBar.current?.onMouseDown?.(args);
         }
 
         function handleMouseMove(e: MouseEvent) {
@@ -72,21 +66,20 @@ function SketchPad(props: Props) {
             if (e.buttons !== MouseButtons.Left) return;
             if (!mouseDownLocation) return;
 
-            const { x, y } = calculateLocation(e);
-            if (line == null) {
-                const v1 = new Two.Anchor(mouseDownLocation.x, mouseDownLocation.y);
-                const v2 = new Two.Anchor(x, y);
-                line = makeCurve(twoRef.current, [v1, v2], true);
-                line.noFill().stroke = color.current;
-                line.linewidth = 10;
-                line.vertices.forEach((v: Anchor) => {
-                    v.addSelf(line?.translation);
-                });
-                line.translation.clear();
-            } else {
-                const v3 = new Two.Anchor(x, y);
-                line.vertices.push(v3);
-            }
+            const mouseCurrentLocation = calculateLocation(e);
+            const args = {
+                e,
+                two: twoRef.current,
+                mouseDownLocation,
+                mouseCurrentLocation,
+                mouseUpLocation: undefined,
+            } as MouseEventCallBackProperties;
+
+            const response = activeToolBar.current?.onMouseMove?.(args);
+            // find a better way
+            // if (response && "shape" in response) {
+            // }
+
             twoRef?.current?.update();
         }
 
@@ -94,7 +87,14 @@ function SketchPad(props: Props) {
             e.preventDefault();
 
             const mouseUpLocation = calculateLocation(e);
-            const args = { e, mouseDownLocation, mouseUpLocation } as MouseEventCallBackProperties;
+            const args = {
+                e,
+                two: twoRef.current,
+                mouseDownLocation,
+                mouseCurrentLocation: mouseUpLocation,
+                mouseUpLocation,
+            } as MouseEventCallBackProperties;
+            activeToolBar.current?.onMouseUp?.(args);
 
             mouseDownLocation = undefined;
             twoRef?.current?.update();
@@ -163,9 +163,9 @@ function SketchPad(props: Props) {
 
     useEffect(setup, []);
 
-    console.log(`toolbarname=${activeToolBar?.name} inside SketchPad!!`);
+    console.log(`toolbarname=${activeToolBar.current?.name} inside SketchPad!!`);
     twoRef?.current?.update();
-    color.current = getBackgroundColor(activeToolBar?.name ?? "");
+    color.current = getBackgroundColor(activeToolBar.current?.name ?? "");
     console.log(color.current);
     return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
 }

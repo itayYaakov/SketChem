@@ -1,13 +1,13 @@
-import { MouseEventCallBackProperties } from "@types";
+import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
 
 export default interface ToolbarItem {
     readonly name: string;
 
-    readonly onMouseDown?: (e: MouseEventCallBackProperties) => void;
+    readonly onMouseDown?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
-    readonly onMouseMove?: (e: MouseEventCallBackProperties) => void;
+    readonly onMouseMove?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
-    readonly onMouseUp?: (e: MouseEventCallBackProperties) => void;
+    readonly onMouseUp?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
     readonly keyboardKeys?: string[];
 }

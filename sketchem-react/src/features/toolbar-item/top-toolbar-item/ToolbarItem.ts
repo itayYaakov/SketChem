@@ -2,8 +2,10 @@ import { Direction } from "@constants/enum.constants";
 
 import ToolbarItem from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
+import { DrawMeOther } from "../tools";
 
 const toolbarItemsList: ToolbarItem[] = [
+    DrawMeOther,
     {
         name: "Atom 1",
         onMouseDown: () => {},

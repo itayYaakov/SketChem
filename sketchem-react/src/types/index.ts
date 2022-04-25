@@ -1,3 +1,4 @@
+import Two from "two.js";
 import { Vector } from "two.js/src/vector";
 
 //= =============================================================================
@@ -52,8 +53,13 @@ export interface RootState {
 //= =============================================================================
 export interface MouseEventCallBackProperties {
     e: MouseEvent;
+    two: Two;
     mouseDownLocation: Vector;
+    mouseCurrentLocation: Vector;
     mouseUpLocation?: Vector;
+}
+export interface MouseEventCallBackResponse {
+    shapes: any;
 }
 //= =============================================================================
 // Default Types

@@ -21,8 +21,8 @@ function makeCurve(two: Two, points: Anchor[], close_flag?: boolean): Path {
     return curve;
 }
 
-const DrawMeOther = {
-    name: "DrawMe",
+const DrawMe = {
+    name: "DrawMeOther",
     onMouseDown: (eventHolder: MouseEventCallBackProperties) => {
         line = null;
     },
@@ -33,8 +33,8 @@ const DrawMeOther = {
             const v1 = new Two.Anchor(mouseDownLocation.x, mouseDownLocation.y);
             const v2 = new Two.Anchor(x, y);
             line = makeCurve(two, [v1, v2], true);
-            line.noFill().stroke = "#33aaff";
-            line.linewidth = 3;
+            line.noFill().stroke = "#00ffaa";
+            line.linewidth = 10;
             line.vertices.forEach((v: Anchor) => {
                 v.addSelf(line?.translation);
             });
@@ -48,4 +48,4 @@ const DrawMeOther = {
     keyboardKeys: ["A"],
 } as ToolbarItem;
 
-export default DrawMeOther;
+export default DrawMe;
