@@ -1,5 +1,5 @@
-import Two from "two.js";
-import { Vector } from "two.js/src/vector";
+import { Number as SVGNumber, SVG, Svg } from "@svgdotjs/svg.js";
+import { Vector } from "vector2d";
 
 //= =============================================================================
 // Items
@@ -16,14 +16,6 @@ export interface BondAttributes {
     atom_start_id: number;
     // index of second connected atom
     atom_end_id: number;
-}
-
-export enum BondType {
-    SINGLE = 1,
-    DOUBLE,
-    TRIPLE,
-    AROMATIC,
-    ANY,
 }
 
 // Chemistry - Atom
@@ -53,7 +45,7 @@ export interface RootState {
 //= =============================================================================
 export interface MouseEventCallBackProperties {
     e: MouseEvent;
-    two: Two;
+    canvas: Svg;
     mouseDownLocation: Vector;
     mouseCurrentLocation: Vector;
     mouseUpLocation?: Vector;

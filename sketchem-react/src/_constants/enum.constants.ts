@@ -13,3 +13,11 @@ export enum MouseButtons {
     Back = 8,
     Forward = 16,
 }
+
+export enum BondType {
+    SINGLE = 1,
+    DOUBLE,
+    TRIPLE,
+    AROMATIC,
+    ANY,
+}
