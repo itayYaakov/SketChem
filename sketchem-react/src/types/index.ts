@@ -1,5 +1,6 @@
-import { Number as SVGNumber, SVG, Svg } from "@svgdotjs/svg.js";
-import { Vector } from "vector2d";
+import type { BondType } from "@constants/enum.constants";
+import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
+import Vector2 from "@utils/mathsTs/Vector2";
 
 //= =============================================================================
 // Items
@@ -11,20 +12,36 @@ import { Vector } from "vector2d";
 
 // Chemistry - Bond
 export interface BondAttributes {
-    type: number;
+    id: number;
+    type: BondType;
     // index of first connected atom
-    atom_start_id: number;
+    atomStartId: number;
     // index of second connected atom
-    atom_end_id: number;
+    atomEndId: number;
+}
+
+export interface BondEditorContext {
+    bondAttrs: BondAttributes;
+    movedAtomId: number | undefined;
+    // elem: Rect | undefined;
+    canvas: Svg;
 }
 
 // Chemistry - Atom
 export interface AtomAttributes {
     id: number;
-    center: Point;
+    center: Vector2;
     charge: number;
     symbol: string;
+    color: string;
 }
+
+export const DefaultAtomAttributes = {
+    id: 999,
+    symbol: "C",
+    charge: 0,
+    color: "#ffffff",
+};
 
 //= =============================================================================
 // State
@@ -46,9 +63,9 @@ export interface RootState {
 export interface MouseEventCallBackProperties {
     e: MouseEvent;
     canvas: Svg;
-    mouseDownLocation: Vector;
-    mouseCurrentLocation: Vector;
-    mouseUpLocation?: Vector;
+    mouseDownLocation: Vector2;
+    mouseCurrentLocation: Vector2;
+    mouseUpLocation?: Vector2;
 }
 export interface MouseEventCallBackResponse {
     shapes: any;
@@ -56,7 +73,3 @@ export interface MouseEventCallBackResponse {
 //= =============================================================================
 // Default Types
 //= =============================================================================
-interface Point {
-    x: number;
-    y: number;
-}

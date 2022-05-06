@@ -8,11 +8,13 @@ import ToolbarItem from "@features/toolbar-item/ToolbarItem";
 import styles from "@styles/index.module.scss";
 import { Number as SVGNumber, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
+import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import Two from "two.js";
-import { Vector } from "vector2d";
+
+import SetDefs from "./SetDefs";
 
 interface Props {
     // width: number;
@@ -36,12 +38,12 @@ function SketchPad(props: Props) {
     const svgRef = useRef<Svg>(null!);
 
     const mouseEventsSetListeners = (function mouseEventsHandler() {
-        let mouseDownLocation: Vector | undefined;
+        let mouseDownLocation: Vector2 | undefined;
 
-        function calculateLocation(e: MouseEvent): Vector {
-            if (!svgRef.current) return new Vector(0, 0);
+        function calculateLocation(e: MouseEvent): Vector2 {
+            if (!svgRef.current) return new Vector2(0, 0);
             const { x, y } = svgRef.current.point(e.clientX, e.clientY);
-            return new Vector(x, y);
+            return new Vector2(x, y);
         }
 
         function handleMouseDown(e: MouseEvent) {
@@ -113,16 +115,9 @@ function SketchPad(props: Props) {
     function setup() {
         const draw = SVG().addTo(divDomElement.current).size("100%", "100%");
         svgRef.current = draw;
-        // const { width, height } = { parseInt(draw.width()), parseInt(draw.height()) };
-        const width = Number(draw.width().valueOf());
-        const height = Number(draw.height().valueOf());
-        const line = draw.line(width / 2, 0, width, height);
-        line.stroke({ width: 5, color: "#fff", dasharray: "5,5" });
-
-        const rect = draw.rect(width * 0.8, height * 0.25);
-        rect.stroke({ width: 5, color: "#fff", dasharray: "5,5" });
-
-        console.log(rect);
+        // const width = Number(draw.width().valueOf());
+        // const height = Number(draw.height().valueOf());
+        SetDefs(draw);
 
         function unmount() {
             mouseEventsSetListeners(svgRef.current, false);

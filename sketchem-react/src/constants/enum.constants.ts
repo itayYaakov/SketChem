@@ -15,9 +15,11 @@ export enum MouseButtons {
 }
 
 export enum BondType {
-    SINGLE = 1,
-    DOUBLE,
-    TRIPLE,
-    AROMATIC,
-    ANY,
+    Single = 1,
+    Double,
+    Triple,
+    WedgeFront,
+    WedgeBack,
+    Aromatic,
+    Any,
 }

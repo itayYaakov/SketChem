@@ -18,12 +18,14 @@
         "sourceMap": true,
         "baseUrl": "./",
         "paths": {
+            "@app/*": ["./src/app/*"],
+            "@constants/*": ["./src/constants/*"],
+            "@entities": ["./src/entities"],
+            "@features/*": ["./src/features/*"],
             "@src/*": ["./src/*"],
             "@styles/*": ["./src/styles/*"],
-            "@app/*": ["./src/app/*"],
-            "@constants/*": ["./src/_constants/*"],
-            "@features/*": ["./src/features/*"],
-            "@types": ["./src/types"]
+            "@types": ["./src/types"],
+            "@utils/*": ["./src/utils/*"],
         }
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx", ".eslintrc.js", "prettier.config.js", "craco.config.js"],

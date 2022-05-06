@@ -5,21 +5,21 @@ import type { IToolbarItemsProps } from "../ToolbarItems";
 
 const toolbarItemsList: ToolbarItem[] = [
     {
-        name: "Atom 1",
+        name: "Empty 1",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},
         keyboardKeys: ["A"],
     } as ToolbarItem,
     {
-        name: "Bond 2",
+        name: "Empty 2",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},
         keyboardKeys: ["A"],
     } as ToolbarItem,
     {
-        name: "Bond 3",
+        name: "Empty 3",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},
