@@ -5,13 +5,13 @@ import clsx from "clsx";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import type ToolbarItem from "./ToolbarItem";
+import { ActiveToolbarItem, DummyToolbarItem, isDummyToolbarItem, ToolbarItem } from "./ToolbarItem";
 import { actions } from "./toolbarItemsSlice";
 
 // eslint-disable-next-line no-restricted-syntax
-for (const [key, value] of Object.entries(styles)) {
-    console.log(`${key}: ${value}`);
-}
+// for (const [key, value] of Object.entries(styles)) {
+//     console.log(`${key}: ${value}`);
+// }
 
 // handleEvent = (event) => {
 //     if (event.type === "mousedown") {
@@ -30,33 +30,28 @@ interface IToolbarItemsProps {
 type Props = IToolbarItemsProps;
 
 export function ToolbarItems(props: Props) {
-    // const count = useAppSelector(selectCount);
     const dispatch = useAppDispatch();
     const { toolbarItemsList } = props;
     const { direction } = props;
     const className: string = `toolbar-${Direction[direction].toLowerCase()}`;
-    // const className: string = Direction[direction].toLowerCase();
-    // const className: string = `toolbar_${DirectionString[direction]}`;
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
     const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
-        const button: HTMLButtonElement = event.currentTarget;
-        dispatch(actions.press(toolbarItem.name));
-        // setActiveToolbarItem(toolbarItem.name);
-
-        // toolbarItem.onButtonClick?.(event);
-
         event.stopPropagation();
+
+        if (isDummyToolbarItem(toolbarItem)) {
+            dispatch(actions.dialog(toolbarItem.name));
+        } else {
+            dispatch(actions.press(toolbarItem.name));
+        }
+        // const button: HTMLButtonElement = event.currentTarget;
+        // setActiveToolbarItem(toolbarItem.name);
+        // toolbarItem.onButtonClick?.(event);
     };
 
-    // useEffect(() => {
-    //     // Do something on each new render
-    //     console.log("render");
-    // });
     return (
         <div className={clsx(styles[className], className)}>
-            {/* <div> */}
             {toolbarItemsList.map((item) => (
                 <button
                     type="button"

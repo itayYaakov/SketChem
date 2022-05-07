@@ -1,7 +1,7 @@
 import b from "./bottom-toolbar-item/ToolbarItem";
 import l from "./left-toolbar-item/ToolbarItem";
 import r from "./right-toolbar-item/ToolbarItem";
-import type ToolbarItem from "./ToolbarItem";
+import type { ToolbarItem } from "./ToolbarItem";
 import t from "./top-toolbar-item/ToolbarItem";
 
 const toolbarItemsList: ToolbarItem[] = [

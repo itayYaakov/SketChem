@@ -39,6 +39,7 @@ export interface BondAttributes {
 //= =============================================================================
 export interface ToolbarItemState {
     selectedToolbarItem: string;
+    dialogWindow: string;
 }
 
 export interface RootState {

@@ -79,6 +79,7 @@ export class Atom {
             fill: color,
             family: EditorConstants.atomFontSize,
             size: EditorConstants.atomFontSize,
+            anchor: "middle",
         });
 
         text.insertAfter(circle);

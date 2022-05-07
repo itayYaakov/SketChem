@@ -4,7 +4,7 @@
 import { getToolbarItem } from "@app/selectors";
 import { Direction, MouseButtons } from "@constants/enum.constants";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
-import ToolbarItem from "@features/toolbar-item/ToolbarItem";
+import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
 import styles from "@styles/index.module.scss";
 import { Number as SVGNumber, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
@@ -30,10 +30,10 @@ function getBackgroundColor(stringInput: string): string {
 function SketchPad(props: Props) {
     const divDomElement = useRef<HTMLDivElement>(null!);
     const svgDomElement = useRef<HTMLDivElement>(null!);
-    const activeToolBar = useRef<ToolbarItem>(null!);
+    const activeToolBar = useRef<ActiveToolbarItem>(null!);
     activeToolBar.current = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
 
-    const color = useRef<string>(getBackgroundColor(""));
+    // const color = useRef<string>(getBackgroundColor(""));
 
     const svgRef = useRef<Svg>(null!);
 
@@ -121,7 +121,7 @@ function SketchPad(props: Props) {
 
         function unmount() {
             mouseEventsSetListeners(svgRef.current, false);
-            divDomElement.current.removeChild(svgRef.current.node);
+            divDomElement?.current?.removeChild(svgRef.current.node);
         }
         mouseEventsSetListeners(svgRef.current, true);
 
@@ -131,8 +131,8 @@ function SketchPad(props: Props) {
     useEffect(setup, []);
 
     console.log(`toolbarname=${activeToolBar.current?.name} inside SketchPad!!`);
-    color.current = getBackgroundColor(activeToolBar.current?.name ?? "");
-    console.log(color.current);
+    // color.current = getBackgroundColor(activeToolBar.current?.name ?? "");
+    // console.log(color.current);
     return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
 }
 

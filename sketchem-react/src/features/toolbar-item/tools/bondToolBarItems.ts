@@ -3,9 +3,9 @@ import { BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { BondAttributes, MouseEventCallBackProperties } from "@types";
 
-import ToolbarItem from "../ToolbarItem";
+import { ActiveToolbarItem } from "../ToolbarItem";
 
-class BondToolBarItem implements ToolbarItem {
+class BondToolBarItem implements ActiveToolbarItem {
     name: string;
 
     bondType: BondType;
