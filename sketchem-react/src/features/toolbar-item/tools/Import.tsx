@@ -1,20 +1,61 @@
 /* eslint-disable class-methods-use-this */
+import styles from "@styles/index.module.scss";
+import clsx from "clsx";
 import React, { useState } from "react";
-import { Button, Modal, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Container, Modal, Row, Tab, Tabs } from "react-bootstrap";
 
 import { DummyToolbarItem } from "../ToolbarItem";
 
-function MissedGoal() {
-    return <h1>MISSED!</h1>;
+function ImportFileTab(props: any) {
+    const { onHide, title } = props;
+
+    const inputRef = React.createRef<HTMLTextAreaElement>();
+
+    const loadText = () => {
+        console.log("Print text");
+        console.log(inputRef?.current?.value);
+        onHide();
+    };
+
+    return (
+        <>
+            <Modal.Body className="show-grid">
+                <Container fluid>
+                    <Row>
+                        <Col>
+                            <textarea
+                                ref={inputRef}
+                                rows={12}
+                                className="w-100"
+                                placeholder="Paste content of any file (from the supported formats)"
+                            />
+                        </Col>
+                    </Row>
+                </Container>
+            </Modal.Body>
+            <Modal.Footer>
+                <div className="me-auto">
+                    {/* Todo!! actually replace or add the molecule on the canvas */}
+                    <Button className="m-2" onClick={loadText}>
+                        Replace
+                    </Button>
+                    <Button className="m-2" onClick={loadText}>
+                        Add
+                    </Button>
+                </div>
+                <Button className="m-2" onClick={onHide}>
+                    Close
+                </Button>
+            </Modal.Footer>
+        </>
+    );
 }
 
-function MadeGoal() {
-    return <h1>Goal!</h1>;
-}
+const defaultTab = "paste";
 
 export function DialogLoadWindow(props: any) {
     const [modalShow, setModalShow] = useState(true);
-    const [key, setKey] = useState("home");
+    const [key, setKey] = useState(defaultTab);
     const { onHide } = props;
 
     const hideMe = () => {
@@ -22,51 +63,28 @@ export function DialogLoadWindow(props: any) {
         onHide();
     };
 
-    // function FromTextInput() {
-    //     return (
-    //         <>
-    //             <h4>Centered Modal</h4>
-    //             <p>
-    //                 Cras mattis consectetur purus sit amet fermentum. Cras justo odio, dapibus ac facilisis in, egestas
-    //                 eget quam. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-    //             </p>
-    //         </>
-    //     );
-    // }
-
     return (
         // <Modal {...props} size="xl" aria-labelledby="contained-modal-title-vcenter" centered>
-        <Modal show={modalShow} size="xl" aria-labelledby="contained-modal-title-vcenter" centered>
-            <Modal.Header closeButton onHide={onHide}>
-                <Modal.Title id="contained-modal-title-vcenter">Import file</Modal.Title>
-            </Modal.Header>
-            {/* <Modal.Body className="show-grid"> */}
-            <Modal.Body>
-                <Tabs
-                    id="controlled-tab-example"
-                    activeKey={key}
-                    onSelect={(k) => setKey(k ?? "home")}
-                    className="mb-3"
-                >
-                    <Tab eventKey="home" title="Home">
-                        <MissedGoal />
-                    </Tab>
-                    <Tab eventKey="profile" title="Profile">
-                        <MadeGoal />
-                    </Tab>
-                    <Tab eventKey="contact" title="Contact" disabled>
-                        {/* <FromTextInput /> */}
-                    </Tab>
-                </Tabs>
-                {/* <h4>Centered Modal</h4>
-                <p>
-                    Cras mattis consectetur purus sit amet fermentum. Cras justo odio, dapibus ac facilisis in, egestas
-                    eget quam. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.
-                </p> */}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={hideMe}>Close</Button>
-            </Modal.Footer>
+        <Modal
+            show={modalShow}
+            // size="xl"
+            dialogClassName={clsx(styles.import_dialog, "stupid_Test")}
+            aria-labelledby="contained-modal-title-vcenter"
+            centered
+        >
+            <Tabs
+                id="controlled-tab-example"
+                activeKey={key}
+                onSelect={(k) => setKey(k ?? defaultTab)}
+                className="mb-3"
+            >
+                <Tab eventKey="paste" title="From Paste">
+                    <ImportFileTab onHide={hideMe} title="From Paste" />
+                </Tab>
+                <Tab eventKey="file" title="From file">
+                    <ImportFileTab onHide={hideMe} title="From file" />
+                </Tab>
+            </Tabs>
         </Modal>
     );
 }

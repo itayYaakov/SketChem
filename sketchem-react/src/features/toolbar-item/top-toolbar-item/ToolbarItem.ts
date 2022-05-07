@@ -1,30 +1,26 @@
 import { Direction } from "@constants/enum.constants";
 
-import ToolbarItem from "../ToolbarItem";
+import { ActiveToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
+import { bondToolBarItems, Import } from "../tools";
 
-const toolbarItemsList: ToolbarItem[] = [
-    {
-        name: "Atom 1",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ToolbarItem,
+const toolbarItemsList: ActiveToolbarItem[] = [
+    Import,
+    bondToolBarItems.tripleBond,
     {
         name: "Atom 2",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},
         keyboardKeys: ["A"],
-    } as ToolbarItem,
+    } as ActiveToolbarItem,
     {
         name: "Atom 3",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},
         keyboardKeys: ["A"],
-    } as ToolbarItem,
+    } as ActiveToolbarItem,
 ];
 
 const props: IToolbarItemsProps = {

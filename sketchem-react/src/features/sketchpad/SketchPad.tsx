@@ -130,7 +130,7 @@ function SketchPad(props: Props) {
 
     useEffect(setup, []);
 
-    console.log(`toolbarname=${activeToolBar.current?.name} inside SketchPad!!`);
+    // console.log(`toolbarname=${activeToolBar.current?.name} inside SketchPad!!`);
     // color.current = getBackgroundColor(activeToolBar.current?.name ?? "");
     // console.log(color.current);
     return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
