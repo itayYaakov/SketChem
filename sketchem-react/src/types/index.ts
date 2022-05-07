@@ -10,23 +10,6 @@ import Vector2 from "@utils/mathsTs/Vector2";
 // Chemistry
 //= =============================================================================
 
-// Chemistry - Bond
-export interface BondAttributes {
-    id: number;
-    type: BondType;
-    // index of first connected atom
-    atomStartId: number;
-    // index of second connected atom
-    atomEndId: number;
-}
-
-export interface BondEditorContext {
-    bondAttrs: BondAttributes;
-    movedAtomId: number | undefined;
-    // elem: Rect | undefined;
-    canvas: Svg;
-}
-
 // Chemistry - Atom
 export interface AtomAttributes {
     id: number;
@@ -36,12 +19,20 @@ export interface AtomAttributes {
     color: string;
 }
 
-export const DefaultAtomAttributes = {
-    id: 999,
-    symbol: "C",
-    charge: 0,
-    color: "#ffffff",
-};
+export interface AtomEditorContext {
+    atomAttrs: AtomAttributes;
+    canvas: Svg;
+}
+
+// Chemistry - Bond
+export interface BondAttributes {
+    id: number;
+    type: BondType;
+    // index of first connected atom
+    atomStartId: number;
+    // index of second connected atom
+    atomEndId: number;
+}
 
 //= =============================================================================
 // State

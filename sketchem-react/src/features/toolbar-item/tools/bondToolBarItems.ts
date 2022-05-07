@@ -1,10 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
-// !!! MOVE TO REDUX??
-import { BondAdd, BondMove } from "@features/sketchpad/bond";
-import { BondAttributes, BondEditorContext, MouseEventCallBackProperties } from "@types";
-import { Vector } from "vector2d";
+import { BondAttributes, MouseEventCallBackProperties } from "@types";
 
 import ToolbarItem from "../ToolbarItem";
 
@@ -26,45 +23,40 @@ class BondToolBarItem implements ToolbarItem {
     static lastAtom: Atom;
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation } = eventHolder;
-        const startAtom = new Atom({ symbol: "C", center: mouseDownLocation });
-        const endAtom = new Atom({ symbol: "C", center: mouseDownLocation.addValues(5, 5) });
+        const { mouseDownLocation, canvas } = eventHolder;
+        let startAtom;
+        let endAtom;
+        if (!BondToolBarItem.lastAtom) {
+            startAtom = new Atom({ symbol: "C", center: mouseDownLocation });
+            endAtom = new Atom({ symbol: "C", center: mouseDownLocation });
 
-        const bondEntity = new Bond(this.bondType, startAtom.getId(), endAtom.getId());
-        const props: BondEditorContext = {
-            bondAttrs: bondEntity.attributes,
-            movedAtomId: bondEntity.attributes.atomEndId,
-            // elem: undefined,
-            canvas: eventHolder.canvas,
-        };
-        // !!! remove
-        const a = Atom.getInstanceById(Atom.instancesCounter - 1);
-        const b = Bond.getInstanceById(Bond.instancesCounter - 1);
-        if (!a) {
-            console.error("Atom is undefined", a);
-            return;
+            startAtom.draw(canvas);
+            endAtom.draw(canvas);
+        } else {
+            startAtom = BondToolBarItem.lastAtom;
+            endAtom = new Atom({ symbol: "Xe", center: mouseDownLocation });
+
+            endAtom.draw(canvas);
         }
-        BondToolBarItem.lastAtom = a;
-        if (!b) {
-            console.error("Bond is undefined", b);
-            return;
-        }
-        BondToolBarItem.lastBond = b;
-        // !!! MOVE TO REDUX
-        BondAdd(props);
+
+        const bond = new Bond(this.bondType, startAtom.getId(), endAtom.getId());
+        BondToolBarItem.lastAtom = endAtom;
+        BondToolBarItem.lastBond = bond;
+        bond.draw(canvas);
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
         if (!BondToolBarItem.lastBond) return;
         if (!BondToolBarItem.lastAtom) return;
         const { canvas, mouseDownLocation, mouseCurrentLocation } = eventHolder;
-        BondToolBarItem.lastAtom.attributes.center = mouseCurrentLocation;
-        const props: BondEditorContext = {
-            bondAttrs: BondToolBarItem.lastBond.attributes,
-            movedAtomId: Atom.instancesCounter - 1,
-            canvas,
-        };
-        BondMove(props);
+        // console.log(
+        //     "mouseCurrentLocation=",
+        //     mouseCurrentLocation,
+        //     "BondToolBarItem.lastAtom center=",
+        //     BondToolBarItem.lastAtom.attributes.center
+        // );
+        BondToolBarItem.lastAtom.move(canvas, mouseCurrentLocation);
+        BondToolBarItem.lastBond.move(canvas, BondToolBarItem.lastAtom.getId());
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {}

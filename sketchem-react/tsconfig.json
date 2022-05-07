@@ -25,7 +25,7 @@
             "@src/*": ["./src/*"],
             "@styles/*": ["./src/styles/*"],
             "@types": ["./src/types"],
-            "@utils/*": ["./src/utils/*"],
+            "@utils/*": ["./src/utils/*"]
         }
     },
     "include": ["./src/**/*.ts", "./src/**/*.tsx", ".eslintrc.js", "prettier.config.js", "craco.config.js"],

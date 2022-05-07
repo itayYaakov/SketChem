@@ -1,16 +1,8 @@
-import { Vector } from "vector2d";
+import Vector2 from "./mathsTs/Vector2";
 
-export function get180angle(Va: Vector, Vb: Vector): number {
-    const Vc = Vb.clone().subtract(Va);
-    const dy = Vc.y;
-    const dx = Vc.x;
-    const theta = Math.atan2(dy, dx); // range (-PI, PI]
-    return theta;
-}
-
-export function get360angle(Va: Vector, Vb: Vector) {
-    let theta = get180angle(Va, Vb);
-    if (theta < 0) theta = 360 + theta; // range [0, 360)
+export function getPiPositiveAngle(Va: Vector2, Vb: Vector2) {
+    let theta = Va.angle(Vb);
+    if (theta < 0) theta = Math.PI + theta; // range [0, 2 pi)
     return theta;
 }
 

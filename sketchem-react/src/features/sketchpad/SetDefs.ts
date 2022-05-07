@@ -14,7 +14,7 @@ export default function SetDefs(canvas: Svg) {
             patternContentUnits: "objectBoundingBox",
         })
             .update((add) => {
-                add.line(0.5, 0, 0.5, 1).stroke({ color: "#00aa12", width: 0.1 });
+                add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
             })
             .id(getElementId(BondType[BondType.Single]))
     );
@@ -25,8 +25,8 @@ export default function SetDefs(canvas: Svg) {
             patternContentUnits: "objectBoundingBox",
         })
             .update((add) => {
-                add.line(0.3, 0, 0.3, 1).stroke({ color: "#00aa12", width: 0.1 });
-                add.line(0.7, 0, 0.7, 1).stroke({ color: "#00aa12", width: 0.1 });
+                add.line(0.3, 0, 0.3, 1).stroke({ color: "#000000", width: 0.1 });
+                add.line(0.7, 0, 0.7, 1).stroke({ color: "#000000", width: 0.1 });
             })
             .id(getElementId(BondType[BondType.Double]))
     );
@@ -37,9 +37,9 @@ export default function SetDefs(canvas: Svg) {
             patternContentUnits: "objectBoundingBox",
         })
             .update((add) => {
-                add.line(0.1, 0, 0.1, 1).stroke({ color: "#00aa12", width: 0.1 });
-                add.line(0.5, 0, 0.5, 1).stroke({ color: "#00aa12", width: 0.1 });
-                add.line(0.9, 0, 0.9, 1).stroke({ color: "#00aa12", width: 0.1 });
+                add.line(0.1, 0, 0.1, 1).stroke({ color: "#000000", width: 0.1 });
+                add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
+                add.line(0.9, 0, 0.9, 1).stroke({ color: "#000000", width: 0.1 });
             })
             .id(getElementId(BondType[BondType.Triple]))
     );
