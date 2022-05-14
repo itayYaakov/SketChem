@@ -1,10 +1,20 @@
-import type { BondType } from "@constants/enum.constants";
+import type { BondStereo, BondType } from "@constants/enum.constants";
 import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
 
 //= =============================================================================
 // Items
 //= =============================================================================
+export interface ActionItem {
+    command: "ADD" | "CHANGE" | "REMOVE";
+    type: "ATOM" | "BOND";
+    atomAttributes: AtomAttributes;
+    bondAttributes: BondAttributes;
+}
+
+// interface ActionItems {
+//     commands: ActionItem[];
+// }
 
 //= =============================================================================
 // Chemistry
@@ -28,6 +38,7 @@ export interface AtomEditorContext {
 export interface BondAttributes {
     id: number;
     type: BondType;
+    stereo: BondStereo;
     // index of first connected atom
     atomStartId: number;
     // index of second connected atom
@@ -40,10 +51,15 @@ export interface BondAttributes {
 export interface ToolbarItemState {
     selectedToolbarItem: string;
     dialogWindow: string;
+    fileContent: string;
+}
+export interface ChemistryState {
+    items?: ActionItem[];
 }
 
 export interface RootState {
     toolbarItem: ToolbarItemState;
+    chemistry: ChemistryState;
 }
 //= =============================================================================
 // API

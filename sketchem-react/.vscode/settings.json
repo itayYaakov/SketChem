@@ -19,7 +19,11 @@
         "titleBar.inactiveForeground": "#15202b99"
     },
     "peacock.color": "#54c2d9",
-    "cSpell.words": ["browserslist", "sketchem"],
+    "cSpell.words": [
+        "browserslist",
+        "kekule",
+        "sketchem"
+    ],
     "files.exclude": {
         "node_modules/": true
     }

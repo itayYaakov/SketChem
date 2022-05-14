@@ -1,12 +1,22 @@
 /* eslint-disable react/default-props-match-prop-types */
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-unused-vars */
+// import "./svg.panzoom";
+// import "src/features/sketchpad/svg.panzoom.js.d.ts";
+// eslint-disable-next-line import/extensions
+// import "./svg.panzoom.js";
+// import "./svg.panzoom";
+
+// !!! replace with my custom file
+import "@svgdotjs/svg.panzoom.js";
+
+// import "@svgdotjs/svg.panzoom.js";
 import { getToolbarItem } from "@app/selectors";
 import { Direction, MouseButtons } from "@constants/enum.constants";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
 import styles from "@styles/index.module.scss";
-import { Number as SVGNumber, SVG, Svg } from "@svgdotjs/svg.js";
+import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
@@ -20,6 +30,10 @@ interface Props {
     // width: number;
     // height: number;
 }
+
+// !!! delete later
+// eslint-disable-next-line import/no-mutable-exports
+export let Canvas: any = null;
 
 function getBackgroundColor(stringInput: string): string {
     // eslint-disable-next-line no-bitwise
@@ -49,7 +63,9 @@ function SketchPad(props: Props) {
         function handleMouseDown(e: MouseEvent) {
             e.preventDefault();
 
+            if (e.buttons !== MouseButtons.Left) return;
             mouseDownLocation = calculateLocation(e);
+
             const args = {
                 e,
                 canvas: svgRef.current,
@@ -113,8 +129,24 @@ function SketchPad(props: Props) {
     })();
 
     function setup() {
-        const draw = SVG().addTo(divDomElement.current).size("100%", "100%");
+        // const draw = SVG().addTo(divDomElement.current).size("100%", "100%").panZoom({ zoomMin: 1, zoomMax: 1.1 });
+        const draw = SVG()
+            .addTo(divDomElement.current)
+            .size("100%", "100%")
+            .viewbox(-350, -350, 900, 900)
+            .panZoom({
+                // wheelZoom: false,
+                zoomMin: 0.1,
+                zoomMax: 4,
+                zoomFactor: 0.1,
+                wheelZoomDeltaModeLinePixels: 9,
+                wheelZoomDeltaModeScreenPixels: 27,
+                panButton: 1,
+                // panning: false,
+            })
+            .zoom(2);
         svgRef.current = draw;
+        Canvas = draw;
         // const width = Number(draw.width().valueOf());
         // const height = Number(draw.height().valueOf());
         SetDefs(draw);

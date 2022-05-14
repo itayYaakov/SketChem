@@ -1,2 +1,5 @@
 build/
 dist/
+node_modules/
+.vscode/
+src/features/chemistry/kekule-js-dist/

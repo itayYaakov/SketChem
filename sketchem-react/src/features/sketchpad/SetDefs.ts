@@ -1,5 +1,5 @@
 import { BondConstants } from "@constants/bond.constants";
-import { BondType } from "@constants/enum.constants";
+import { BondStereo, BondType } from "@constants/enum.constants";
 import { Pattern, Svg } from "@svgdotjs/svg.js";
 
 function getElementId(name: String) {
@@ -57,7 +57,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.51, -0.1, 0.51, 1.1).stroke({ color: "#000000", width: 0.17 });
                 add.line(0.85, -0.1, 0.85, 1.1).stroke({ color: "#000000", width: 0.17 });
             })
-            .id(getElementId(BondType[BondType.WedgeFront]))
+            .id(getElementId(BondStereo[BondStereo.Up]))
     );
 
     canvas.defs().put(
@@ -71,7 +71,7 @@ export default function SetDefs(canvas: Svg) {
             .update((add) => {
                 add.rect(1, 1).fill({ color: "#000000" });
             })
-            .id(getElementId(BondType[BondType.WedgeBack]))
+            .id(getElementId(BondStereo[BondStereo.Down]))
     );
 
     const poly = canvas.defs().polygon("0,1 1,1 0.52,0 0.48,0");

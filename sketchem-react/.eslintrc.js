@@ -14,7 +14,13 @@ module.exports = {
         sourceType: "module",
     },
     // !!! temp
-    ignorePatterns: ["build/*", "src/features/counter/*", "src/features/to/", "src/_actions/user.action.ts"],
+    ignorePatterns: [
+        "build/*",
+        "src/features/counter/*",
+        "src/features/to/",
+        "src/_actions/user.action.ts",
+        "src/features/chemistry/kekule-js-dist/*",
+    ],
     plugins: ["react", "@typescript-eslint", "prettier", "simple-import-sort"],
     rules: {
         "simple-import-sort/imports": "error",

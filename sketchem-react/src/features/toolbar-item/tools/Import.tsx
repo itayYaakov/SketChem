@@ -1,19 +1,30 @@
 /* eslint-disable class-methods-use-this */
+import { useAppDispatch } from "@app/hooks";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React, { useState } from "react";
 import { Button, Col, Container, Modal, Row, Tab, Tabs } from "react-bootstrap";
 
 import { DummyToolbarItem } from "../ToolbarItem";
+import { actions } from "../toolbarItemsSlice";
 
 function ImportFileTab(props: any) {
     const { onHide, title } = props;
+    const dispatch = useAppDispatch();
 
     const inputRef = React.createRef<HTMLTextAreaElement>();
 
     const loadText = () => {
         console.log("Print text");
-        console.log(inputRef?.current?.value);
+        const textValue = inputRef?.current?.value;
+        if (!textValue) return;
+        console.log(textValue);
+        const payload = {
+            content: textValue,
+            format: "mol",
+            replace: true,
+        };
+        dispatch(actions.load_file(payload));
         onHide();
     };
 

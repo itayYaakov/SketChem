@@ -1,5 +1,6 @@
 import "@styles/App.scss";
 
+import { KekuleShow } from "@features/chemistry/kekuleHandler";
 import SketchPad from "@features/sketchpad/SketchPad";
 import {
     BottomToolbarProps,
@@ -54,6 +55,13 @@ function App() {
                         </Col>
                     </Row>
                     <DialogShow />
+                    {/* delete later */}
+                    <Row>
+                        <Col>
+                            <KekuleShow />
+                        </Col>
+                    </Row>
+                    {/* delete later */}
                 </Container>
             </div>
         </>

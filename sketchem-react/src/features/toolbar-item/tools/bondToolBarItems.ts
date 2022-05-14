@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { BondType } from "@constants/enum.constants";
+import { BondStereo, BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { BondAttributes, MouseEventCallBackProperties } from "@types";
 
@@ -10,11 +10,14 @@ class BondToolBarItem implements ActiveToolbarItem {
 
     bondType: BondType;
 
+    bondStereo: BondStereo;
+
     keyboardKeys?: string[];
 
-    constructor(name: string, bondType: BondType, keyboardKeys?: string[]) {
+    constructor(name: string, bondType: BondType, bondStereo: BondStereo, keyboardKeys?: string[]) {
         this.name = name;
         this.bondType = bondType;
+        this.bondStereo = bondStereo;
         this.keyboardKeys = keyboardKeys ?? undefined;
     }
 
@@ -39,7 +42,7 @@ class BondToolBarItem implements ActiveToolbarItem {
             endAtom.draw(canvas);
         }
 
-        const bond = new Bond(this.bondType, startAtom.getId(), endAtom.getId());
+        const bond = new Bond(this.bondType, this.bondStereo, startAtom.getId(), endAtom.getId());
         BondToolBarItem.lastAtom = endAtom;
         BondToolBarItem.lastBond = bond;
         bond.draw(canvas);
@@ -62,10 +65,10 @@ class BondToolBarItem implements ActiveToolbarItem {
     onMouseUp(eventHolder: MouseEventCallBackProperties) {}
 }
 
-const singleBond = new BondToolBarItem("Bond Single", BondType.Single, ["A"]);
-const doubleBond = new BondToolBarItem("Bond Double", BondType.Double, ["B"]);
-const tripleBond = new BondToolBarItem("Bond Triple", BondType.Triple, ["C"]);
-const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondType.WedgeFront, ["K"]);
-const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondType.WedgeBack, ["D"]);
+const singleBond = new BondToolBarItem("Bond Single", BondType.Single, BondStereo.None, ["A"]);
+const doubleBond = new BondToolBarItem("Bond Double", BondType.Double, BondStereo.None, ["B"]);
+const tripleBond = new BondToolBarItem("Bond Triple", BondType.Triple, BondStereo.None, ["C"]);
+const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondType.Single, BondStereo.Up, ["D"]);
+const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondType.Single, BondStereo.Down, ["D"]);
 
 export { doubleBond, singleBond, tripleBond, wedgeBackBond, wedgeFrontBond };

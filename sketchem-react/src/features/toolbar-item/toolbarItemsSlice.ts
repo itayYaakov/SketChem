@@ -1,10 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ToolbarItemState } from "@types";
 
-const initialState = { selectedToolbarItem: "", dialogWindow: "" } as ToolbarItemState;
+const initialState = { selectedToolbarItem: "", dialogWindow: "", fileContent: "" } as ToolbarItemState;
 
+interface LoadFileAction {
+    content: string;
+    format: string;
+    replace?: boolean;
+}
 const slice = createSlice({
-    name: "toolbar-item",
+    name: "toolbarItem",
     initialState,
     reducers: {
         press: (state, action: PayloadAction<string>) => {
@@ -15,6 +20,9 @@ const slice = createSlice({
         },
         dialog: (state, action: PayloadAction<string>) => {
             state.dialogWindow = action.payload;
+        },
+        load_file: (state, action: PayloadAction<LoadFileAction>) => {
+            state.fileContent = action.payload.content;
         },
     },
 });
