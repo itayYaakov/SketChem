@@ -1,0 +1,79 @@
+checkValence = function(atom)
+{
+    let currValence = atom.getValence();
+    let charge = atom.getCharge() || 0;
+    let possibleValences = _getPossibleValences(atom.getAtomicNumber(), charge);
+    if (possibleValences.length && possibleValences.indexOf(currValence) < 0)  // current is abnormal
+    {
+        return {'currValence': currValence, 'possibleValences': possibleValences, atom}
+    }
+    else  // no error
+        return null;
+}
+
+_getPossibleValences = function(atomicNum, charge)
+{
+    let result = [];
+    let info = Kekule.ValenceUtils.getPossibleMdlValenceInfo(atomicNum, charge);
+    if (info && info.valences && !info.unexpectedCharge)  // if abnormal charge is meet, we can not determinate the valence precisely, just ignore here
+    {
+        result = [].concat(info.valences);
+    }
+    return result;
+}
+
+// check weather this bond valence doesn't exceed the max order of one of it's connected atoms
+checkBondOrder = function(bond)
+{
+    let bondValence = bond.getBondValence && bond.getBondValence();
+    if (bondValence)
+    {
+        let connectedNodes = bond.getConnectedChemNodes();
+        let maxOrder = 0;
+        for (let i = 0, l = connectedNodes.length; i < l; ++i)
+        {
+            let m = _getAllowedMaxBondOrder(connectedNodes[i]);
+            if (m > 0 && (!maxOrder || m < maxOrder))
+                maxOrder = m;
+        }
+        if (maxOrder)
+        {
+            if (bondValence > maxOrder)   // error
+            {
+                return {'currOrder': bondValence, 'maxOrder': maxOrder, bond};
+            }
+        }
+    }
+    return null;
+}
+
+// Return atom max properties (src/data/kekule.structGenAtomTypesData.js), e.g.:
+// {
+//     elementSymbol: "N",
+//     atomicNumber: 7,
+//     atomTypes: [
+//       { id: "N3", maxBondOrder: 3, bondOrderSum: 3 },
+//       { id: "N5", maxBondOrder: 2, bondOrderSum: 5 },
+//     ]
+//  }
+_getAllowedMaxBondOrder = function(atom)
+{
+    let result = 0;
+    if (atom instanceof Kekule.Atom && atom.isNormalAtom())
+    {
+        let currValence = atom.getValence();
+        let atomTypes = Kekule.AtomTypeDataUtil.getAllAtomTypes(atom.getAtomicNumber());
+        if (atomTypes)
+        {
+            for (let i = 0, l = atomTypes.length; i < l; ++i)
+            {
+                if (currValence <= atomTypes[i].bondOrderSum)
+                {
+                    result = atomTypes[i].maxBondOrder;
+                    break;
+                }
+            }
+        }
+    }
+    return result;
+}

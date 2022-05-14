@@ -28,7 +28,7 @@ interface options {
     wheelZoomDeltaModeScreenPixels?: number;
 }
 
-declare module "./svgpanzoom.js" {
+declare module "@svgdotjs/svg.js" {
     interface Svg {
         panZoom(options?: options | false): this;
     }

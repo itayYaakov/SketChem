@@ -1,5 +1,5 @@
 import { BondConstants } from "@constants/bond.constants";
-import { BondStereo, BondType } from "@constants/enum.constants";
+import { BondStereoKekule, BondType } from "@constants/enum.constants";
 import { Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import { BondAttributes } from "@types";
 import * as VectorUtils from "@utils/vector";
@@ -15,7 +15,7 @@ export class Bond {
     // just a demo for now
     static DefaultAttributes: Partial<BondAttributes> = {
         type: BondType.Single,
-        stereo: BondStereo.None,
+        stereo: BondStereoKekule.NONE,
     };
 
     attributes: BondAttributes;
@@ -27,7 +27,13 @@ export class Bond {
     endAtom: Atom | undefined;
 
     // label: any;
-    constructor(type: BondType, stereo: BondStereo, atomStartId: number, atomEndId: number, optional_id?: number) {
+    constructor(
+        type: BondType,
+        stereo: BondStereoKekule,
+        atomStartId: number,
+        atomEndId: number,
+        optional_id?: number
+    ) {
         // this.attributes = { ...Bond.DefaultAttributes, ...attributes };
         const id = optional_id ?? Bond.generateNewId();
         this.attributes = { ...Bond.DefaultAttributes, id, type, stereo, atomStartId, atomEndId };
@@ -88,11 +94,11 @@ export class Bond {
         const distance = startPosition.distance(endPosition);
 
         const rect = canvas.rect(BondConstants.padding, distance);
-        if (this.attributes.stereo === BondStereo.None) {
+        if (this.attributes.stereo === BondStereoKekule.NONE) {
             rect.fill(`url(#def_${BondType[this.attributes.type]})`);
         } else {
-            console.log("stereo=", this.attributes.stereo, BondStereo[this.attributes.stereo]);
-            rect.fill(`url(#def_${BondStereo[this.attributes.stereo]})`);
+            console.log("stereo=", this.attributes.stereo, BondStereoKekule[this.attributes.stereo]);
+            rect.fill(`url(#def_${BondStereoKekule[this.attributes.stereo]})`);
         }
 
         rect.move(startAtom.attributes.center.x, startAtom.attributes.center.y).id(
@@ -100,8 +106,8 @@ export class Bond {
         );
 
         switch (this.attributes.stereo) {
-            case BondStereo.Down:
-            case BondStereo.Up:
+            case BondStereoKekule.DOWN:
+            case BondStereoKekule.UP:
                 rect.attr("clip-path", `url(#def_${BondConstants.poly_clip_id})`);
                 break;
 

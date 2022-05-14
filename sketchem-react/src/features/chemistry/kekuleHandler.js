@@ -1,6 +1,7 @@
+/* eslint-disable no-unreachable */
 import { getFileContent, getMoleculeCommands } from "@app/selectors";
 import Vector2 from "@utils/mathsTs/Vector2";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { BondStereoKekuleMap } from "src/constants/enum.constants";
 
@@ -9,28 +10,68 @@ import { Canvas } from "../sketchpad/SketchPad";
 // eslint-disable-next-line import/extensions
 import * as K from "./kekule-js-dist/kekule.js?module=core,algorithm,calculation,io,extra";
 
-const { Kekule } = K;
+const getBoundingBox = (mol) => {
+    let minX = mol.getNodeAt(0).absCoord2D.x;
+    let minY = mol.getNodeAt(0).absCoord2D.y;
+    let maxX = mol.getNodeAt(0).absCoord2D.x;
+    let maxY = mol.getNodeAt(0).absCoord2D.y;
 
-function drawMol(mol) {
-    if (!Canvas) {
-        console.log("canvas is empty!!");
+    for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
+        const node = mol.getNodeAt(i);
+        const { x, y } = node.absCoord2D;
+
+        minX = x < minX ? x : minX;
+        maxX = x > maxX ? x : maxX;
+        minY = y < minY ? y : minY;
+        maxY = y > maxY ? y : maxY;
     }
+
+    return { minX, minY, maxX, maxY };
+};
+
+const drawMol = (mol) => {
     const canvas = Canvas;
 
     const factor = 100;
     let firstAtomDelta = new Vector2(0, 0);
+
+    canvas.zoom(1);
+    // Bo{x: 304.0000000000001, y: 304.0000000000001, w: 1392, width: 1392, h: 1392,…}
+    const viewBox = canvas.viewbox();
+    const xLocation = 0.3;
+    const yLocation = 0.2;
+
+    const initialPoint = new Vector2(viewBox.x + xLocation * viewBox.width, viewBox.y + yLocation * viewBox.height);
+
+    // canvas.rect(10, 10).move(initialPoint.x, initialPoint.y);
+
+    const scaleFactor = 0.9;
+
+    const boundingBox = getBoundingBox(mol);
+    const molWidth = boundingBox.maxX - boundingBox.minX;
+    const molHeight = boundingBox.maxY - boundingBox.minY;
+
+    const molScaleX = (scaleFactor * viewBox.width) / molWidth;
+    const molScaleY = (scaleFactor * viewBox.height) / molHeight;
+
+    // const molScaleMax = Math.max(molScaleX, molScaleY);
+    const molScaleMin = Math.min(molScaleX, molScaleY);
+    const molScale = molScaleMin;
+    // canvas
+    //     .rect(scaleFactor * viewBox.width, scaleFactor * viewBox.height)
+    //     .move(initialPoint.x, initialPoint.y)
+    //     .fill("#0000ff");
+    // canvas.rect(molWidth, molHeight).move(initialPoint.x, initialPoint.y).fill("#ff0000");
+
     for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
         const node = mol.getNodeAt(i);
-        node.id = i + 1;
         const { x, y } = node.absCoord2D;
-        console.log(x * factor, y * factor);
-        let pos = new Vector2(x * factor, y * factor);
+        let pos = new Vector2(x, -y).scale(molScale);
         if (firstAtomDelta.x === 0 && firstAtomDelta.y === 0) {
             firstAtomDelta = pos;
         }
-        pos = pos.sub(firstAtomDelta);
-        console.log(pos.x, pos.y);
-        console.log(`node ${i}`, node.getClassName(), node.getLabel());
+        console.log(`node ${i}`, node.getClassName(), node.getLabel(), x, y);
+        pos = pos.sub(firstAtomDelta).add(initialPoint);
         // const atom = new Atom({ symbol: node.getLabel(), center: pos, id: node.id });
         const atom = new Atom({ symbol: node.getLabel(), center: pos });
         node.id = atom.getId();
@@ -45,26 +86,52 @@ function drawMol(mol) {
             connector.getClassName(),
             connector.getBondOrder ? connector.getBondOrder() : "?",
             "real stereo",
+            // connector.getStereo()
             connector.stereo,
-            "transposed stereo",
-            BondStereoKekuleMap.get(connector.stereo)
+            "transposed stereo"
+            // BondStereoKekuleMap.get(connector.stereo)
         );
         const bond = new Bond(
             order,
-            BondStereoKekuleMap.get(connector.stereo),
+            connector.stereo,
             connector.getConnectedObjs()[0].id,
             connector.getConnectedObjs()[1].id
         );
         bond.draw(canvas);
     }
-}
+};
+
+const drawMolOneTime = (fileContent, kek) => {
+    if (!fileContent) return;
+    const canvas = Canvas;
+    // const rect = canvas.rect(10, 10);
+    // console.log(rect);
+    const child = document.createElement("div");
+    child.id = "STUPODTEST";
+    document.body.appendChild(child);
+    const mol = kek.IO.loadFormatData(fileContent, "mol");
+    drawMol(mol);
+};
 
 export function KekuleShow() {
+    const KekuleRef = useRef(null);
     const fileContent = useSelector(getFileContent);
+
+    function setup() {
+        const { Kekule } = K;
+        KekuleRef.current = Kekule;
+    }
+    useEffect(setup, []);
+    useEffect(() => drawMolOneTime(fileContent, KekuleRef.current), [fileContent]);
+
     if (!fileContent) return null;
-    const mol = Kekule.IO.loadFormatData(fileContent, "mol");
-    drawMol(mol);
+    if (!Canvas) {
+        console.log("canvas is empty!!");
+    }
+
+    // setCount(count.current + 10);
     // console.log(Object.keys(K.Kekule.));
+
     return <div />;
 }
 
@@ -83,9 +150,9 @@ export function KekuleShow() {
 // console.log("Formula: ", formula.getText());
 
 // // Output SMILES
-// const smiles = Kekule.IO.saveFormatData(mol, "smi");
+// const smiles = KekuleRef.current.IO.saveFormatData(mol, "smi");
 // console.log("SMILES: ", smiles);
 
 // // Output MOL2k
-// const mol2k = Kekule.IO.saveFormatData(mol, "mol");
+// const mol2k = KekuleRef.current.IO.saveFormatData(mol, "mol");
 // console.log("MOL 2000: \n", mol2k);

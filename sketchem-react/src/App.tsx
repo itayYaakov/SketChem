@@ -43,7 +43,9 @@ function App() {
                             <ToolbarItems {...LeftToolbarProps} />
                         </Col>
                         <Col xl="10">
-                            <SketchPad />
+                            <Row className="h-50">
+                                <SketchPad />
+                            </Row>
                         </Col>
                         <Col xl="1">
                             <ToolbarItems {...RightToolbarProps} />

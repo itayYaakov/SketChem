@@ -27,15 +27,68 @@ export enum BondType {
     WedgeBack = 50,
 }
 
-export enum BondStereo {
+export enum BondStereoMol {
+    // export enum BondStereo {
     // for single
-    None = 0,
-    Up = 1,
-    Either = 4,
-    Down = 6,
+    NONE = 0,
+    UP = 1,
+    UP_OR_DOWN = 4,
+    DOWN = 6,
     // for double
     // XYZ = 0,
-    CisOrTrans = 3,
+    CIS_OR_TRANS = 3,
+}
+
+// export enum KekuleBondStereo = {
+export enum BondStereoKekule {
+    /** A bond for which there is no stereochemistry. */
+    NONE = 0,
+    /** A bond pointing up of which the start atom is the stereocenter and
+     * the end atom is above the drawing plane. */
+    UP = 1,
+    /** A bond pointing up of which the end atom is the stereocenter and
+     * the start atom is above the drawing plane. */
+    UP_INVERTED = 2,
+    /** A bond pointing down of which the start atom is the stereocenter
+     * and the end atom is below the drawing plane. */
+    DOWN = 3,
+    /** A bond pointing down of which the end atom is the stereocenter and
+     * the start atom is below the drawing plane. */
+    DOWN_INVERTED = 4,
+    /** A bond for which there is stereochemistry, we just do not know
+     *  if it is UP or DOWN. The start atom is the stereocenter.
+     */
+    UP_OR_DOWN = 8,
+    /** A bond for which there is stereochemistry, we just do not know
+     *  if it is UP or DOWN. The end atom is the stereocenter.
+     */
+    UP_OR_DOWN_INVERTED = 9,
+    /** A bond is closer to observer than papaer, often used in ring structures. */
+    CLOSER = 10,
+    /** Indication that this double bond has a fixed, but unknown E/Z
+     * configuration.
+     */
+    E_OR_Z = 20,
+    /** Indication that this double bond has a E configuration.
+     */
+    E = 21,
+    /** Indication that this double bond has a Z configuration.
+     */
+    Z = 22,
+    /** Indication that this double bond has a fixed configuration, defined
+     * by the 2D and/or 3D coordinates.
+     */
+    E_Z_BY_COORDINATES = 23,
+    /** Indication that this double bond has a fixed, but unknown cis/trans
+     * configuration.
+     */
+    CIS_OR_TRANS = 30,
+    /** Indication that this double bond has a Cis configuration.
+     */
+    CIS = 31,
+    /** Indication that this double bond has a Trans configuration.
+     */
+    TRANS = 32,
 }
 
 // Real Mol -> Kekule
@@ -62,5 +115,25 @@ export const BondStereoKekuleMap = new Map<number, number>([
     [4, 8],
     [6, 3],
 ]);
+
+// /**
+//  * Get inverted stereo direction value.
+//  * @param {Int} direction
+//  * @returns {Int}
+//  */
+// getInvertedDirection: function(direction)
+// {
+// 	var S = Kekule.BondStereo;
+// 	switch (direction)
+// 	{
+// 		case S.UP: return S.UP_INVERTED;
+// 		case S.UP_INVERTED: return S.UP;
+// 		case S.DOWN: return S.DOWN_INVERTED;
+// 		case S.DOWN_INVERTED: return S.DOWN;
+// 		case S.UP_OR_DOWN: return S.UP_OR_DOWN_INVERTED;
+// 		default:
+// 			return direction;
+// 	}
+// }
 
 // WedgeBack,

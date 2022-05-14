@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { BondStereo, BondType } from "@constants/enum.constants";
+import { BondStereoKekule, BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { BondAttributes, MouseEventCallBackProperties } from "@types";
 
@@ -10,11 +10,11 @@ class BondToolBarItem implements ActiveToolbarItem {
 
     bondType: BondType;
 
-    bondStereo: BondStereo;
+    bondStereo: BondStereoKekule;
 
     keyboardKeys?: string[];
 
-    constructor(name: string, bondType: BondType, bondStereo: BondStereo, keyboardKeys?: string[]) {
+    constructor(name: string, bondType: BondType, bondStereo: BondStereoKekule, keyboardKeys?: string[]) {
         this.name = name;
         this.bondType = bondType;
         this.bondStereo = bondStereo;
@@ -65,10 +65,10 @@ class BondToolBarItem implements ActiveToolbarItem {
     onMouseUp(eventHolder: MouseEventCallBackProperties) {}
 }
 
-const singleBond = new BondToolBarItem("Bond Single", BondType.Single, BondStereo.None, ["A"]);
-const doubleBond = new BondToolBarItem("Bond Double", BondType.Double, BondStereo.None, ["B"]);
-const tripleBond = new BondToolBarItem("Bond Triple", BondType.Triple, BondStereo.None, ["C"]);
-const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondType.Single, BondStereo.Up, ["D"]);
-const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondType.Single, BondStereo.Down, ["D"]);
+const singleBond = new BondToolBarItem("Bond Single", BondType.Single, BondStereoKekule.NONE, ["A"]);
+const doubleBond = new BondToolBarItem("Bond Double", BondType.Double, BondStereoKekule.NONE, ["B"]);
+const tripleBond = new BondToolBarItem("Bond Triple", BondType.Triple, BondStereoKekule.NONE, ["C"]);
+const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondType.Single, BondStereoKekule.UP, ["D"]);
+const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondType.Single, BondStereoKekule.DOWN, ["D"]);
 
 export { doubleBond, singleBond, tripleBond, wedgeBackBond, wedgeFrontBond };

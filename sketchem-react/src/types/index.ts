@@ -1,4 +1,4 @@
-import type { BondStereo, BondType } from "@constants/enum.constants";
+import type { BondStereoKekule, BondType } from "@constants/enum.constants";
 import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
 
@@ -38,7 +38,7 @@ export interface AtomEditorContext {
 export interface BondAttributes {
     id: number;
     type: BondType;
-    stereo: BondStereo;
+    stereo: BondStereoKekule;
     // index of first connected atom
     atomStartId: number;
     // index of second connected atom

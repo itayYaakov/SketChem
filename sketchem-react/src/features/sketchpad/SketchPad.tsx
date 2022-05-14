@@ -5,11 +5,10 @@
 // import "src/features/sketchpad/svg.panzoom.js.d.ts";
 // eslint-disable-next-line import/extensions
 // import "./svg.panzoom.js";
-// import "./svg.panzoom";
+import "./svgpanzoom";
 
 // !!! replace with my custom file
-import "@svgdotjs/svg.panzoom.js";
-
+// import "@svgdotjs/svg.panzoom.js";
 // import "@svgdotjs/svg.panzoom.js";
 import { getToolbarItem } from "@app/selectors";
 import { Direction, MouseButtons } from "@constants/enum.constants";
@@ -132,25 +131,34 @@ function SketchPad(props: Props) {
         // const draw = SVG().addTo(divDomElement.current).size("100%", "100%").panZoom({ zoomMin: 1, zoomMax: 1.1 });
         const draw = SVG()
             .addTo(divDomElement.current)
+            // .size("100%", "100%")
             .size("100%", "100%")
-            .viewbox(-350, -350, 900, 900)
             .panZoom({
                 // wheelZoom: false,
                 zoomMin: 0.1,
                 zoomMax: 4,
                 zoomFactor: 0.1,
+                // {top, left, right, bottom}
+                // margins: { top: 0, left: 0, right: 3000, bottom: 3000 },
+                margins: { top: 0, left: 0, right: 100, bottom: 100 },
                 wheelZoomDeltaModeLinePixels: 9,
                 wheelZoomDeltaModeScreenPixels: 27,
                 panButton: 1,
                 // panning: false,
             })
-            .zoom(2);
+            .viewbox(0, 0, 2000, 2000)
+            .zoom(1);
+
+        const viewBox = draw.viewbox();
+        // draw.viewbox(0, 0, viewBox.width + viewBox.x, viewBox.height + viewBox.y);
+        draw.viewbox(0, 0, viewBox.width, viewBox.height);
+
+        // .viewbox(0, 0, 2000, 2000);
         svgRef.current = draw;
         Canvas = draw;
         // const width = Number(draw.width().valueOf());
         // const height = Number(draw.height().valueOf());
         SetDefs(draw);
-
         function unmount() {
             mouseEventsSetListeners(svgRef.current, false);
             divDomElement?.current?.removeChild(svgRef.current.node);
