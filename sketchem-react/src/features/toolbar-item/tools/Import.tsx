@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import { useAppDispatch } from "@app/hooks";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -114,7 +113,6 @@ class ImportToolBarTemplate implements DummyToolbarItem {
     }
 }
 
-// const loadFile = new LoadToolBarTemplate("Load file", ["D"]);
 const Import = new ImportToolBarTemplate("Import", DialogLoadWindow, ["D"]);
 
 export default Import;

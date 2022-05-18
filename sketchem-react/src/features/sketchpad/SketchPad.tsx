@@ -9,9 +9,9 @@ import "./svgpanzoom";
 
 // !!! replace with my custom file
 // import "@svgdotjs/svg.panzoom.js";
-// import "@svgdotjs/svg.panzoom.js";
 import { getToolbarItem } from "@app/selectors";
 import { Direction, MouseButtons } from "@constants/enum.constants";
+import { CanvasObject } from "@features/shared/CanvasObject";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
 import styles from "@styles/index.module.scss";
@@ -21,7 +21,6 @@ import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import Two from "two.js";
 
 import SetDefs from "./SetDefs";
 
@@ -29,10 +28,6 @@ interface Props {
     // width: number;
     // height: number;
 }
-
-// !!! delete later
-// eslint-disable-next-line import/no-mutable-exports
-export let Canvas: any = null;
 
 function getBackgroundColor(stringInput: string): string {
     // eslint-disable-next-line no-bitwise
@@ -52,9 +47,10 @@ function SketchPad(props: Props) {
 
     const mouseEventsSetListeners = (function mouseEventsHandler() {
         let mouseDownLocation: Vector2 | undefined;
+        let mouseUpLocation: Vector2 | undefined;
 
         function calculateLocation(e: MouseEvent): Vector2 {
-            if (!svgRef.current) return new Vector2(0, 0);
+            if (!svgRef.current) return Vector2.zero();
             const { x, y } = svgRef.current.point(e.clientX, e.clientY);
             return new Vector2(x, y);
         }
@@ -99,7 +95,7 @@ function SketchPad(props: Props) {
         function handleMouseUp(e: MouseEvent) {
             e.preventDefault();
 
-            const mouseUpLocation = calculateLocation(e);
+            mouseUpLocation = calculateLocation(e);
             const args = {
                 e,
                 canvas: svgRef.current,
@@ -112,15 +108,33 @@ function SketchPad(props: Props) {
             mouseDownLocation = undefined;
         }
 
+        function handleMouseLeave(e: MouseEvent) {
+            e.preventDefault();
+
+            const mouseCurrentLocation = calculateLocation(e);
+            const args = {
+                e,
+                canvas: svgRef.current,
+                mouseDownLocation,
+                mouseCurrentLocation,
+                mouseUpLocation,
+            } as MouseEventCallBackProperties;
+            activeToolBar.current?.onMouseLeave?.(args);
+
+            mouseDownLocation = undefined;
+        }
+
         function setListeners(object: any, enable: boolean) {
             if (enable) {
                 object.on("mousedown", handleMouseDown);
                 object.on("mousemove", handleMouseMove);
                 object.on("mouseup", handleMouseUp);
+                object.on("mouseleave", handleMouseLeave);
             } else {
                 object.off("mousedown", handleMouseDown);
                 object.off("mousemove", handleMouseMove);
                 object.off("mouseup", handleMouseUp);
+                object.off("mouseleave", handleMouseLeave);
             }
         }
 
@@ -155,7 +169,7 @@ function SketchPad(props: Props) {
 
         // .viewbox(0, 0, 2000, 2000);
         svgRef.current = draw;
-        Canvas = draw;
+        CanvasObject.set(draw);
         // const width = Number(draw.width().valueOf());
         // const height = Number(draw.height().valueOf());
         SetDefs(draw);

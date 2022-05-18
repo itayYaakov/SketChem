@@ -1,5 +1,7 @@
 import { BondConstants } from "@constants/bond.constants";
 import { BondStereoKekule, BondType } from "@constants/enum.constants";
+import { itemsMaps } from "@features/shared/storage";
+import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import { BondAttributes } from "@types";
 import * as VectorUtils from "@utils/vector";
@@ -26,6 +28,8 @@ export class Bond {
 
     endAtom: Atom | undefined;
 
+    center!: Vector2;
+
     // label: any;
     constructor(
         type: BondType,
@@ -39,6 +43,7 @@ export class Bond {
         this.attributes = { ...Bond.DefaultAttributes, id, type, stereo, atomStartId, atomEndId };
         this.startAtom = Atom.getInstanceById(this.attributes.atomStartId);
         this.endAtom = Atom.getInstanceById(this.attributes.atomEndId);
+        this.setBondCenter();
         if (!this.startAtom || !this.endAtom) {
             console.error("Couldn't find Start atom", this.startAtom);
             console.error("Or Couldn't find End atom", this.endAtom);
@@ -50,17 +55,47 @@ export class Bond {
         this.addInstanceToMap();
     }
 
+    setBondCenter(rect?: any) {
+        if (!this.startAtom || !this.endAtom) {
+            this.center = Vector2.zero();
+            return;
+        }
+        const center = this.startAtom.attributes.center.add(this.endAtom.attributes.center);
+        this.center = center.scale(0.5);
+        this.center.x -= BondConstants.padding / 2;
+    }
+
+    // setBondCenter(rect?: Rect) {
+    //     if (!rect) {
+    //         this.center = Vector2.zero();
+    //         return;
+    //     }
+    //     const bbox = rect.bbox();
+    //     this.center = new Vector2((bbox.x + bbox.x2) / 2, (bbox.y + bbox.y2) / 2);
+    // }
+
+    modifyTree(add: boolean = true) {
+        const entry = { id: this.attributes.id, point: this.center };
+        if (add) {
+            itemsMaps.bonds.insert(entry);
+        } else {
+            itemsMaps.bonds.remove(entry);
+        }
+    }
+
     addInstanceToMap() {
         if (Bond.map.has(this.attributes.id)) {
             console.error("Object already exists!");
         }
         if (Bond.map.has(this.attributes.id)) return;
         Bond.map.set(this.attributes.id, this);
+        this.modifyTree(true);
     }
 
     removeInstanceFromMap() {
         if (!Bond.map.has(this.attributes.id)) return;
         Bond.map.delete(this.attributes.id);
+        this.modifyTree(true);
     }
 
     getId() {
@@ -122,7 +157,25 @@ export class Bond {
             rotate: angle - 90,
         });
 
+        this.setBondCenter(rect);
+        canvas.circle(8).move(this.center.x, this.center.y).fill("#ff0000");
         return rect;
+    }
+
+    Select(isSelected: boolean) {
+        const rect: Rect | null = SVG(`#${BondConstants.getElemId(this.attributes.id)}`) as Rect;
+        if (isSelected) {
+            rect.attr({ filter: `url(#def_${BondConstants.hoverFilter})` });
+
+            if (this.attributes.stereo === BondStereoKekule.UP) {
+                rect.attr({ "fill-opacity": 0.7 });
+            }
+        } else {
+            rect.attr({ filter: "" });
+            if (this.attributes.stereo === BondStereoKekule.UP) {
+                rect.attr({ "fill-opacity": 1 });
+            }
+        }
     }
 
     BondMove(canvas: Svg, movedAtomId: number | undefined) {
@@ -171,10 +224,13 @@ export class Bond {
             origin: "top center",
             rotate: angle - 90,
         });
+        this.setBondCenter(rect);
     }
 
     move(canvas: Svg, movedAtomId: number | undefined) {
+        this.modifyTree(false);
         this.BondMove(canvas, movedAtomId);
+        this.modifyTree(true);
     }
 
     static getElementStringId(idNum: number) {

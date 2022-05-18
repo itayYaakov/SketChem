@@ -1,36 +1,22 @@
 /* eslint-disable no-unreachable */
 import { getFileContent, getMoleculeCommands } from "@app/selectors";
+import { CanvasObject } from "@features/shared/CanvasObject";
 import Vector2 from "@utils/mathsTs/Vector2";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { BondStereoKekuleMap } from "src/constants/enum.constants";
 
 import { Atom, Bond } from "../../entities";
-import { Canvas } from "../sketchpad/SketchPad";
 // eslint-disable-next-line import/extensions
 import * as K from "./kekule-js-dist/kekule.js?module=core,algorithm,calculation,io,extra";
 
 const getBoundingBox = (mol) => {
-    let minX = mol.getNodeAt(0).absCoord2D.x;
-    let minY = mol.getNodeAt(0).absCoord2D.y;
-    let maxX = mol.getNodeAt(0).absCoord2D.x;
-    let maxY = mol.getNodeAt(0).absCoord2D.y;
-
-    for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
-        const node = mol.getNodeAt(i);
-        const { x, y } = node.absCoord2D;
-
-        minX = x < minX ? x : minX;
-        maxX = x > maxX ? x : maxX;
-        minY = y < minY ? y : minY;
-        maxY = y > maxY ? y : maxY;
-    }
-
+    // {x2: maxX, x1: minX, y2: maxY, y1: minY}
+    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = mol.getContainerBox2D();
     return { minX, minY, maxX, maxY };
 };
 
 const drawMol = (mol) => {
-    const canvas = Canvas;
+    const canvas = CanvasObject.get();
 
     const factor = 100;
     let firstAtomDelta = new Vector2(0, 0);
@@ -89,7 +75,6 @@ const drawMol = (mol) => {
             // connector.getStereo()
             connector.stereo,
             "transposed stereo"
-            // BondStereoKekuleMap.get(connector.stereo)
         );
         const bond = new Bond(
             order,
@@ -103,7 +88,7 @@ const drawMol = (mol) => {
 
 const drawMolOneTime = (fileContent, kek) => {
     if (!fileContent) return;
-    const canvas = Canvas;
+    const canvas = CanvasObject.get();
     // const rect = canvas.rect(10, 10);
     // console.log(rect);
     const child = document.createElement("div");
@@ -125,7 +110,7 @@ export function KekuleShow() {
     useEffect(() => drawMolOneTime(fileContent, KekuleRef.current), [fileContent]);
 
     if (!fileContent) return null;
-    if (!Canvas) {
+    if (!CanvasObject.get()) {
         console.log("canvas is empty!!");
     }
 

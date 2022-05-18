@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import { BondStereoKekule, BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { BondAttributes, MouseEventCallBackProperties } from "@types";

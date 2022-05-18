@@ -51,14 +51,14 @@ export default class Vector2 {
      *
      * @returns the new 2-element vector object
      */
-    static zero = new Vector2(0, 0);
+    static zero = (): Vector2 => new Vector2(0, 0);
 
     /**
      * Creates a new 2-element vector object with all elements set to one
      *
      * @returns the new 2-element vector object
      */
-    static one = new Vector2(1, 1);
+    static one = (): Vector2 => new Vector2(1, 1);
 
     constructor(x?: number, y?: number) {
         this.x = x ?? 0;
@@ -83,7 +83,35 @@ export default class Vector2 {
         this.y = a.y + b.y;
     };
 
+    static min = (a: Vector2, b: Vector2) => {
+        let minX = a.x;
+        let minY = a.y;
+        if (b.x < minX) minX = b.x;
+        if (b.y < minY) minY = b.y;
+        return new Vector2(minX, minY);
+    };
+
+    static max = (a: Vector2, b: Vector2) => {
+        let maxX = a.x;
+        let maxY = a.y;
+        if (b.x > maxX) maxX = b.x;
+        if (b.y > maxY) maxY = b.y;
+        return new Vector2(maxX, maxY);
+    };
+
+    minSelf = (b: Vector2) => {
+        if (b.x < this.x) this.x = b.x;
+        if (b.y < this.y) this.y = b.y;
+    };
+
+    maxSelf = (b: Vector2) => {
+        if (b.x > this.x) this.x = b.x;
+        if (b.y > this.y) this.y = b.y;
+    };
+
     scale = (f: number) => new Vector2(this.x * f, this.y * f);
+
+    clone = () => new Vector2(this.x, this.y);
 
     normalize = () => this.scale(1.0 / this.mag());
 

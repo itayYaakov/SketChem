@@ -108,14 +108,6 @@ export enum BondStereoKekule {
 //     CisOrTrans = 12, // a mistake, not available in kekule?
 // }
 
-export const BondStereoKekuleMap = new Map<number, number>([
-    [0, 0],
-    [1, 1],
-    [3, 0],
-    [4, 8],
-    [6, 3],
-]);
-
 // /**
 //  * Get inverted stereo direction value.
 //  * @param {Int} direction

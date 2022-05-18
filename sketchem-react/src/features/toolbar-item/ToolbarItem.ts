@@ -9,6 +9,8 @@ export interface ActiveToolbarItem {
 
     readonly onMouseUp?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
+    readonly onMouseLeave?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+
     readonly keyboardKeys?: string[];
 }
 

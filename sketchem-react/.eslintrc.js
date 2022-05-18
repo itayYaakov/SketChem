@@ -28,6 +28,7 @@ module.exports = {
         "arrow-parens": "off",
         "no-console": "off",
         "import/prefer-default-export": "off",
+        "class-methods-use-this": "off",
         "no-param-reassign": ["error", { props: true, ignorePropertyModificationsFor: ["state"] }],
         // "array-element-newline": ["error", { multiline: true, minItems: 3 }],
         "react/jsx-filename-extension": ["warn", { extensions: [".js", ".jsx", ".ts", ".tsx"] }],

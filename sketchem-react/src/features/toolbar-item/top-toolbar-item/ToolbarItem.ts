@@ -2,11 +2,13 @@ import { Direction } from "@constants/enum.constants";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
-import { bondToolBarItems, Import } from "../tools";
+import { bondToolBarItems, Import, selectToolBarItems } from "../tools";
 
 const toolbarItemsList: ActiveToolbarItem[] = [
     Import,
     bondToolBarItems.tripleBond,
+    selectToolBarItems.simpleSelect,
+    selectToolBarItems.lassoSelect,
     {
         name: "Atom 2",
         onMouseDown: () => {},
