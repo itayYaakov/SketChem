@@ -6,7 +6,7 @@ const slice = createSlice({
     name: "chemistry",
     initialState,
     reducers: {
-        press: (state, action: PayloadAction<ActionItem[]>) => {
+        press: (state: ChemistryState, action: PayloadAction<ActionItem[]>) => {
             state.items = action.payload;
         },
     },

@@ -48,10 +48,15 @@ export interface BondAttributes {
 //= =============================================================================
 // State
 //= =============================================================================
+// export interface BondMouseEventState {
+//     eventType: string;
+//     id: number;
+// }
 export interface ToolbarItemState {
     selectedToolbarItem: string;
     dialogWindow: string;
     fileContent: string;
+    // bondMouseEvent: BondMouseEventState;
 }
 export interface ChemistryState {
     items?: ActionItem[];

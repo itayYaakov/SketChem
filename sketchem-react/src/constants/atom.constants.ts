@@ -1,3 +1,1 @@
-export const AtomConstants = {
-    getElemId: (idNum: number) => `atom_${idNum}`,
-};
+export const AtomConstants = {};

@@ -3,19 +3,25 @@
 import { BondStereoKekule, BondType } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { itemsMaps } from "@features/shared/storage";
+import { IdUtils } from "@src/utils/IdUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BondAttributes, BoundingBox, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 
-// Todo: Create lasso/ single mouse and box select functions
+enum SelectionMode {
+    Empty = -1,
+    Single = 1,
+    Multiple,
+}
+
 abstract class SelectTemplate implements ActiveToolbarItem {
     name: string;
 
-    static selectedAtoms: Atom[];
+    static selectedAtoms: Set<Atom>;
 
-    static selectedBonds: Bond[];
+    static selectedBonds: Set<Bond>;
 
     keyboardKeys?: string[];
 
@@ -23,35 +29,79 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     maxBoundingBoxPoint!: Vector2;
 
+    selectionMode: SelectionMode;
+
     constructor(name: string, keyboardKeys?: string[]) {
         this.name = name;
-        SelectTemplate.selectedAtoms = [];
-        SelectTemplate.selectedBonds = [];
         this.keyboardKeys = keyboardKeys ?? undefined;
+        SelectTemplate.selectedAtoms = new Set<Atom>();
+        SelectTemplate.selectedBonds = new Set<Bond>();
+        this.selectionMode = SelectionMode.Empty;
     }
 
     resetSelection() {
-        SelectTemplate.selectedAtoms = [];
-        SelectTemplate.selectedBonds = [];
+        this.unselectAll();
+        SelectTemplate.selectedAtoms.clear();
+        SelectTemplate.selectedBonds.clear();
     }
 
     unselectAll() {
         SelectTemplate.selectedAtoms.forEach((atom) => {
-            if (!atom) return;
             atom.Select(false);
         });
 
         SelectTemplate.selectedBonds.forEach((bond) => {
-            if (!bond) return;
             bond.Select(false);
         });
     }
 
+    selectAtom(id: number) {
+        const atom = Atom.getInstanceById(id);
+        atom.Select(true);
+        SelectTemplate.selectedAtoms.add(atom);
+    }
+
+    selectBond(id: number) {
+        const bond = Bond.getInstanceById(id);
+        bond.Select(true);
+        SelectTemplate.selectedBonds.add(bond);
+    }
+
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, canvas } = eventHolder;
-        this.minBoundingBoxPoint = mouseDownLocation.clone();
-        this.maxBoundingBoxPoint = mouseDownLocation.clone();
-        this.createShape(eventHolder);
+        const { mouseDownLocation, canvas, e } = eventHolder;
+
+        const startTime = performance.now();
+        // Retrieve all html elements in given mouse down location
+        const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+        const endTime = performance.now();
+
+        // exists on return true
+        elementsAtPoint.some((elem) => {
+            this.selectionMode = SelectionMode.Empty;
+
+            if (elem.tagName === "svg") {
+                return true;
+            }
+
+            const atomId = IdUtils.idIsOfAtomElem(elem.id);
+            if (atomId) {
+                this.resetSelection();
+
+                this.selectionMode = SelectionMode.Single;
+                this.selectAtom(atomId);
+                return true;
+            }
+            const bondId = IdUtils.idIsOfBondElem(elem.id);
+            if (bondId) {
+                this.resetSelection();
+
+                this.selectionMode = SelectionMode.Single;
+                this.selectBond(bondId);
+                return true;
+            }
+
+            return false;
+        });
 
         // for testing:
         // const { mouseDownLocation, canvas } = eventHolder;
@@ -67,7 +117,20 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
+        if (this.selectionMode === SelectionMode.Single) {
+            return;
+        }
+
         const { mouseCurrentLocation, mouseDownLocation, canvas } = eventHolder;
+
+        // !!! for this.selectionMode === SelectionMode.Empty only
+
+        if (this.selectionMode === SelectionMode.Empty) {
+            this.minBoundingBoxPoint = mouseDownLocation.clone();
+            this.maxBoundingBoxPoint = mouseDownLocation.clone();
+            this.createShape(eventHolder);
+            this.selectionMode = SelectionMode.Multiple;
+        }
 
         this.setEdgePoints(eventHolder);
 
@@ -81,40 +144,17 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             maxY: this.maxBoundingBoxPoint.y,
         } as BoundingBox;
 
-        console.log(mouseDownLocation);
-        console.log(mouseCurrentLocation);
-        console.log(boundingBox);
-
-        const atomsIdSet = new Set<number>();
-        const bondsIdSet = new Set<number>();
-
         const atomPointsInBoundingBox = itemsMaps.atoms.search(boundingBox);
         const bondsPointsInBoundingBox = itemsMaps.bonds.search(boundingBox);
 
         atomPointsInBoundingBox.forEach((element) => {
             if (!this.pointIsInShape(element.point.x, element.point.y, boundingBox)) return;
-            const { id } = element;
-            atomsIdSet.add(id);
+            this.selectAtom(element.id);
         });
 
         bondsPointsInBoundingBox.forEach((element) => {
             if (!this.pointIsInShape(element.point.x, element.point.y, boundingBox)) return;
-            const { id } = element;
-            bondsIdSet.add(id);
-        });
-
-        atomsIdSet.forEach((id) => {
-            const atom = Atom.getInstanceById(id);
-            if (!atom) return;
-            atom.Select(true);
-            SelectTemplate.selectedAtoms.push(atom);
-        });
-
-        bondsIdSet.forEach((id) => {
-            const bond = Bond.getInstanceById(id);
-            if (!bond) return;
-            bond.Select(true);
-            SelectTemplate.selectedBonds.push(bond);
+            this.selectBond(element.id);
         });
 
         // for testing
@@ -127,11 +167,26 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
-        this.removeShape();
+        switch (this.selectionMode) {
+            case SelectionMode.Empty:
+                this.resetSelection();
+                break;
+
+            default:
+                this.removeShape();
+                break;
+        }
     }
 
     onMouseLeave(eventHolder: MouseEventCallBackProperties) {
-        this.removeShape();
+        switch (this.selectionMode) {
+            case SelectionMode.Multiple:
+                this.removeShape();
+                break;
+
+            default:
+                break;
+        }
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;

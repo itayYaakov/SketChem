@@ -1,6 +1,7 @@
 import { BondConstants } from "@constants/bond.constants";
 import { BondStereoKekule, BondType } from "@constants/enum.constants";
 import { itemsMaps } from "@features/shared/storage";
+import { IdUtils } from "@src/utils/IdUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import { BondAttributes } from "@types";
@@ -10,7 +11,7 @@ import * as VectorUtils from "@utils/vector";
 import { Atom } from "./Atom";
 
 export class Bond {
-    static instancesCounter = 0;
+    static instancesCounter = 1;
 
     static map = new Map<number, Bond>();
 
@@ -113,14 +114,7 @@ export class Bond {
     BondAdd(canvas: Svg): Rect | undefined {
         const startAtom = Atom.getInstanceById(this.attributes.atomStartId);
         const endAtom = Atom.getInstanceById(this.attributes.atomEndId);
-        if (!startAtom) {
-            console.error("Couldn't find start atom", startAtom, this.attributes.atomStartId);
-            return undefined;
-        }
-        if (!endAtom) {
-            console.error("Couldn't find end atom", endAtom, this.attributes.atomEndId);
-            return undefined;
-        }
+
         const startPosition = startAtom.attributes.center;
         const endPosition = endAtom.attributes.center;
 
@@ -137,7 +131,7 @@ export class Bond {
         }
 
         rect.move(startAtom.attributes.center.x, startAtom.attributes.center.y).id(
-            BondConstants.getElemId(this.attributes.id)
+            IdUtils.getBondElemId(this.attributes.id)
         );
 
         switch (this.attributes.stereo) {
@@ -163,7 +157,7 @@ export class Bond {
     }
 
     Select(isSelected: boolean) {
-        const rect: Rect | null = SVG(`#${BondConstants.getElemId(this.attributes.id)}`) as Rect;
+        const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
         if (isSelected) {
             rect.attr({ filter: `url(#def_${BondConstants.hoverFilter})` });
 
@@ -179,11 +173,11 @@ export class Bond {
     }
 
     BondMove(canvas: Svg, movedAtomId: number | undefined) {
-        const rect: Rect | null = SVG(`#${BondConstants.getElemId(this.attributes.id)}`) as Rect;
+        const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
         if (!rect) {
             console.error(
                 "rect is undefined!",
-                `#${BondConstants.getElemId(this.attributes.id)}`,
+                `#${IdUtils.getBondElemId(this.attributes.id)}`,
                 rect,
                 this.attributes.id
             );
@@ -194,14 +188,7 @@ export class Bond {
 
         const startAtom = Atom.getInstanceById(this.attributes.atomStartId);
         const endAtom = Atom.getInstanceById(this.attributes.atomEndId);
-        if (!startAtom) {
-            console.error("Couldn't find start atom", startAtom, this.attributes.atomStartId);
-            return;
-        }
-        if (!endAtom) {
-            console.error("Couldn't find end atom", endAtom, this.attributes.atomEndId);
-            return;
-        }
+
         const startPosition = startAtom.attributes.center;
         const endPosition = endAtom.attributes.center;
 
@@ -234,11 +221,15 @@ export class Bond {
     }
 
     static getElementStringId(idNum: number) {
-        return BondConstants.getElemId(idNum);
+        return IdUtils.getBondElemId(idNum);
     }
 
     static getInstanceById(idNum: number) {
-        return Bond.map.get(idNum);
+        const bond = Bond.map.get(idNum);
+        if (!bond) {
+            throw new Error(`Couldn't find bond with id ${idNum}`);
+        }
+        return bond;
     }
 
     static generateNewId() {

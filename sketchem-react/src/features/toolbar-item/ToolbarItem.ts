@@ -3,6 +3,8 @@ import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types
 export interface ActiveToolbarItem {
     readonly name: string;
 
+    readonly onMouseClick?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+
     readonly onMouseDown?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
     readonly onMouseMove?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;

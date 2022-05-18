@@ -14,6 +14,27 @@ export enum MouseButtons {
     Forward = 16,
 }
 
+export enum MouseEventsNames {
+    onClick = "click",
+    onContextMenu = "contextmenu",
+    onDoubleClick = "doubleclick",
+    onDrag = "drag",
+    onDragEnd = "dragend",
+    onDragEnter = "dragenter",
+    onDragExit = "dragexit",
+    onDragLeave = "dragleave",
+    onDragOver = "dragover",
+    onDragStart = "dragstart",
+    onDrop = "drop",
+    onMouseDown = "mousedown",
+    onMouseEnter = "mouseenter",
+    onMouseLeave = "mouseleave",
+    onMouseMove = "mousemove",
+    onMouseOut = "mouseout",
+    onMouseOver = "mouseover",
+    onMouseUp = "mouseup",
+}
+
 export enum BondType {
     Single = 1,
     Double = 2,

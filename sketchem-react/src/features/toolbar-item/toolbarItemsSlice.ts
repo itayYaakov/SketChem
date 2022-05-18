@@ -12,16 +12,16 @@ const slice = createSlice({
     name: "toolbarItem",
     initialState,
     reducers: {
-        press: (state, action: PayloadAction<string>) => {
+        press: (state: ToolbarItemState, action: PayloadAction<string>) => {
             state.selectedToolbarItem = action.payload;
             state.dialogWindow = "";
             // state.user = action.payload;
             // localStorage.setItem('user', JSON.stringify(action.payload))
         },
-        dialog: (state, action: PayloadAction<string>) => {
+        dialog: (state: ToolbarItemState, action: PayloadAction<string>) => {
             state.dialogWindow = action.payload;
         },
-        load_file: (state, action: PayloadAction<LoadFileAction>) => {
+        load_file: (state: ToolbarItemState, action: PayloadAction<LoadFileAction>) => {
             state.fileContent = action.payload.content;
         },
     },

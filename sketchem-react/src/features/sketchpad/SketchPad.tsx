@@ -10,7 +10,7 @@ import "./svgpanzoom";
 // !!! replace with my custom file
 // import "@svgdotjs/svg.panzoom.js";
 import { getToolbarItem } from "@app/selectors";
-import { Direction, MouseButtons } from "@constants/enum.constants";
+import { Direction, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
 import { CanvasObject } from "@features/shared/CanvasObject";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
@@ -53,6 +53,21 @@ function SketchPad(props: Props) {
             if (!svgRef.current) return Vector2.zero();
             const { x, y } = svgRef.current.point(e.clientX, e.clientY);
             return new Vector2(x, y);
+        }
+
+        function handleMouseClick(e: MouseEvent) {
+            e.preventDefault();
+
+            const mouseCurrentLocation = calculateLocation(e);
+            const args = {
+                e,
+                canvas: svgRef.current,
+                mouseDownLocation: mouseCurrentLocation,
+                mouseCurrentLocation,
+                mouseUpLocation: undefined,
+            } as MouseEventCallBackProperties;
+
+            const response = activeToolBar.current?.onMouseMove?.(args);
         }
 
         function handleMouseDown(e: MouseEvent) {
@@ -126,15 +141,17 @@ function SketchPad(props: Props) {
 
         function setListeners(object: any, enable: boolean) {
             if (enable) {
-                object.on("mousedown", handleMouseDown);
-                object.on("mousemove", handleMouseMove);
-                object.on("mouseup", handleMouseUp);
-                object.on("mouseleave", handleMouseLeave);
+                object.on(MouseEventsNames.onClick, handleMouseClick);
+                object.on(MouseEventsNames.onMouseDown, handleMouseDown);
+                object.on(MouseEventsNames.onMouseMove, handleMouseMove);
+                object.on(MouseEventsNames.onMouseUp, handleMouseUp);
+                object.on(MouseEventsNames.onMouseLeave, handleMouseLeave);
             } else {
-                object.off("mousedown", handleMouseDown);
-                object.off("mousemove", handleMouseMove);
-                object.off("mouseup", handleMouseUp);
-                object.off("mouseleave", handleMouseLeave);
+                object.off(MouseEventsNames.onClick, handleMouseClick);
+                object.off(MouseEventsNames.onMouseDown, handleMouseDown);
+                object.off(MouseEventsNames.onMouseMove, handleMouseMove);
+                object.off(MouseEventsNames.onMouseUp, handleMouseUp);
+                object.off(MouseEventsNames.onMouseLeave, handleMouseLeave);
             }
         }
 

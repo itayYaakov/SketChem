@@ -25,6 +25,7 @@
         "sketchem"
     ],
     "files.exclude": {
+        "**/*.min.js": true,
         "node_modules/": true
     }
 }

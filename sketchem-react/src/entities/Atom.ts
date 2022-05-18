@@ -2,12 +2,13 @@ import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData } from "@constants/elements.constants";
 import { itemsMaps } from "@features/shared/storage";
+import { IdUtils } from "@src/utils/IdUtils";
 import { Circle, SVG, Svg, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 
 export class Atom {
-    static instancesCounter = 0;
+    static instancesCounter = 1;
 
     static map = new Map<number, Atom>();
 
@@ -90,7 +91,7 @@ export class Atom {
             .circle(10)
             .fill("#ffffff")
             .center(position.x, position.y)
-            .id(`${AtomConstants.getElemId(this.attributes.id)}_circle`);
+            .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
         const text = canvas.text(textContent);
         text.center(position.x, position.y).font({
@@ -102,7 +103,7 @@ export class Atom {
 
         text.insertAfter(this.mainCircle);
 
-        text.id(AtomConstants.getElemId(this.attributes.id));
+        text.id(IdUtils.getAtomElemId(this.attributes.id));
 
         return text;
     }
@@ -119,8 +120,8 @@ export class Atom {
     }
 
     AtomMove(canvas: Svg): Text | undefined {
-        const text: Text | null = SVG(`#${AtomConstants.getElemId(this.attributes.id)}`) as Text;
-        const circle: Circle | null = SVG(`#${AtomConstants.getElemId(this.attributes.id)}_circle`) as Circle;
+        const text: Text | null = SVG(`#${IdUtils.getAtomElemId(this.attributes.id)}`) as Text;
+        const circle: Circle | null = SVG(`#${IdUtils.getAtomElemId(this.attributes.id)}_circle`) as Circle;
         if (!text) {
             console.error("Couldn't find text element", text);
         }
@@ -148,7 +149,11 @@ export class Atom {
     }
 
     static getInstanceById(idNum: number) {
-        return Atom.map.get(idNum);
+        const atom = Atom.map.get(idNum);
+        if (!atom) {
+            throw new Error(`Couldn't find atom with id ${idNum}`);
+        }
+        return atom;
     }
 
     static generateNewId() {
