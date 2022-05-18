@@ -29,8 +29,6 @@ const drawMol = (mol) => {
 
     const initialPoint = new Vector2(viewBox.x + xLocation * viewBox.width, viewBox.y + yLocation * viewBox.height);
 
-    // canvas.rect(10, 10).move(initialPoint.x, initialPoint.y);
-
     const scaleFactor = 0.9;
 
     const boundingBox = getBoundingBox(mol);
@@ -61,7 +59,7 @@ const drawMol = (mol) => {
         // const atom = new Atom({ symbol: node.getLabel(), center: pos, id: node.id });
         const atom = new Atom({ symbol: node.getLabel(), center: pos });
         node.id = atom.getId();
-        atom.draw(canvas);
+        atom.draw();
     }
     // iterate all connectors(bonds)
     for (let i = 0, l = mol.getConnectorCount(); i < l; i += 1) {
