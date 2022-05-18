@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
-import { BondStereoKekule, BondType } from "@constants/enum.constants";
+import { BondStereoKekule, BondType, LayersNames } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { itemsMaps } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
+import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BondAttributes, BoundingBox, MouseEventCallBackProperties } from "@types";
@@ -68,7 +69,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, canvas, e } = eventHolder;
+        const { mouseDownLocation, e } = eventHolder;
 
         const startTime = performance.now();
         // Retrieve all html elements in given mouse down location
@@ -121,7 +122,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             return;
         }
 
-        const { mouseCurrentLocation, mouseDownLocation, canvas } = eventHolder;
+        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
 
         // !!! for this.selectionMode === SelectionMode.Empty only
 
@@ -215,8 +216,8 @@ class SimpleSelect extends SelectTemplate {
     }
 
     createShape(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, canvas } = eventHolder;
-        this.rect = canvas
+        const { mouseDownLocation } = eventHolder;
+        this.rect = LayersUtils.getLayer(LayersNames.Selection)
             .rect(0, 0)
             .move(mouseDownLocation.x, mouseDownLocation.y)
             .fill({ color: "#5cdfdd", opacity: 0.3 })
@@ -225,7 +226,7 @@ class SimpleSelect extends SelectTemplate {
 
     updateShape(eventHolder: MouseEventCallBackProperties): void {
         if (!this.rect) return;
-        const { mouseCurrentLocation, mouseDownLocation, canvas } = eventHolder;
+        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
         const diff = mouseCurrentLocation.sub(mouseDownLocation);
         const width = Math.abs(diff.x);
         const height = Math.abs(diff.y);
@@ -253,7 +254,7 @@ class LassoSelect extends SelectTemplate {
     pathArray: PathArray | undefined;
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {
-        const { mouseCurrentLocation, mouseDownLocation, canvas } = eventHolder;
+        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
         this.minBoundingBoxPoint.minSelf(mouseCurrentLocation);
         this.maxBoundingBoxPoint.maxSelf(mouseCurrentLocation);
     }
@@ -286,11 +287,11 @@ class LassoSelect extends SelectTemplate {
     }
 
     createShape(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, canvas } = eventHolder;
+        const { mouseDownLocation } = eventHolder;
         this.pathArray = new PathArray([["M", mouseDownLocation.x, mouseDownLocation.y]]);
         this.polygon = [[mouseDownLocation.x, mouseDownLocation.y]];
         this.path?.remove();
-        this.path = canvas
+        this.path = LayersUtils.getLayer(LayersNames.Selection)
             .path(this.pathArray)
             .attr({ "fill-rule": "evenodd" })
             .fill({ color: "#5cdfdd", opacity: 0.3 })
@@ -298,7 +299,7 @@ class LassoSelect extends SelectTemplate {
     }
 
     updateShape(eventHolder: MouseEventCallBackProperties): void {
-        const { mouseCurrentLocation, mouseDownLocation, canvas } = eventHolder;
+        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
         if (!this.path || !this.pathArray) return;
 
         this.polygon.push([mouseCurrentLocation.x, mouseCurrentLocation.y]);

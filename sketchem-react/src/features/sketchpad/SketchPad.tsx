@@ -14,6 +14,7 @@ import { Direction, MouseButtons, MouseEventsNames } from "@constants/enum.const
 import { CanvasObject } from "@features/shared/CanvasObject";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
+import { LayersUtils } from "@src/utils/LayersUtils";
 import styles from "@styles/index.module.scss";
 import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
@@ -190,6 +191,7 @@ function SketchPad(props: Props) {
         // const width = Number(draw.width().valueOf());
         // const height = Number(draw.height().valueOf());
         SetDefs(draw);
+        LayersUtils.setLayers(draw);
         function unmount() {
             mouseEventsSetListeners(svgRef.current, false);
             divDomElement?.current?.removeChild(svgRef.current.node);

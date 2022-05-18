@@ -1,9 +1,11 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData } from "@constants/elements.constants";
+import { LayersNames } from "@constants/enum.constants";
 import { itemsMaps } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
-import { Circle, SVG, Svg, Text } from "@svgdotjs/svg.js";
+import { LayersUtils } from "@src/utils/LayersUtils";
+import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 
@@ -22,9 +24,11 @@ export class Atom {
 
     attributes: AtomAttributes;
 
-    mainCircle: Circle | undefined;
+    backgroundRect: Rect | undefined;
 
     hoverCircle: Circle | undefined;
+
+    text!: Text;
 
     // label: any;
     constructor(attrs: Partial<AtomAttributes>) {
@@ -64,48 +68,53 @@ export class Atom {
         return this.attributes.id;
     }
 
-    draw(canvas: Svg) {
+    draw() {
         // !!! MOVE TO REDUX ???
-        const result = this.AtomAdd(canvas);
-        if (!result) {
-            console.error("result=", result, "in atom.ts");
-        }
+        this.AtomAdd();
     }
 
-    move(canvas: Svg, newPostion: Vector2) {
+    move(newPostion: Vector2) {
         this.modifyTree(false);
         this.attributes.center = newPostion;
         this.modifyTree(true);
-        this.AtomMove(canvas);
+        this.AtomMove();
     }
 
-    AtomAdd(canvas: Svg): Text | undefined {
+    AtomAdd() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
         const { color } = this.attributes;
         const textContent = this.attributes.symbol;
 
-        // const circle = canvas.circle(10).fill("#ffffff").move(position.x, position.y);
-        this.mainCircle = canvas
-            .circle(10)
-            .fill("#ffffff")
+        this.text = LayersUtils.getLayer(LayersNames.AtomLabelText)
+            .text(textContent)
+            .font({
+                fill: color,
+                "font-weight": "bold",
+                family: EditorConstants.atomFontSize,
+                size: EditorConstants.atomFontSize,
+                anchor: "middle",
+            })
             .center(position.x, position.y)
+            .id(IdUtils.getAtomElemId(this.attributes.id));
+
+        const textBbox = this.text.bbox();
+
+        this.backgroundRect = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+            .rect(textBbox.width * 1.1, textBbox.height * 1.1)
+            .fill("#ffffff")
+            // .center(position.x, position.y)
+            .move(textBbox.x, textBbox.y)
             .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
-        const text = canvas.text(textContent);
-        text.center(position.x, position.y).font({
-            fill: color,
-            family: EditorConstants.atomFontSize,
-            size: EditorConstants.atomFontSize,
-            anchor: "middle",
-        });
-
-        text.insertAfter(this.mainCircle);
-
-        text.id(IdUtils.getAtomElemId(this.attributes.id));
-
-        return text;
+        this.hoverCircle = LayersUtils.getLayer(LayersNames.AtomLabelHover)
+            .circle(Math.max(textBbox.width, textBbox.height) * 1.8)
+            .fill("none")
+            .stroke({ color: "#f06", opacity: 0.6, width: 5 })
+            .center(position.x, position.y)
+            .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle_hover`)
+            .hide();
     }
 
     Select(isSelected: boolean) {
@@ -119,12 +128,7 @@ export class Atom {
         }
     }
 
-    AtomMove(canvas: Svg): Text | undefined {
-        const text: Text | null = SVG(`#${IdUtils.getAtomElemId(this.attributes.id)}`) as Text;
-        const circle: Circle | null = SVG(`#${IdUtils.getAtomElemId(this.attributes.id)}_circle`) as Circle;
-        if (!text) {
-            console.error("Couldn't find text element", text);
-        }
+    AtomMove() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
@@ -132,20 +136,23 @@ export class Atom {
         const textContent = this.attributes.symbol;
 
         // ??? find a better option
-        if (text.text() !== textContent) {
-            text.clear();
-            text.text(textContent);
-            text.font({ fill: color });
+        if (this.text.text() !== textContent) {
+            this.text.clear();
+            this.text.text(textContent);
+            this.text.font({ fill: color });
         }
 
-        text.center(position.x, position.y);
-        circle!.center(position.x, position.y);
+        this.text.center(position.x, position.y);
 
-        return text;
-    }
+        const textBbox = this.text.bbox();
 
-    static getElementStringId(idNum: number) {
-        return `atom_${idNum}`;
+        this.backgroundRect
+            ?.width(textBbox.width * 1.1)
+            .height(textBbox.height * 1.1)
+            .move(textBbox.x, textBbox.y);
+
+        const radius = Math.max(textBbox.width, textBbox.height) * 1.8;
+        this.hoverCircle?.radius(radius).center(position.x, position.y);
     }
 
     static getInstanceById(idNum: number) {

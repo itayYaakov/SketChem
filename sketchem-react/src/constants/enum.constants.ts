@@ -35,6 +35,16 @@ export enum MouseEventsNames {
     onMouseUp = "mouseup",
 }
 
+export enum LayersNames {
+    Root = "root",
+    General = "general",
+    Bond = "bond",
+    AtomLabelBackground = "atom_label_background",
+    AtomLabelHover = "atom_label_hover",
+    AtomLabelText = "atom_label_text",
+    Selection = "selection",
+}
+
 export enum BondType {
     Single = 1,
     Double = 2,

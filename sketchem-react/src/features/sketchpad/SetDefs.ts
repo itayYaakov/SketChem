@@ -2,11 +2,8 @@ import "@svgdotjs/svg.filter.js";
 
 import { BondConstants } from "@constants/bond.constants";
 import { BondStereoKekule, BondType } from "@constants/enum.constants";
+import { IdUtils } from "@src/utils/IdUtils";
 import { Effect, Filter, Pattern, SVG, Svg } from "@svgdotjs/svg.js";
-
-function getElementId(name: String) {
-    return `def_${name}`;
-}
 
 export default function SetDefs(canvas: Svg) {
     canvas.defs().put(
@@ -18,7 +15,7 @@ export default function SetDefs(canvas: Svg) {
             .update((add) => {
                 add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(getElementId(BondType[BondType.Single]))
+            .id(IdUtils.getDefElemId(BondType[BondType.Single]))
     );
     canvas.defs().put(
         new Pattern({
@@ -30,7 +27,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.3, 0, 0.3, 1).stroke({ color: "#000000", width: 0.1 });
                 add.line(0.7, 0, 0.7, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(getElementId(BondType[BondType.Double]))
+            .id(IdUtils.getDefElemId(BondType[BondType.Double]))
     );
     canvas.defs().put(
         new Pattern({
@@ -43,7 +40,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
                 add.line(0.9, 0, 0.9, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(getElementId(BondType[BondType.Triple]))
+            .id(IdUtils.getDefElemId(BondType[BondType.Triple]))
     );
 
     canvas.defs().put(
@@ -59,7 +56,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.51, -0.1, 0.51, 1.1).stroke({ color: "#000000", width: 0.17 });
                 add.line(0.85, -0.1, 0.85, 1.1).stroke({ color: "#000000", width: 0.17 });
             })
-            .id(getElementId(BondStereoKekule[BondStereoKekule.DOWN]))
+            .id(IdUtils.getDefElemId(BondStereoKekule[BondStereoKekule.DOWN]))
     );
 
     canvas.defs().put(
@@ -73,7 +70,7 @@ export default function SetDefs(canvas: Svg) {
             .update((add) => {
                 add.rect(1, 1).fill({ color: "#000000" });
             })
-            .id(getElementId(BondStereoKekule[BondStereoKekule.UP]))
+            .id(IdUtils.getDefElemId(BondStereoKekule[BondStereoKekule.UP]))
     );
     // <filter filterUnits="objectBoundingBox" x="0" y="0" width="100%" height="100%">
     //     <feDropShadow dx="0" dy="0" stdDeviation="1" flood-color="#99aa00" flood-opacity="0.9"/>
@@ -81,7 +78,7 @@ export default function SetDefs(canvas: Svg) {
     //     <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#00ffff" flood-opacity="0.7"/>
     // </filter>
 
-    const bondFilter = canvas.defs().filter().id(getElementId(BondConstants.hoverFilter));
+    const bondFilter = canvas.defs().filter().id(IdUtils.getDefElemId(BondConstants.hoverFilter));
     bondFilter.dropShadow(bondFilter.$sourceAlpha, 0, 0, 5).attr({ "flood-color": "#330033", "flood-opacity": 0.6 });
     bondFilter.dropShadow(bondFilter.$sourceAlpha, 0, 0, 4).attr({ "flood-color": "#880088", "flood-opacity": 0.7 });
     bondFilter.dropShadow(bondFilter.$sourceAlpha, 0, 0, 3).attr({ "flood-color": "#aa00aa", "flood-opacity": 0.8 });
@@ -98,5 +95,5 @@ export default function SetDefs(canvas: Svg) {
             height: "100%",
             clipPathUnits: "objectBoundingBox",
         })
-        .id(getElementId(BondConstants.poly_clip_id));
+        .id(IdUtils.getDefElemId(BondConstants.poly_clip_id));
 }

@@ -1,7 +1,8 @@
 import { BondConstants } from "@constants/bond.constants";
-import { BondStereoKekule, BondType } from "@constants/enum.constants";
+import { BondStereoKekule, BondType, LayersNames } from "@constants/enum.constants";
 import { itemsMaps } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
+import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import { BondAttributes } from "@types";
@@ -103,15 +104,15 @@ export class Bond {
         return this.attributes.id;
     }
 
-    draw(canvas: Svg) {
+    draw() {
         // !!! MOVE TO REDUX ???
-        const result = this.BondAdd(canvas);
+        const result = this.BondAdd();
         if (!result) {
             console.error("result=", result, "in Bond.ts");
         }
     }
 
-    BondAdd(canvas: Svg): Rect | undefined {
+    BondAdd(): Rect | undefined {
         const startAtom = Atom.getInstanceById(this.attributes.atomStartId);
         const endAtom = Atom.getInstanceById(this.attributes.atomEndId);
 
@@ -122,12 +123,12 @@ export class Bond {
         // if (angle === 0 || angle === 90) return;
         const distance = startPosition.distance(endPosition);
 
-        const rect = canvas.rect(BondConstants.padding, distance);
+        const rect = LayersUtils.getLayer(LayersNames.Bond).rect(BondConstants.padding, distance);
         if (this.attributes.stereo === BondStereoKekule.NONE) {
-            rect.fill(`url(#def_${BondType[this.attributes.type]})`);
+            rect.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondType[this.attributes.type])));
         } else {
             console.log("stereo=", this.attributes.stereo, BondStereoKekule[this.attributes.stereo]);
-            rect.fill(`url(#def_${BondStereoKekule[this.attributes.stereo]})`);
+            rect.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondStereoKekule[this.attributes.stereo])));
         }
 
         rect.move(startAtom.attributes.center.x, startAtom.attributes.center.y).id(
@@ -137,7 +138,7 @@ export class Bond {
         switch (this.attributes.stereo) {
             case BondStereoKekule.DOWN:
             case BondStereoKekule.UP:
-                rect.attr("clip-path", `url(#def_${BondConstants.poly_clip_id})`);
+                rect.attr("clip-path", IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.poly_clip_id)));
                 break;
 
             default:
@@ -152,14 +153,14 @@ export class Bond {
         });
 
         this.setBondCenter(rect);
-        canvas.circle(8).move(this.center.x, this.center.y).fill("#ff0000");
+        LayersUtils.getLayer(LayersNames.General).circle(8).move(this.center.x, this.center.y).fill("#ff0000");
         return rect;
     }
 
     Select(isSelected: boolean) {
         const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
         if (isSelected) {
-            rect.attr({ filter: `url(#def_${BondConstants.hoverFilter})` });
+            rect.attr({ filter: IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.hoverFilter)) });
 
             if (this.attributes.stereo === BondStereoKekule.UP) {
                 rect.attr({ "fill-opacity": 0.7 });
@@ -172,7 +173,7 @@ export class Bond {
         }
     }
 
-    BondMove(canvas: Svg, movedAtomId: number | undefined) {
+    BondMove(movedAtomId: number | undefined) {
         const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
         if (!rect) {
             console.error(
@@ -214,9 +215,9 @@ export class Bond {
         this.setBondCenter(rect);
     }
 
-    move(canvas: Svg, movedAtomId: number | undefined) {
+    move(movedAtomId: number | undefined) {
         this.modifyTree(false);
-        this.BondMove(canvas, movedAtomId);
+        this.BondMove(movedAtomId);
         this.modifyTree(true);
     }
 

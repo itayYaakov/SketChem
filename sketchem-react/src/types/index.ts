@@ -29,11 +29,6 @@ export interface AtomAttributes {
     color: string;
 }
 
-export interface AtomEditorContext {
-    atomAttrs: AtomAttributes;
-    canvas: Svg;
-}
-
 // Chemistry - Bond
 export interface BondAttributes {
     id: number;
