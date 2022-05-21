@@ -45,7 +45,7 @@ export enum LayersNames {
     Selection = "selection",
 }
 
-export enum BondType {
+export enum BondOrder {
     Single = 1,
     Double = 2,
     Triple = 3,

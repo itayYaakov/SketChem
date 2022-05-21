@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
-import { BondStereoKekule, BondType, LayersNames } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
-import { itemsMaps } from "@features/shared/storage";
+import { EntitiesMapsStorage } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
@@ -48,33 +48,35 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     unselectAll() {
         SelectTemplate.selectedAtoms.forEach((atom) => {
-            atom.Select(false);
+            atom.select(false);
         });
 
         SelectTemplate.selectedBonds.forEach((bond) => {
-            bond.Select(false);
+            bond.select(false);
         });
     }
 
     selectAtom(id: number) {
-        const atom = Atom.getInstanceById(id);
-        atom.Select(true);
+        const { atomsMap } = EntitiesMapsStorage;
+        const atom = EntitiesMapsStorage.getMapInstanceById(atomsMap, id);
+        atom.select(true);
         SelectTemplate.selectedAtoms.add(atom);
     }
 
     selectBond(id: number) {
-        const bond = Bond.getInstanceById(id);
-        bond.Select(true);
+        const { bondsMap } = EntitiesMapsStorage;
+        const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, id);
+        bond.select(true);
         SelectTemplate.selectedBonds.add(bond);
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
         const { mouseDownLocation, e } = eventHolder;
 
-        const startTime = performance.now();
+        // const startTime = performance.now();
         // Retrieve all html elements in given mouse down location
         const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
-        const endTime = performance.now();
+        // const endTime = performance.now();
 
         // exists on return true
         elementsAtPoint.some((elem) => {
@@ -150,8 +152,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             maxY: this.maxBoundingBoxPoint.y,
         } as BoundingBox;
 
-        const atomPointsInBoundingBox = itemsMaps.atoms.search(boundingBox);
-        const bondsPointsInBoundingBox = itemsMaps.bonds.search(boundingBox);
+        const atomPointsInBoundingBox = EntitiesMapsStorage.atomsTree.search(boundingBox);
+        const bondsPointsInBoundingBox = EntitiesMapsStorage.bondsTree.search(boundingBox);
 
         atomPointsInBoundingBox.forEach((element) => {
             if (!this.pointIsInShape(element.point.x, element.point.y, boundingBox)) return;

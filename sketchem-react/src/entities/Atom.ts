@@ -2,17 +2,16 @@ import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData } from "@constants/elements.constants";
 import { LayersNames } from "@constants/enum.constants";
-import { itemsMaps } from "@features/shared/storage";
+import { EntitiesMapsStorage } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
+import { KekuleUtils } from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
-import { AtomAttributes } from "@types";
+import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 
 export class Atom {
     static instancesCounter = 1;
-
-    static map = new Map<number, Atom>();
 
     static DefaultAttributes: AtomAttributes = {
         id: -1,
@@ -30,38 +29,63 @@ export class Atom {
 
     private text!: Text;
 
+    nodeObj: any;
+
     // label: any;
-    constructor(attrs: Partial<AtomAttributes>) {
-        const id = attrs.id && attrs.id > 0 ? attrs.id : Atom.generateNewId();
-        this.attributes = { ...Atom.DefaultAttributes, ...attrs, id };
+    constructor(args: IAtom) {
+        let id;
+        let color;
+        if (args.props) {
+            const { props } = args;
+            // !!! make sure id is valid - a number, and greater than instance counter
+            id = props.id ?? Atom.generateNewId();
+            color = props.color;
+            this.attributes = { ...Atom.DefaultAttributes, ...props, id };
+
+            // this.nodeObj = (new Kekule.Atom()).setSymbol('O').setCoord2D({'x': 0, 'y': -0.46});
+        } else if (args.nodeObj) {
+            this.nodeObj = args.nodeObj;
+            id = KekuleUtils.getNumericId(this.nodeObj.id);
+            color = undefined;
+            const charge = this.nodeObj.getCharge();
+            const symbol = this.nodeObj.getLabel();
+            const coord2D = this.nodeObj.getCoord2D();
+            const center = new Vector2(coord2D.x, coord2D.y);
+            this.attributes = { ...Atom.DefaultAttributes, charge, symbol, center, id };
+        } else {
+            throw new Error(`Atom constructor not implement args = ${args}`);
+        }
+
         const element = ElementsData.elementsMap.get(this.attributes.symbol);
-        this.attributes.color = attrs?.color || element?.jmolColor || "#000000";
-        // this.charge = getValueOrDefault(attributes.charge, Atom.attrlist.isotope);
+        this.attributes.color = color ?? element?.jmolColor ?? "#000000";
+
         this.addInstanceToMap();
     }
 
     private modifyTree(add: boolean = true) {
         const entry = { id: this.attributes.id, point: this.attributes.center };
         if (add) {
-            itemsMaps.atoms.insert(entry);
+            EntitiesMapsStorage.atomsTree.insert(entry);
         } else {
-            itemsMaps.atoms.remove(entry);
+            EntitiesMapsStorage.atomsTree.remove(entry);
         }
     }
 
     private addInstanceToMap() {
-        if (Atom.map.has(this.attributes.id)) {
+        const map = EntitiesMapsStorage.atomsMap;
+        if (map.has(this.attributes.id)) {
             console.error("Object already exists!");
         }
-        if (Atom.map.has(this.attributes.id)) return;
-        Atom.map.set(this.attributes.id, this);
+        if (map.has(this.attributes.id)) return;
+        map.set(this.attributes.id, this);
         this.modifyTree(true);
     }
 
     // !!! why no usage?
     private removeInstanceFromMap() {
-        if (!Atom.map.has(this.attributes.id)) return;
-        Atom.map.delete(this.attributes.id);
+        const map = EntitiesMapsStorage.atomsMap;
+        if (map.has(this.attributes.id)) return;
+        map.delete(this.attributes.id);
         this.modifyTree(false);
     }
 
@@ -71,17 +95,29 @@ export class Atom {
 
     draw() {
         // !!! MOVE TO REDUX ???
-        this.AtomAdd();
+        this.addAtomToCanvas();
     }
 
     move(newPostion: Vector2) {
         this.modifyTree(false);
         this.attributes.center = newPostion;
         this.modifyTree(true);
-        this.AtomMove();
+        this.moveAtomOnCanvas();
+        this.notifyConnectedBonds();
     }
 
-    private AtomAdd() {
+    private notifyConnectedBonds() {
+        const { bondsMap } = EntitiesMapsStorage;
+
+        const connectedBonds: any[] | [] = this.nodeObj.getLinkedBonds();
+        connectedBonds.forEach((bondKekule: any) => {
+            const id = KekuleUtils.getNumericId(bondKekule.id);
+            const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, id);
+            bond.move(this.attributes.id);
+        });
+    }
+
+    private addAtomToCanvas() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
@@ -118,7 +154,7 @@ export class Atom {
             .hide();
     }
 
-    Select(isSelected: boolean) {
+    select(isSelected: boolean) {
         if (!this.hoverCircle) return;
         if (isSelected) {
             this.hoverCircle.show();
@@ -129,7 +165,7 @@ export class Atom {
         }
     }
 
-    private AtomMove() {
+    private moveAtomOnCanvas() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
@@ -154,14 +190,6 @@ export class Atom {
 
         const radius = Math.max(textBbox.width, textBbox.height) * 1.8;
         this.hoverCircle?.radius(radius).center(position.x, position.y);
-    }
-
-    static getInstanceById(idNum: number) {
-        const atom = Atom.map.get(idNum);
-        if (!atom) {
-            throw new Error(`Couldn't find atom with id ${idNum}`);
-        }
-        return atom;
     }
 
     static generateNewId() {

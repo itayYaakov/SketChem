@@ -1,7 +1,7 @@
 import "@svgdotjs/svg.filter.js";
 
 import { BondConstants } from "@constants/bond.constants";
-import { BondStereoKekule, BondType } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule } from "@constants/enum.constants";
 import { IdUtils } from "@src/utils/IdUtils";
 import { Effect, Filter, Pattern, SVG, Svg } from "@svgdotjs/svg.js";
 
@@ -15,7 +15,7 @@ export default function SetDefs(canvas: Svg) {
             .update((add) => {
                 add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(IdUtils.getDefElemId(BondType[BondType.Single]))
+            .id(IdUtils.getDefElemId(BondOrder[BondOrder.Single]))
     );
     canvas.defs().put(
         new Pattern({
@@ -27,7 +27,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.3, 0, 0.3, 1).stroke({ color: "#000000", width: 0.1 });
                 add.line(0.7, 0, 0.7, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(IdUtils.getDefElemId(BondType[BondType.Double]))
+            .id(IdUtils.getDefElemId(BondOrder[BondOrder.Double]))
     );
     canvas.defs().put(
         new Pattern({
@@ -40,7 +40,7 @@ export default function SetDefs(canvas: Svg) {
                 add.line(0.5, 0, 0.5, 1).stroke({ color: "#000000", width: 0.1 });
                 add.line(0.9, 0, 0.9, 1).stroke({ color: "#000000", width: 0.1 });
             })
-            .id(IdUtils.getDefElemId(BondType[BondType.Triple]))
+            .id(IdUtils.getDefElemId(BondOrder[BondOrder.Triple]))
     );
 
     canvas.defs().put(

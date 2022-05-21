@@ -32,6 +32,9 @@ function App() {
                     <h2>Buttons</h2>
                     <ButtonsShowcase />
                 </Container> */}
+                {/* delete later */}
+                <KekuleShow />
+                {/* delete later */}
                 <Container fluid>
                     <Row>
                         <Col>
@@ -57,13 +60,6 @@ function App() {
                         </Col>
                     </Row>
                     <DialogShow />
-                    {/* delete later */}
-                    <Row>
-                        <Col>
-                            <KekuleShow />
-                        </Col>
-                    </Row>
-                    {/* delete later */}
                 </Container>
             </div>
         </>

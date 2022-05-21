@@ -19,7 +19,7 @@ module.exports = {
         "src/features/counter/*",
         "src/features/to/",
         "src/_actions/user.action.ts",
-        "src/features/chemistry/kekule-js-dist/*",
+        "src/utils/kekule-js-dist/*",
     ],
     plugins: ["react", "@typescript-eslint", "prettier", "simple-import-sort"],
     rules: {

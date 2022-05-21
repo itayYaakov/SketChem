@@ -1,22 +1,22 @@
-import { BondStereoKekule, BondType, LayersNames } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
 import { LayersUtils } from "@src/utils/LayersUtils";
-import { BondAttributes, MouseEventCallBackProperties } from "@types";
+import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 
 class BondToolBarItem implements ActiveToolbarItem {
     name: string;
 
-    bondType: BondType;
+    bondOrder: BondOrder;
 
     bondStereo: BondStereoKekule;
 
     keyboardKeys?: string[];
 
-    constructor(name: string, bondType: BondType, bondStereo: BondStereoKekule, keyboardKeys?: string[]) {
+    constructor(name: string, bondType: BondOrder, bondStereo: BondStereoKekule, keyboardKeys?: string[]) {
         this.name = name;
-        this.bondType = bondType;
+        this.bondOrder = bondType;
         this.bondStereo = bondStereo;
         this.keyboardKeys = keyboardKeys ?? undefined;
     }
@@ -31,19 +31,28 @@ class BondToolBarItem implements ActiveToolbarItem {
         let startAtom;
         let endAtom;
         if (!BondToolBarItem.lastAtom) {
-            startAtom = new Atom({ symbol: "C", center: mouseDownLocation });
-            endAtom = new Atom({ symbol: "C", center: mouseDownLocation });
+            startAtom = new Atom({ props: { symbol: "C", center: mouseDownLocation } } as IAtom);
+            endAtom = new Atom({ props: { symbol: "C", center: mouseDownLocation } } as IAtom);
 
             startAtom.draw();
             endAtom.draw();
         } else {
             startAtom = BondToolBarItem.lastAtom;
-            endAtom = new Atom({ symbol: "Xe", center: mouseDownLocation });
+            endAtom = new Atom({ props: { symbol: "Xe", center: mouseDownLocation } } as IAtom);
 
             endAtom.draw();
         }
 
-        const bond = new Bond(this.bondType, this.bondStereo, startAtom.getId(), endAtom.getId());
+        const bondArgs = {
+            props: {
+                order: this.bondOrder,
+                stereo: this.bondStereo,
+                atomStartId: startAtom.getId(),
+                atomEndId: endAtom.getId(),
+            },
+        } as IBond;
+
+        const bond = new Bond(bondArgs);
         BondToolBarItem.lastAtom = endAtom;
         BondToolBarItem.lastBond = bond;
         bond.draw();
@@ -66,10 +75,10 @@ class BondToolBarItem implements ActiveToolbarItem {
     onMouseUp(eventHolder: MouseEventCallBackProperties) {}
 }
 
-const singleBond = new BondToolBarItem("Bond Single", BondType.Single, BondStereoKekule.NONE, ["A"]);
-const doubleBond = new BondToolBarItem("Bond Double", BondType.Double, BondStereoKekule.NONE, ["B"]);
-const tripleBond = new BondToolBarItem("Bond Triple", BondType.Triple, BondStereoKekule.NONE, ["C"]);
-const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondType.Single, BondStereoKekule.UP, ["D"]);
-const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondType.Single, BondStereoKekule.DOWN, ["D"]);
+const singleBond = new BondToolBarItem("Bond Single", BondOrder.Single, BondStereoKekule.NONE, ["A"]);
+const doubleBond = new BondToolBarItem("Bond Double", BondOrder.Double, BondStereoKekule.NONE, ["B"]);
+const tripleBond = new BondToolBarItem("Bond Triple", BondOrder.Triple, BondStereoKekule.NONE, ["C"]);
+const wedgeFrontBond = new BondToolBarItem("Bond Wedge Front", BondOrder.Single, BondStereoKekule.UP, ["D"]);
+const wedgeBackBond = new BondToolBarItem("Bond Wedge Back", BondOrder.Single, BondStereoKekule.DOWN, ["D"]);
 
 export { doubleBond, singleBond, tripleBond, wedgeBackBond, wedgeFrontBond };

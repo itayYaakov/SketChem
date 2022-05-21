@@ -1,3 +1,4 @@
+import type { Atom, Bond } from "@entities";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Svg } from "@svgdotjs/svg.js";
 import RBush from "rbush";
@@ -35,7 +36,21 @@ const ENTRIES_AMOUNT = 7;
 const atomsTree = new PointRBush(ENTRIES_AMOUNT);
 const bondsTree = new PointRBush(ENTRIES_AMOUNT);
 
-export const itemsMaps = {
-    atoms: atomsTree,
-    bonds: bondsTree,
+const atomsMap = new Map<number, Atom>();
+const bondsMap = new Map<number, Bond>();
+
+function getMapInstanceById<Type>(map: Map<number, Type>, idNum: number): Type {
+    const entity = map.get(idNum);
+    if (!entity) {
+        throw new Error(`Couldn't find entity with id ${idNum}`);
+    }
+    return entity;
+}
+
+export const EntitiesMapsStorage = {
+    atomsTree,
+    bondsTree,
+    atomsMap,
+    bondsMap,
+    getMapInstanceById,
 };

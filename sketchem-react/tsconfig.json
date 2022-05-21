@@ -28,7 +28,7 @@
             "@utils/*": ["./src/utils/*"]
         }
     },
-    "include": ["./src/**/*.ts", "./src/**/*.tsx", ".eslintrc.js", "prettier.config.js", "craco.config.js"],
+    "include": ["./src/**/*.ts", "./src/**/*.tsx", ".eslintrc.js", "prettier.config.js", "craco.config.js", "src/utils/KekuleUtils.js"],
     "exclude": [
         "./node_modules/",
         ".vscode",

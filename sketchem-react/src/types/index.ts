@@ -1,4 +1,4 @@
-import type { BondStereoKekule, BondType } from "@constants/enum.constants";
+import type { BondOrder, BondStereoKekule } from "@constants/enum.constants";
 import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
 
@@ -28,16 +28,34 @@ export interface AtomAttributes {
     symbol: string;
     color: string;
 }
+export interface IAtom {
+    nodeObj?: any;
+    props?: Partial<AtomAttributes>;
+}
 
 // Chemistry - Bond
 export interface BondAttributes {
     id: number;
-    type: BondType;
+    type: BondOrder;
     stereo: BondStereoKekule;
     // index of first connected atom
     atomStartId: number;
     // index of second connected atom
     atomEndId: number;
+}
+
+// Chemistry - Bond
+export interface IBond {
+    connectorObj?: any;
+    props?: {
+        order: BondOrder;
+        stereo: BondStereoKekule;
+        // index of first connected atom
+        atomStartId: number;
+        // index of second connected atom
+        atomEndId: number;
+        optionalId?: number;
+    };
 }
 
 //= =============================================================================

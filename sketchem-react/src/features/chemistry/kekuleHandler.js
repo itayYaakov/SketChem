@@ -1,13 +1,13 @@
 /* eslint-disable no-unreachable */
 import { getFileContent, getMoleculeCommands } from "@app/selectors";
 import { CanvasObject } from "@features/shared/CanvasObject";
+import { KekuleUtils } from "@src/utils/KekuleUtils";
+import { IBond } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { Atom, Bond } from "../../entities";
-// eslint-disable-next-line import/extensions
-import * as K from "./kekule-js-dist/kekule.js?module=core,algorithm,calculation,io,extra";
 
 const getBoundingBox = (mol) => {
     // {x2: maxX, x1: minX, y2: maxY, y1: minY}
@@ -54,58 +54,37 @@ const drawMol = (mol) => {
         if (firstAtomDelta.x === 0 && firstAtomDelta.y === 0) {
             firstAtomDelta = pos;
         }
-        console.log(`node ${i}`, node.getClassName(), node.getLabel(), x, y);
+        const id = Atom.generateNewId();
+        node.id = id;
         pos = pos.sub(firstAtomDelta).add(initialPoint);
-        // const atom = new Atom({ symbol: node.getLabel(), center: pos, id: node.id });
-        const atom = new Atom({ symbol: node.getLabel(), center: pos });
-        node.id = atom.getId();
+        node.setCoord2D({ x: pos.x, y: pos.y });
+
+        const atom = new Atom({ nodeObj: node });
         atom.draw();
     }
     // iterate all connectors(bonds)
     for (let i = 0, l = mol.getConnectorCount(); i < l; i += 1) {
         const connector = mol.getConnectorAt(i);
-        const order = connector.getBondOrder ? connector.getBondOrder() : 0;
-        console.log(
-            `connector ${i}`,
-            connector.getClassName(),
-            connector.getBondOrder ? connector.getBondOrder() : "?",
-            "real stereo",
-            // connector.getStereo()
-            connector.stereo,
-            "transposed stereo"
-        );
-        const bond = new Bond(
-            order,
-            connector.stereo,
-            connector.getConnectedObjs()[0].id,
-            connector.getConnectedObjs()[1].id
-        );
+        const id = Bond.generateNewId();
+        connector.id = id;
+        const bond = new Bond({ connectorObj: connector });
         bond.draw(canvas);
     }
 };
 
-const drawMolOneTime = (fileContent, kek) => {
+const drawMolOneTime = (fileContent) => {
     if (!fileContent) return;
     const canvas = CanvasObject.get();
-    // const rect = canvas.rect(10, 10);
-    // console.log(rect);
-    const child = document.createElement("div");
-    child.id = "STUPODTEST";
-    document.body.appendChild(child);
-    const mol = kek.IO.loadFormatData(fileContent, "mol");
+    const mol = KekuleUtils.getKekule().IO.loadFormatData(fileContent, "mol");
     drawMol(mol);
 };
 
 export function KekuleShow() {
-    const KekuleRef = useRef(null);
     const fileContent = useSelector(getFileContent);
 
-    function setup() {
-        const { Kekule } = K;
-        KekuleRef.current = Kekule;
-    }
+    function setup() {}
     useEffect(setup, []);
-    useEffect(() => drawMolOneTime(fileContent, KekuleRef.current), [fileContent]);
+    useEffect(() => drawMolOneTime(fileContent), [fileContent]);
 
     if (!fileContent) return null;
     if (!CanvasObject.get()) {
@@ -115,7 +94,7 @@ export function KekuleShow() {
     // setCount(count.current + 10);
     // console.log(Object.keys(K.Kekule.));
 
-    return <div />;
+    return null;
 }
 
 // // var Kekule = require('../../dist/kekule.min.js').Kekule;
