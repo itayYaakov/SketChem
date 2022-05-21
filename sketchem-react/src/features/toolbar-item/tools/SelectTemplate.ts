@@ -118,11 +118,16 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
+        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
+
         if (this.selectionMode === SelectionMode.Single) {
+            if (SelectTemplate.selectedAtoms.size === 1) {
+                SelectTemplate.selectedAtoms.forEach((atom) => {
+                    atom.move(mouseCurrentLocation);
+                });
+            }
             return;
         }
-
-        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
 
         // !!! for this.selectionMode === SelectionMode.Empty only
 

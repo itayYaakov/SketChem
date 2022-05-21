@@ -24,11 +24,11 @@ export class Atom {
 
     attributes: AtomAttributes;
 
-    backgroundRect: Rect | undefined;
+    private backgroundRect: Rect | undefined;
 
-    hoverCircle: Circle | undefined;
+    private hoverCircle: Circle | undefined;
 
-    text!: Text;
+    private text!: Text;
 
     // label: any;
     constructor(attrs: Partial<AtomAttributes>) {
@@ -40,7 +40,7 @@ export class Atom {
         this.addInstanceToMap();
     }
 
-    modifyTree(add: boolean = true) {
+    private modifyTree(add: boolean = true) {
         const entry = { id: this.attributes.id, point: this.attributes.center };
         if (add) {
             itemsMaps.atoms.insert(entry);
@@ -49,7 +49,7 @@ export class Atom {
         }
     }
 
-    addInstanceToMap() {
+    private addInstanceToMap() {
         if (Atom.map.has(this.attributes.id)) {
             console.error("Object already exists!");
         }
@@ -58,7 +58,8 @@ export class Atom {
         this.modifyTree(true);
     }
 
-    removeInstanceFromMap() {
+    // !!! why no usage?
+    private removeInstanceFromMap() {
         if (!Atom.map.has(this.attributes.id)) return;
         Atom.map.delete(this.attributes.id);
         this.modifyTree(false);
@@ -80,7 +81,7 @@ export class Atom {
         this.AtomMove();
     }
 
-    AtomAdd() {
+    private AtomAdd() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
@@ -128,7 +129,7 @@ export class Atom {
         }
     }
 
-    AtomMove() {
+    private AtomMove() {
         const position = this.attributes.center;
 
         // const element = ElementsData.elementsMap.get(this.attributes.symbol);
