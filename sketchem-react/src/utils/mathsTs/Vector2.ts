@@ -65,6 +65,8 @@ export default class Vector2 {
         this.y = y ?? 0;
     }
 
+    get = () => ({ x: this.x, y: this.y });
+
     distance = (b: Vector2): number => this.sub(b).mag();
 
     sub = (a: Vector2): Vector2 => new Vector2(this.x - a.x, this.y - a.y);

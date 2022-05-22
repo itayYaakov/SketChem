@@ -68,8 +68,8 @@ class BondToolBarItem implements ActiveToolbarItem {
         //     "BondToolBarItem.lastAtom center=",
         //     BondToolBarItem.lastAtom.attributes.center
         // );
-        BondToolBarItem.lastAtom.move(mouseCurrentLocation);
-        BondToolBarItem.lastBond.move(BondToolBarItem.lastAtom.getId());
+        BondToolBarItem.lastAtom.moveTo(mouseCurrentLocation);
+        BondToolBarItem.lastBond.movedByAtomId(BondToolBarItem.lastAtom.getId());
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {}

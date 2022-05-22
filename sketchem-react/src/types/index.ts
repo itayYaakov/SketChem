@@ -36,7 +36,7 @@ export interface IAtom {
 // Chemistry - Bond
 export interface BondAttributes {
     id: number;
-    type: BondOrder;
+    order: BondOrder;
     stereo: BondStereoKekule;
     // index of first connected atom
     atomStartId: number;
@@ -89,6 +89,7 @@ export interface RootState {
 export interface MouseEventCallBackProperties {
     e: MouseEvent;
     canvas: Svg;
+    previousMouseLocation: Vector2;
     mouseDownLocation: Vector2;
     mouseCurrentLocation: Vector2;
     mouseUpLocation?: Vector2;

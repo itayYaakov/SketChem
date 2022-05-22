@@ -10,6 +10,8 @@ import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 
+import type { Bond } from "./Bond";
+
 export class Atom {
     static instancesCounter = 1;
 
@@ -29,7 +31,7 @@ export class Atom {
 
     private text!: Text;
 
-    nodeObj: any;
+    private nodeObj: any;
 
     // label: any;
     constructor(args: IAtom) {
@@ -41,8 +43,7 @@ export class Atom {
             id = props.id ?? Atom.generateNewId();
             color = props.color;
             this.attributes = { ...Atom.DefaultAttributes, ...props, id };
-
-            // this.nodeObj = (new Kekule.Atom()).setSymbol('O').setCoord2D({'x': 0, 'y': -0.46});
+            this.nodeObj = KekuleUtils.registerAtomFromAttributes(this.attributes);
         } else if (args.nodeObj) {
             this.nodeObj = args.nodeObj;
             id = KekuleUtils.getNumericId(this.nodeObj.id);
@@ -98,22 +99,52 @@ export class Atom {
         this.addAtomToCanvas();
     }
 
-    move(newPostion: Vector2) {
-        this.modifyTree(false);
-        this.attributes.center = newPostion;
-        this.modifyTree(true);
-        this.moveAtomOnCanvas();
-        this.notifyConnectedBonds();
+    moveByDelta(delta: Vector2, ignoreNotifyBondsIds: number[] = []) {
+        const newPosition = this.attributes.center.add(delta);
+        this.moveTo(newPosition, ignoreNotifyBondsIds);
     }
 
-    private notifyConnectedBonds() {
-        const { bondsMap } = EntitiesMapsStorage;
+    moveTo(newPosition: Vector2, ignoreNotifyBondsIds: number[] = []) {
+        this.modifyTree(false);
+        this.attributes.center = newPosition;
+        this.modifyTree(true);
+        this.moveAtomOnCanvas();
+        this.notifyConnectedBonds(ignoreNotifyBondsIds);
+    }
 
-        const connectedBonds: any[] | [] = this.nodeObj.getLinkedBonds();
-        connectedBonds.forEach((bondKekule: any) => {
+    getConnectedBonds() {
+        const { bondsMap } = EntitiesMapsStorage;
+        const connectedBonds = new Set<Bond>();
+        const connectedBondsKekule: any[] | [] = this.nodeObj.getLinkedBonds();
+
+        connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
             const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, id);
-            bond.move(this.attributes.id);
+            connectedBonds.add(bond);
+        });
+
+        return connectedBonds;
+    }
+
+    getConnectedBondsIds() {
+        const connectedBondsIds = new Set<number>();
+        const connectedBondsKekule: any[] | [] = this.nodeObj.getLinkedBonds();
+
+        connectedBondsKekule.forEach((bondKekule: any) => {
+            const id = KekuleUtils.getNumericId(bondKekule.id);
+            connectedBondsIds.add(id);
+        });
+
+        return connectedBondsIds;
+    }
+
+    private notifyConnectedBonds(ignoreNotify: number[] = []) {
+        const connectedBonds = this.getConnectedBonds();
+        connectedBonds.forEach((bond: Bond) => {
+            if (ignoreNotify.includes(bond.getId())) {
+                return;
+            }
+            bond.movedByAtomId(this.attributes.id);
         });
     }
 
@@ -163,6 +194,14 @@ export class Atom {
             this.hoverCircle.hide();
             // circle.attr({ filter: "" });
         }
+    }
+
+    getKekuleNode() {
+        return this.nodeObj;
+    }
+
+    getCenter() {
+        return this.attributes.center;
     }
 
     private moveAtomOnCanvas() {

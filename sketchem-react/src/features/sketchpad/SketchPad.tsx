@@ -47,6 +47,7 @@ function SketchPad(props: Props) {
     const svgRef = useRef<Svg>(null!);
 
     const mouseEventsSetListeners = (function mouseEventsHandler() {
+        let previousMouseLocation: Vector2 | undefined;
         let mouseDownLocation: Vector2 | undefined;
         let mouseUpLocation: Vector2 | undefined;
 
@@ -63,12 +64,14 @@ function SketchPad(props: Props) {
             const args = {
                 e,
                 canvas: svgRef.current,
+                previousMouseLocation,
                 mouseDownLocation: mouseCurrentLocation,
                 mouseCurrentLocation,
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;
 
             const response = activeToolBar.current?.onMouseMove?.(args);
+            previousMouseLocation = mouseCurrentLocation;
         }
 
         function handleMouseDown(e: MouseEvent) {
@@ -81,10 +84,12 @@ function SketchPad(props: Props) {
                 e,
                 canvas: svgRef.current,
                 mouseDownLocation,
+                previousMouseLocation,
                 mouseCurrentLocation: mouseDownLocation,
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;
             activeToolBar.current?.onMouseDown?.(args);
+            previousMouseLocation = mouseDownLocation;
         }
 
         function handleMouseMove(e: MouseEvent) {
@@ -97,15 +102,14 @@ function SketchPad(props: Props) {
             const args = {
                 e,
                 canvas: svgRef.current,
+                previousMouseLocation,
                 mouseDownLocation,
                 mouseCurrentLocation,
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;
-
+            // !!! remove response?
             const response = activeToolBar.current?.onMouseMove?.(args);
-            // find a better way
-            // if (response && "shape" in response) {
-            // }
+            previousMouseLocation = mouseCurrentLocation;
         }
 
         function handleMouseUp(e: MouseEvent) {
@@ -115,6 +119,7 @@ function SketchPad(props: Props) {
             const args = {
                 e,
                 canvas: svgRef.current,
+                previousMouseLocation,
                 mouseDownLocation,
                 mouseCurrentLocation: mouseUpLocation,
                 mouseUpLocation,
@@ -122,6 +127,7 @@ function SketchPad(props: Props) {
             activeToolBar.current?.onMouseUp?.(args);
 
             mouseDownLocation = undefined;
+            previousMouseLocation = mouseUpLocation;
         }
 
         function handleMouseLeave(e: MouseEvent) {
@@ -131,6 +137,7 @@ function SketchPad(props: Props) {
             const args = {
                 e,
                 canvas: svgRef.current,
+                previousMouseLocation,
                 mouseDownLocation,
                 mouseCurrentLocation,
                 mouseUpLocation,
@@ -138,6 +145,7 @@ function SketchPad(props: Props) {
             activeToolBar.current?.onMouseLeave?.(args);
 
             mouseDownLocation = undefined;
+            previousMouseLocation = mouseCurrentLocation;
         }
 
         function setListeners(object: any, enable: boolean) {
