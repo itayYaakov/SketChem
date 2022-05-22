@@ -58,6 +58,11 @@ export enum BondOrder {
     WedgeBack = 50,
 }
 
+export enum EntityType {
+    Atom = 1,
+    Bond = 2,
+}
+
 export enum BondStereoMol {
     // export enum BondStereo {
     // for single

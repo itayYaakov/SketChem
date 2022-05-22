@@ -1,6 +1,6 @@
 import { BondConstants } from "@constants/bond.constants";
-import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
-import { EntitiesMapsStorage } from "@features/shared/storage";
+import { BondOrder, BondStereoKekule, EntityType, LayersNames } from "@constants/enum.constants";
+import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import { KekuleUtils } from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
@@ -91,7 +91,7 @@ export class Bond {
     // }
 
     modifyTree(add: boolean = true) {
-        const entry = { id: this.attributes.id, point: this.center };
+        const entry = { id: this.attributes.id, point: this.center, entityType: EntityType.Bond } as NamedPoint;
         if (add) {
             EntitiesMapsStorage.bondsTree.insert(entry);
         } else {
@@ -165,20 +165,25 @@ export class Bond {
 
         this.setBondCenter();
 
-        this.centralMarks[1].show().radius(6).cx(this.center.x).cy(this.center.y).fill("#ff0000");
-
-        this.centralMarks[0]
+        this.centralMarks[1]
             .show()
-            .radius(4)
-            .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
-            .fill("#00ff00");
+            .radius(BondConstants.SelectDistance)
+            .cx(this.center.x)
+            .cy(this.center.y)
+            .fill("#ff0000");
 
-        this.centralMarks[2]
-            .show()
-            .radius(4)
-            .cx(this.endAtom.getCenter().x)
-            .cy(this.endAtom.getCenter().y)
-            .fill("#0000ff");
+        // this.centralMarks[0]
+        //     .show()
+        //     .radius(4)
+        //     .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
+        //     .fill("#00ff00");
+
+        // this.centralMarks[2]
+        //     .show()
+        //     .radius(4)
+        //     .cx(this.endAtom.getCenter().x)
+        //     .cy(this.endAtom.getCenter().y)
+        //     .fill("#0000ff");
 
         return rect;
     }

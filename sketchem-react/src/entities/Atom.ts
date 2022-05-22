@@ -1,8 +1,8 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData } from "@constants/elements.constants";
-import { LayersNames } from "@constants/enum.constants";
-import { EntitiesMapsStorage } from "@features/shared/storage";
+import { EntityType, LayersNames } from "@constants/enum.constants";
+import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import { KekuleUtils } from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
@@ -26,6 +26,8 @@ export class Atom {
     attributes: AtomAttributes;
 
     private backgroundRect: Rect | undefined;
+
+    private backgroundCircle: Circle | undefined;
 
     private hoverCircle: Circle | undefined;
 
@@ -64,7 +66,11 @@ export class Atom {
     }
 
     private modifyTree(add: boolean = true) {
-        const entry = { id: this.attributes.id, point: this.attributes.center };
+        const entry = {
+            id: this.attributes.id,
+            point: this.attributes.center,
+            entityType: EntityType.Atom,
+        } as NamedPoint;
         if (add) {
             EntitiesMapsStorage.atomsTree.insert(entry);
         } else {
@@ -169,15 +175,24 @@ export class Atom {
 
         const textBbox = this.text.bbox();
 
-        this.backgroundRect = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
-            .rect(textBbox.width * 1.1, textBbox.height * 1.1)
+        this.backgroundCircle = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+            .circle()
+            .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1.1)
             .fill("#ffffff")
-            // .center(position.x, position.y)
-            .move(textBbox.x, textBbox.y)
+            .center(textBbox.cx, textBbox.cy)
             .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
+        // this.backgroundRect = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+        //     .rect(textBbox.width * 1.1, textBbox.height * 1.1)
+        //     .fill("#ffffff")
+        //     // .center(position.x, position.y)
+        //     .move(textBbox.x, textBbox.y)
+        //     .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
+
         this.hoverCircle = LayersUtils.getLayer(LayersNames.AtomLabelHover)
-            .circle(Math.max(textBbox.width, textBbox.height) * 1.8)
+            // .circle(Math.max(textBbox.width, textBbox.height) * 1.8)
+            .circle(AtomConstants.HoverRadius * 2)
+            // .fill({ color: "#0000ff", opacity: 0.2 })
             .fill("none")
             .stroke({ color: "#f06", opacity: 0.6, width: 5 })
             .center(position.x, position.y)
@@ -222,13 +237,15 @@ export class Atom {
 
         const textBbox = this.text.bbox();
 
-        this.backgroundRect
-            ?.width(textBbox.width * 1.1)
-            .height(textBbox.height * 1.1)
-            .move(textBbox.x, textBbox.y);
+        const radius = (Math.max(textBbox.width, textBbox.height) / 2) * 1.1;
+        this.backgroundCircle?.radius(radius).center(textBbox.cx, textBbox.cy);
 
-        const radius = Math.max(textBbox.width, textBbox.height) * 1.8;
-        this.hoverCircle?.radius(radius).center(position.x, position.y);
+        // this.backgroundRect
+        //     ?.width(textBbox.width * 1.1)
+        //     .height(textBbox.height * 1.1)
+        //     .move(textBbox.x, textBbox.y);
+
+        this.hoverCircle?.center(position.x, position.y);
     }
 
     static generateNewId() {

@@ -1,11 +1,16 @@
+import { EntityType } from "@constants/enum.constants";
 import type { Atom, Bond } from "@entities";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Svg } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 
-interface NamedPoint {
+import { mergeArrays } from "./oldRbushKnn";
+import knn, { INode } from "./rbushKnn";
+
+export interface NamedPoint {
     id: number;
     point: Vector2;
+    entityType: EntityType;
 }
 class PointRBush extends RBush<NamedPoint> {
     toBBox(v: NamedPoint) {
@@ -47,10 +52,31 @@ function getMapInstanceById<Type>(map: Map<number, Type>, idNum: number): Type {
     return entity;
 }
 
+function knnFromMultipleMaps(
+    trees: RBush<any>[],
+    point: Vector2,
+    n?: number,
+    maxDistances?: number[],
+    predicate?: (c: any) => boolean
+) {
+    const treeResults: INode[][] = [];
+    let index = 0;
+    trees.forEach((tree) => {
+        const maxDistance = maxDistances ? maxDistances[index] : undefined;
+        const treeResult = knn(tree, point.x, point.y, n, maxDistance, predicate);
+        treeResults.push(treeResult);
+        index += 1;
+    });
+    const result = mergeArrays(treeResults, n);
+    return result;
+}
+
 export const EntitiesMapsStorage = {
     atomsTree,
     bondsTree,
     atomsMap,
     bondsMap,
     getMapInstanceById,
+    knn,
+    knnFromMultipleMaps,
 };

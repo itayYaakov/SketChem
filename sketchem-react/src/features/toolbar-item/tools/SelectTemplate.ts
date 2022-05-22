@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
-import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
+import { AtomConstants } from "@constants/atom.constants";
+import { BondConstants } from "@constants/bond.constants";
+import { EntityType, LayersNames } from "@constants/enum.constants";
 import { Atom, Bond } from "@entities";
+import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import { IdUtils } from "@src/utils/IdUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { Circle, Path, PathArray, Rect } from "@svgdotjs/svg.js";
-import { BondAttributes, BoundingBox, MouseEventCallBackProperties } from "@types";
-import { defaultMaxListeners } from "events";
+import { Path, PathArray, Rect } from "@svgdotjs/svg.js";
+import { BoundingBox, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 
@@ -126,55 +127,52 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, e } = eventHolder;
+        const { mouseDownLocation } = eventHolder;
 
-        // const startTime = performance.now();
-        // Retrieve all html elements in given mouse down location
-        // !!!! Change to Knn(1) using rbush
-        const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
-        // const endTime = performance.now();
+        const atomMaxDistance = AtomConstants.SelectDistance;
+        const bondMaxDistance = BondConstants.SelectDistance;
+        const Neighbors = 1;
+        const { atomsTree, bondsTree, knnFromMultipleMaps } = EntitiesMapsStorage;
 
-        // exists on return true
-        // console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
-        elementsAtPoint.some((elem) => {
-            this.selectionMode = SelectionMode.Empty;
+        const startTime = performance.now();
 
-            if (elem.tagName === "svg") {
-                return true;
-            }
+        const closetSomethings = knnFromMultipleMaps([atomsTree, bondsTree], mouseDownLocation, Neighbors, [
+            atomMaxDistance,
+            bondMaxDistance,
+        ]);
+        const [closest] = closetSomethings;
+        if (closest) {
+            const closestNode = closest.node as NamedPoint;
+            console.log("closest.dist", closest.dist, "type=", EntityType[closestNode.entityType]);
 
-            const atomId = IdUtils.idIsOfAtomElem(elem.id);
-            if (atomId) {
+            if (closestNode.entityType === EntityType.Atom) {
+                const atomId = closestNode.id;
                 this.selectionMode = SelectionMode.Single;
                 this.resetAnchor();
                 this.anchor.atomId = atomId;
-                if (SelectTemplate.selectedAtoms.has(atomId)) {
-                    return true;
+
+                if (!SelectTemplate.selectedAtoms.has(atomId)) {
+                    this.resetSelection();
+                    this.selectAtom(atomId);
                 }
-                this.resetSelection();
-                // console.log("Selected from A");
-                this.selectAtom(atomId);
-                // console.log("A this.selectedAtoms =", SelectTemplate.selectedAtoms);
-                return true;
-            }
-            const bondId = IdUtils.idIsOfBondElem(elem.id);
-            if (bondId) {
+            } else if (closestNode.entityType === EntityType.Bond) {
+                const bondId = closestNode.id;
                 this.selectionMode = SelectionMode.Single;
                 this.resetAnchor();
                 this.anchor.bondId = bondId;
-                if (SelectTemplate.selectedBonds.has(bondId)) {
-                    return true;
-                }
-                this.resetSelection();
 
-                this.selectBond(bondId);
-                return true;
+                if (!SelectTemplate.selectedBonds.has(bondId)) {
+                    this.resetSelection();
+                    this.selectBond(bondId);
+                }
             }
 
-            return false;
-        });
-
-        console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
+            const endTime = performance.now();
+            console.log("took=", endTime - startTime, "ms");
+            console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
+        } else {
+            this.selectionMode = SelectionMode.Empty;
+        }
 
         // for testing:
         // const { mouseDownLocation, canvas } = eventHolder;
@@ -249,7 +247,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             const onlyOneBond = selectedAtomsSize === 0 && selectedBondsSize === 1;
 
             if (onlyOneAtom) {
-                console.log("D this.selectedAtoms =", SelectTemplate.selectedAtoms);
                 SelectTemplate.selectedAtoms.forEach((atom) => {
                     atom.moveTo(mouseCurrentLocation);
                 });
