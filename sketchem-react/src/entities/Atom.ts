@@ -4,11 +4,13 @@ import { ElementsData } from "@constants/elements.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
-import { KekuleUtils } from "@src/utils/KekuleUtils";
+import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
+import styles from "@styles/index.module.scss";
 import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
+import clsx from "clsx";
 
 import type { Bond } from "./Bond";
 
@@ -171,6 +173,7 @@ export class Atom {
                 anchor: "middle",
             })
             .center(position.x, position.y)
+            .addClass(styles.atoms_labels)
             .id(IdUtils.getAtomElemId(this.attributes.id));
 
         const textBbox = this.text.bbox();

@@ -1,7 +1,7 @@
 /* eslint-disable no-unreachable */
 import { getFileContent, getMoleculeCommands } from "@app/selectors";
 import { CanvasObject } from "@features/shared/CanvasObject";
-import { KekuleUtils } from "@src/utils/KekuleUtils";
+import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { IBond } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import React, { useEffect, useRef, useState } from "react";

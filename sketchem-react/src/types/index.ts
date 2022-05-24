@@ -65,10 +65,20 @@ export interface IBond {
 //     eventType: string;
 //     id: number;
 // }
+
+export interface LoadFileAction {
+    content: string;
+    format: string;
+    replace?: boolean;
+}
+export interface SaveFileAction {
+    format: string;
+}
 export interface ToolbarItemState {
     selectedToolbarItem: string;
     dialogWindow: string;
-    fileContent: string;
+    importContext: LoadFileAction;
+    exportContext: SaveFileAction;
     // bondMouseEvent: BondMouseEventState;
 }
 export interface ChemistryState {

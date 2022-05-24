@@ -1,6 +1,6 @@
 const path = require("path");
+// const CopyPlugin = require("copy-webpack-plugin");
 // const webpack = require("webpack"); // for development only?
-// const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
 module.exports = {
     webpack: {
@@ -14,5 +14,23 @@ module.exports = {
             "@types": path.resolve(__dirname, "src/types/index.ts"),
             "@utils": path.resolve(__dirname, "src/utils"),
         },
+        // rules: [{ test: /\.wasm$/, type: "asset/inline" }],
+        configure: {
+            resolve: {
+                fallback: {
+                    fs: false,
+                    path: require.resolve("path-browserify"),
+                },
+            },
+        },
+        // plugins: [
+        //     // Copy kekule extra folder
+        //     new CopyPlugin({
+        //         patterns: [
+        //             // { from: path.resolve(__dirname, "src", "utils", "kekule-js-dist", "extra"), to: "static/js/extra" },
+        //             { from: path.resolve(__dirname, "src", "utils", "kekule-js-dist"), to: "static/js/kekule-js-dist" },
+        //         ],
+        //     }),
+        // ],
     },
 };

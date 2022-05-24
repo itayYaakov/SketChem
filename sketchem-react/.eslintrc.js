@@ -16,10 +16,10 @@ module.exports = {
     // !!! temp
     ignorePatterns: [
         "build/*",
+        "public/kekule-js-dist",
         "src/features/counter/*",
         "src/features/to/",
         "src/_actions/user.action.ts",
-        "src/utils/kekule-js-dist/*",
     ],
     plugins: ["react", "@typescript-eslint", "prettier", "simple-import-sort"],
     rules: {

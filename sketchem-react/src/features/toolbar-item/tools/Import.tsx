@@ -1,11 +1,36 @@
 import { useAppDispatch } from "@app/hooks";
+import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React, { useState } from "react";
-import { Button, Col, Container, Modal, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
+import SelectSearch from "react-select-search";
 
 import { DummyToolbarItem } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
+
+function SupportedFiles(props: any) {
+    /**
+     * The options array should contain objects.
+     * Required keys are "name" and "value" but you can have and use any number of key/value pairs.
+     */
+    const { selectOptions } = props;
+
+    return (
+        //
+        <Form.Select aria-label="Default select example">
+            {selectOptions.map((element: any) => (
+                <option value={element.value}>{element.name}</option>
+            ))}
+        </Form.Select>
+        // <SelectSearch
+        //     //
+        //     options={selectOptions}
+        //     search
+        //     placeholder="Select import file extension"
+        // />
+    );
+}
 
 function ImportFileTab(props: any) {
     const { onHide, title } = props;
@@ -27,10 +52,16 @@ function ImportFileTab(props: any) {
         onHide();
     };
 
+    KekuleUtils.enableBabel();
+    const options = KekuleUtils.getSupportedReadFormats();
+
     return (
         <>
             <Modal.Body className="show-grid">
                 <Container fluid>
+                    <Row>
+                        <SupportedFiles selectOptions={options} />
+                    </Row>
                     <Row>
                         <Col>
                             <textarea

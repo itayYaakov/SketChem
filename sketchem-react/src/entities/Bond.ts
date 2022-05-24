@@ -2,7 +2,7 @@ import { BondConstants } from "@constants/bond.constants";
 import { BondOrder, BondStereoKekule, EntityType, LayersNames } from "@constants/enum.constants";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
-import { KekuleUtils } from "@src/utils/KekuleUtils";
+import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";

@@ -38,8 +38,8 @@
     ],
     "exclude": [
         "./node_modules/",
+        "./public/kekule-js-dist",
         ".vscode",
-        // !!! TEMP
         "src/features/counter/",
         "./src/features/counter/*",
         "./src/features/to/",

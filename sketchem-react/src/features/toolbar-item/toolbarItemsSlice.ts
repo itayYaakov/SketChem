@@ -1,13 +1,25 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ToolbarItemState } from "@types";
+import { LoadFileAction, SaveFileAction, ToolbarItemState } from "@types";
 
-const initialState = { selectedToolbarItem: "", dialogWindow: "", fileContent: "" } as ToolbarItemState;
+const initialLoadFileAction = {
+    content: "",
+    format: "",
+    replace: false,
+} as LoadFileAction;
 
-interface LoadFileAction {
-    content: string;
-    format: string;
-    replace?: boolean;
-}
+const initialSaveFileAction = {
+    format: "",
+    isWaiting: false,
+    response: "",
+} as SaveFileAction;
+
+const initialState = {
+    selectedToolbarItem: "",
+    dialogWindow: "",
+    importContext: initialLoadFileAction,
+    exportContext: initialSaveFileAction,
+} as ToolbarItemState;
+
 const slice = createSlice({
     name: "toolbarItem",
     initialState,
@@ -22,7 +34,10 @@ const slice = createSlice({
             state.dialogWindow = action.payload;
         },
         load_file: (state: ToolbarItemState, action: PayloadAction<LoadFileAction>) => {
-            state.fileContent = action.payload.content;
+            state.importContext = action.payload;
+        },
+        save_file: (state: ToolbarItemState, action: PayloadAction<SaveFileAction>) => {
+            state.exportContext = action.payload;
         },
     },
 });
