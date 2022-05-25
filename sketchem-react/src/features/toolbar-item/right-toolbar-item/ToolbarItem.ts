@@ -2,8 +2,11 @@ import { Direction } from "@constants/enum.constants";
 
 import { ToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
+import { Charge } from "../tools";
 
 const toolbarItemsList: ToolbarItem[] = [
+    Charge.ChargePlus,
+    Charge.ChargeMinus,
     {
         name: "Empty 1",
         onMouseDown: () => {},

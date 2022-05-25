@@ -67,10 +67,10 @@ function SketchPad(props: Props) {
                 previousMouseLocation,
                 mouseDownLocation: mouseCurrentLocation,
                 mouseCurrentLocation,
-                mouseUpLocation: undefined,
+                mouseUpLocation: mouseCurrentLocation,
             } as MouseEventCallBackProperties;
 
-            const response = activeToolBar.current?.onMouseMove?.(args);
+            const response = activeToolBar.current?.onMouseClick?.(args);
             previousMouseLocation = mouseCurrentLocation;
         }
 
@@ -83,8 +83,8 @@ function SketchPad(props: Props) {
             const args = {
                 e,
                 canvas: svgRef.current,
-                mouseDownLocation,
                 previousMouseLocation,
+                mouseDownLocation,
                 mouseCurrentLocation: mouseDownLocation,
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;

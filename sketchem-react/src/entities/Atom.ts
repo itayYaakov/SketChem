@@ -25,19 +25,22 @@ export class Atom {
         center: Vector2.zero(),
     };
 
-    attributes: AtomAttributes;
+    private attributes: AtomAttributes;
 
     private backgroundRect: Rect | undefined;
 
     private backgroundCircle: Circle | undefined;
 
+    private chargeBackgroundCircle: Circle | undefined;
+
     private hoverCircle: Circle | undefined;
 
-    private text!: Text;
+    private symbolLabel: Text | undefined;
+
+    private chargeLabel: Text | undefined;
 
     private nodeObj: any;
 
-    // label: any;
     constructor(args: IAtom) {
         let id;
         let color;
@@ -102,11 +105,6 @@ export class Atom {
         return this.attributes.id;
     }
 
-    draw() {
-        // !!! MOVE TO REDUX ???
-        this.addAtomToCanvas();
-    }
-
     moveByDelta(delta: Vector2, ignoreNotifyBondsIds: number[] = []) {
         const newPosition = this.attributes.center.add(delta);
         this.moveTo(newPosition, ignoreNotifyBondsIds);
@@ -116,7 +114,8 @@ export class Atom {
         this.modifyTree(false);
         this.attributes.center = newPosition;
         this.modifyTree(true);
-        this.moveAtomOnCanvas();
+        // should be inside update attribues
+        this.draw();
         this.notifyConnectedBonds(ignoreNotifyBondsIds);
     }
 
@@ -156,51 +155,124 @@ export class Atom {
         });
     }
 
-    private addAtomToCanvas() {
-        const position = this.attributes.center;
+    // ! should be private
+    draw() {
+        this.drawLabel();
+        this.drawCharge();
+        this.drawHover();
+    }
 
-        // const element = ElementsData.elementsMap.get(this.attributes.symbol);
-        const { color } = this.attributes;
-        const textContent = this.attributes.symbol;
+    private drawLabel() {
+        this.symbolLabel =
+            this.symbolLabel ??
+            LayersUtils.getLayer(LayersNames.AtomLabelLabel)
+                .text("")
+                .addClass(styles.atoms_labels)
+                .font({
+                    // "font-weight": "bold",
+                    family: EditorConstants.atomFontSize,
+                    size: EditorConstants.atomFontSize,
+                    anchor: "middle",
+                })
+                .id(IdUtils.getAtomElemId(this.attributes.id));
 
-        this.text = LayersUtils.getLayer(LayersNames.AtomLabelText)
-            .text(textContent)
+        const { symbol, center, color } = this.attributes;
+
+        this.symbolLabel
+            .text(symbol)
             .font({
                 fill: color,
-                "font-weight": "bold",
-                family: EditorConstants.atomFontSize,
-                size: EditorConstants.atomFontSize,
-                anchor: "middle",
             })
-            .center(position.x, position.y)
-            .addClass(styles.atoms_labels)
-            .id(IdUtils.getAtomElemId(this.attributes.id));
+            .center(center.x, center.y);
 
-        const textBbox = this.text.bbox();
+        this.backgroundCircle =
+            this.backgroundCircle ??
+            LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+                .circle()
+                .fill("#ffffff")
+                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
-        this.backgroundCircle = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
-            .circle()
+        const textBbox = this.symbolLabel.bbox();
+
+        this.backgroundCircle
             .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1.1)
-            .fill("#ffffff")
-            .center(textBbox.cx, textBbox.cy)
-            .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
+            .center(textBbox.cx, textBbox.cy);
+    }
 
-        // this.backgroundRect = LayersUtils.getLayer(LayersNames.AtomLabelBackground)
-        //     .rect(textBbox.width * 1.1, textBbox.height * 1.1)
-        //     .fill("#ffffff")
-        //     // .center(position.x, position.y)
-        //     .move(textBbox.x, textBbox.y)
-        //     .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
+    private drawCharge() {
+        const { charge, center, color } = this.attributes;
 
-        this.hoverCircle = LayersUtils.getLayer(LayersNames.AtomLabelHover)
-            // .circle(Math.max(textBbox.width, textBbox.height) * 1.8)
-            .circle(AtomConstants.HoverRadius * 2)
-            // .fill({ color: "#0000ff", opacity: 0.2 })
-            .fill("none")
-            .stroke({ color: "#f06", opacity: 0.6, width: 5 })
-            .center(position.x, position.y)
-            .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle_hover`)
-            .hide();
+        if (charge === 0) {
+            this.chargeLabel?.hide();
+            return;
+        }
+
+        const absCharge = Math.abs(charge);
+
+        this.chargeLabel =
+            this.chargeLabel ??
+            LayersUtils.getLayer(LayersNames.AtomLabelCharge)
+                .text("")
+                .addClass(styles.atoms_labels)
+                .font({
+                    // "font-weight": "bold",
+                    family: EditorConstants.atomFontSize,
+                    size: EditorConstants.atomFontSize,
+                    anchor: "middle",
+                })
+                .id(IdUtils.getAtomElemId(this.attributes.id));
+
+        let text = "";
+        if (charge < 0) {
+            text = `${absCharge}-`;
+        } else {
+            text = `${absCharge}+`;
+        }
+
+        const labelTextBbox = this.symbolLabel!.bbox();
+
+        let chargeOffset = { x: labelTextBbox.width / 2, y: -labelTextBbox.height / 2 };
+
+        this.chargeLabel
+            .show()
+            .text(text)
+            .font({
+                fill: color,
+            })
+            .center(center.x, center.y)
+            .dmove(chargeOffset.x, chargeOffset.y);
+
+        let chargeTextBbox = this.chargeLabel.bbox();
+        chargeOffset = { x: chargeTextBbox.width / 2, y: 0 };
+
+        this.chargeLabel.dmove(chargeOffset.x, chargeOffset.y);
+
+        chargeTextBbox = this.chargeLabel.bbox();
+        this.chargeBackgroundCircle =
+            this.chargeBackgroundCircle ??
+            LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+                .circle()
+                .fill("#ffffff")
+                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle_charge`);
+
+        this.chargeBackgroundCircle
+            .radius(Math.max(chargeTextBbox.width, chargeTextBbox.height) / 2)
+            .center(chargeTextBbox.cx, chargeTextBbox.cy);
+    }
+
+    private drawHover() {
+        const { center } = this.attributes;
+
+        this.hoverCircle =
+            this.hoverCircle ??
+            LayersUtils.getLayer(LayersNames.AtomLabelHover)
+                .circle()
+                .fill("none")
+                .stroke({ color: "#f06", opacity: 0.6, width: 5 })
+                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle_hover`)
+                .hide();
+
+        this.hoverCircle.radius(AtomConstants.HoverRadius).center(center.x, center.y);
     }
 
     select(isSelected: boolean) {
@@ -219,36 +291,30 @@ export class Atom {
     }
 
     getCenter() {
-        return this.attributes.center;
+        return this.attributes.center.clone();
     }
 
-    private moveAtomOnCanvas() {
-        const position = this.attributes.center;
+    getAttributes() {
+        // return a copy of attributes
+        return { ...this.attributes };
+    }
 
-        // const element = ElementsData.elementsMap.get(this.attributes.symbol);
-        const { color } = this.attributes;
-        const textContent = this.attributes.symbol;
+    updateAttributes(newAttributes: Partial<AtomAttributes>) {
+        this.attributes = { ...this.attributes, ...newAttributes };
 
-        // ??? find a better option
-        if (this.text.text() !== textContent) {
-            this.text.clear();
-            this.text.text(textContent);
-            this.text.font({ fill: color });
+        const moved = newAttributes.center !== undefined;
+        const redrawCharge = newAttributes.charge !== undefined || moved;
+        const redrawLabel = newAttributes.charge !== undefined || newAttributes.symbol !== undefined || moved;
+
+        if (redrawCharge) {
+            this.drawCharge();
         }
-
-        this.text.center(position.x, position.y);
-
-        const textBbox = this.text.bbox();
-
-        const radius = (Math.max(textBbox.width, textBbox.height) / 2) * 1.1;
-        this.backgroundCircle?.radius(radius).center(textBbox.cx, textBbox.cy);
-
-        // this.backgroundRect
-        //     ?.width(textBbox.width * 1.1)
-        //     .height(textBbox.height * 1.1)
-        //     .move(textBbox.x, textBbox.y);
-
-        this.hoverCircle?.center(position.x, position.y);
+        if (redrawLabel) {
+            this.drawLabel();
+        }
+        // if (moved) {
+        //     this.drawLabel();
+        // }
     }
 
     static generateNewId() {

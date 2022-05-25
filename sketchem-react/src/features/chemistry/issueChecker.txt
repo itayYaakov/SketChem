@@ -77,3 +77,15 @@ _getAllowedMaxBondOrder = function(atom)
     }
     return result;
 }
+
+In kekule:
+    this.valence = valence
+    this.implicitH = hyd
+    if (this.implicitH < 0) {
+      this.valence = conn
+      this.implicitH = 0
+      this.badConn = true
+      return false
+    }
+    return true
+  }

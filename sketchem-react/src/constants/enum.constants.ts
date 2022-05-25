@@ -40,7 +40,8 @@ export enum LayersNames {
     Bond = "bond",
     AtomLabelBackground = "atom_label_background",
     AtomLabelHover = "atom_label_hover",
-    AtomLabelText = "atom_label_text",
+    AtomLabelLabel = "atom_label_label",
+    AtomLabelCharge = "atom_label_charge",
     General = "general",
     Selection = "selection",
 }

@@ -3,6 +3,7 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { BondConstants } from "@constants/bond.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
+import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
@@ -131,12 +132,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
         const atomMaxDistance = AtomConstants.SelectDistance;
         const bondMaxDistance = BondConstants.SelectDistance;
-        const Neighbors = 1;
+        const NeighborsToFind = 1;
         const { atomsTree, bondsTree, knnFromMultipleMaps } = EntitiesMapsStorage;
 
+        // !! can be removed later
         const startTime = performance.now();
 
-        const closetSomethings = knnFromMultipleMaps([atomsTree, bondsTree], mouseDownLocation, Neighbors, [
+        const closetSomethings = knnFromMultipleMaps([atomsTree, bondsTree], mouseDownLocation, NeighborsToFind, [
             atomMaxDistance,
             bondMaxDistance,
         ]);
@@ -166,13 +168,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
                     this.selectBond(bondId);
                 }
             }
-
-            const endTime = performance.now();
-            console.log("took=", endTime - startTime, "ms");
-            console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
         } else {
             this.selectionMode = SelectionMode.Empty;
         }
+
+        // !! can be removed later
+        const endTime = performance.now();
+        console.log("took=", endTime - startTime, "ms");
+        console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
 
         // for testing:
         // const { mouseDownLocation, canvas } = eventHolder;
@@ -235,8 +238,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const { mouseCurrentLocation, previousMouseLocation, mouseDownLocation } = eventHolder;
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
         // console.log("distance=", distance);
-        // !!! use constant distance
-        if (distance < 10) {
+
+        if (distance < ToolsConstants.ValidMouseMoveDistance) {
             return;
         }
 
