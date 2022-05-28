@@ -2,6 +2,7 @@
     "name": "sketchem-react",
     "version": "0.1.0",
     "private": true,
+    "homepage": ".",
     "dependencies": {
         "@craco/craco": "^6.4.3",
         "@reduxjs/toolkit": "^1.8.0",
@@ -41,6 +42,7 @@
     },
     "scripts": {
         "start": "craco start",
+        "set_github_pages": "git subtree push --prefix sketchem-react/build origin gh-pages",
         "pretty": "yarn run lint_fix && yarn run prettier:write",
         "build": "yarn run lint_fix && yarn run prettier:write && craco build",
         "test": "craco test",
