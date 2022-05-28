@@ -6,14 +6,14 @@ $toolbar-max-size: 96%;
     position: relative;
     display: grid;
     grid-template-areas:    "top top top"
-                            "left sketchpad right"
+                            "left draw right"
                             "bottom bottom bottom";
     grid-template-rows: auto minmax($toolbar-min-size, $toolbar-max-size) auto;
     grid-template-columns: auto minmax($toolbar-min-size, $toolbar-max-size) auto;
 }
   
-.sketchpad {
-grid-area: sketchpad;
+.draw {
+grid-area: draw;
 }
 
 .top {

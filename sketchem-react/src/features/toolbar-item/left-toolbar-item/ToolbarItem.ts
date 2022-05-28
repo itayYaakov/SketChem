@@ -4,11 +4,12 @@ import { useAppDispatch } from "@app/hooks";
 import { store } from "@app/store";
 import { Direction } from "@constants/enum.constants";
 
+import DebugTools from "../debug_tools";
 import { ToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
 // !!! delete
 import { actions } from "../toolbarItemsSlice";
-import { bondToolBarItems } from "../tools";
+import { bondToolBarItems, Chain } from "../tools";
 
 let i = 0;
 const toolbarItemsList: ToolbarItem[] = [
@@ -17,6 +18,7 @@ const toolbarItemsList: ToolbarItem[] = [
     bondToolBarItems.tripleBond,
     bondToolBarItems.wedgeBackBond,
     bondToolBarItems.wedgeFrontBond,
+    Chain,
     {
         name: "Atom",
         onMouseDown: () => {},
@@ -43,6 +45,8 @@ const toolbarItemsList: ToolbarItem[] = [
         onMouseUp: () => {},
         keyboardKeys: ["A"],
     } as ToolbarItem,
+    DebugTools.DrawAtoms,
+    DebugTools.DrawBonds,
 ];
 
 const props: IToolbarItemsProps = {

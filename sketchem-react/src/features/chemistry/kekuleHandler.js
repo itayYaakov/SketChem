@@ -97,7 +97,7 @@ const drawMol = (mol) => {
 
 const drawMolOneTime = (fileContent) => {
     if (!fileContent) return;
-    const mol = KekuleUtils.getKekule().IO.loadFormatData(fileContent, "mol");
+    const mol = KekuleUtils.importMoleculeFromFile(fileContent, "mol");
     drawMol(mol);
 };
 

@@ -35,7 +35,8 @@ export function ToolbarItems(props: Props) {
     const dispatch = useAppDispatch();
     const { toolbarItemsList } = props;
     const { direction } = props;
-    const { className } = props;
+    let { className } = props;
+    className = className ?? "";
     const thisClassName: string = `toolbar-${Direction[direction].toLowerCase()}`;
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')

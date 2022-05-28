@@ -36,6 +36,8 @@ class PointRBush extends RBush<NamedPoint> {
     }
 }
 
+export type { PointRBush };
+
 // maximum number of entries in a tree node. 9 (used by default) is a reasonable
 // choice for most applications.Higher value means faster insertion and slower search,
 // and vice versa

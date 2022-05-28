@@ -16,7 +16,7 @@ module.exports = {
     // !!! temp
     ignorePatterns: [
         "build/*",
-        "public/kekule-js-dist",
+        "public/*",
         "src/features/counter/*",
         "src/features/to/",
         "src/_actions/user.action.ts",

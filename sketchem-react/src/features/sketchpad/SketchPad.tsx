@@ -1,17 +1,9 @@
-/* eslint-disable react/default-props-match-prop-types */
-/* eslint-disable react/require-default-props */
-/* eslint-disable no-unused-vars */
-// import "./svg.panzoom";
-// import "src/features/sketchpad/svg.panzoom.js.d.ts";
-// eslint-disable-next-line import/extensions
-// import "./svg.panzoom.js";
+// !!! replace with my custom file
 import "./svgpanzoom";
 
-// !!! replace with my custom file
-// import "@svgdotjs/svg.panzoom.js";
+import { useWindowSize } from "@app/resizeHook";
 import { getToolbarItem } from "@app/selectors";
-import { Direction, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
-import { CanvasObject } from "@features/shared/CanvasObject";
+import { Direction, LayersNames, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
 import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
 import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
 import { LayersUtils } from "@src/utils/LayersUtils";
@@ -20,6 +12,7 @@ import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
+// import panzoom, { PanZoom } from "panzoom";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
@@ -38,15 +31,16 @@ function getBackgroundColor(stringInput: string): string {
 
 function SketchPad(props: Props) {
     const divDomElement = useRef<HTMLDivElement>(null!);
-    const svgDomElement = useRef<HTMLDivElement>(null!);
     const activeToolBar = useRef<ActiveToolbarItem>(null!);
+    const initialZoomRatio = useRef<number>(0);
     activeToolBar.current = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
 
     // const color = useRef<string>(getBackgroundColor(""));
 
     const svgRef = useRef<Svg>(null!);
+    // const panzoomRef = useRef<PanZoom>(null!);
 
-    const mouseEventsSetListeners = (function mouseEventsHandler() {
+    const setMouseEventsListeners = (function mouseEventsHandler() {
         let previousMouseLocation: Vector2 | undefined;
         let mouseDownLocation: Vector2 | undefined;
         let mouseUpLocation: Vector2 | undefined;
@@ -167,54 +161,112 @@ function SketchPad(props: Props) {
         return setListeners;
     })();
 
-    function setup() {
-        // const draw = SVG().addTo(divDomElement.current).size("100%", "100%").panZoom({ zoomMin: 1, zoomMax: 1.1 });
-        const draw = SVG()
-            .addTo(divDomElement.current)
-            // .size("100%", "100%")
-            .size("100%", "100%")
-            .panZoom({
-                // wheelZoom: false,
-                zoomMin: 0.1,
-                zoomMax: 4,
-                zoomFactor: 0.1,
-                // {top, left, right, bottom}
-                // margins: { top: 0, left: 0, right: 3000, bottom: 3000 },
-                margins: { top: 0, left: 0, right: 100, bottom: 100 },
-                wheelZoomDeltaModeLinePixels: 9,
-                wheelZoomDeltaModeScreenPixels: 27,
-                panButton: 1,
-                // panning: false,
-            })
-            .viewbox(0, 0, 2000, 2000)
-            .zoom(1);
+    function resizeEvent() {
+        // return;
+        const pixelRatio = Math.round(window.devicePixelRatio * 100);
+        if (svgRef.current.viewbox().height === 0) {
+            const svgBoundRect = svgRef.current.node.getBoundingClientRect();
+            const ratio = svgBoundRect.width / svgBoundRect.height;
+            const viewBoxHeight = 1000;
+            const viewBoxWidth = Math.ceil(viewBoxHeight * ratio * 1.01);
+            svgRef.current.viewbox(0, 0, viewBoxWidth, viewBoxHeight);
+            initialZoomRatio.current = pixelRatio;
+            console.log("A The zomm level is:", svgRef.current.zoom());
+            svgRef.current.zoom(1);
+            console.log("B The zomm level is:", svgRef.current.zoom());
+            return;
+        }
+        console.log("C The zomm level is:", svgRef.current.zoom());
+        svgRef.current.zoom(pixelRatio / initialZoomRatio.current);
+        console.log("D The zomm level is:", svgRef.current.zoom());
+        // draw.attr({ preserveAspectRatio: "xMaxYMax meet" });
+    }
 
-        const viewBox = draw.viewbox();
-        // draw.viewbox(0, 0, viewBox.width + viewBox.x, viewBox.height + viewBox.y);
-        draw.viewbox(0, 0, viewBox.width, viewBox.height);
-
-        // .viewbox(0, 0, 2000, 2000);
+    function setupSvg() {
+        console.log("I was set up svg");
+        const draw = SVG().addTo(divDomElement.current).size("100%", "100%");
         svgRef.current = draw;
-        CanvasObject.set(draw);
-        // const width = Number(draw.width().valueOf());
-        // const height = Number(draw.height().valueOf());
-        SetDefs(draw);
-        LayersUtils.setLayers(draw);
+        draw.addClass(clsx(styles.sketchpad));
+
+        resizeEvent();
+
+        // const svgBoundRect = svgRef.current.node.getBoundingClientRect();
+        // const ratio = svgBoundRect.width / svgBoundRect.height;
+        // const viewBoxHeight = 1000;
+        // const viewBoxWidth = Math.ceil(viewBoxHeight * ratio * 1.01);
+        // draw.viewbox(0, 0, viewBoxWidth, viewBoxHeight);
+
+        draw.panZoom({
+            // wheelZoom: false,
+            zoomMin: 0.2,
+            zoomMax: 20,
+            zoomFactor: 0.05,
+            // {top, left, right, bottom}
+            // margins: { top: 0, left: 0, right: 3000, bottom: 3000 },
+            // wheelZoomDeltaModeLinePixels: 9,
+            // wheelZoomDeltaModeScreenPixels: 27,
+            panButton: 1,
+            // panning: false,
+        });
+
+        // const vbox = draw.viewbox();
+        // const factor = 1.03;
+        // const xMin = vbox.x * factor;
+        // const xMax = vbox.x2 / factor;
+        // const yMin = vbox.y * factor;
+        // const yMax = vbox.y2 / factor;
+
+        // draw.rect(xMax - xMin, yMax - yMin)
+        //     .move(xMin, yMin)
+        //     .stroke({ color: "#00ff00", width: 10 });
+
+        // draw.rect(80, 80).move(50, 50).fill({ color: "#0000cd" });
+
+        // draw.line(xMin, yMin, xMin, yMax).stroke({ color: "#00ff00", width: 10 });
+        // draw.line(xMin, yMin, xMax, yMin).stroke({ color: "#dd3f1b", width: 10 });
+        // draw.line(xMin, yMax, xMax, yMax).stroke({ color: "#00aaff", width: 10 });
+        // draw.line(xMax, yMin, xMax, yMax).stroke({ color: "#00fbcd", width: 10 });
+        // draw.line(20, 20, 20, 3980).stroke({ color: "#00ff00", width: 10 });
+        // draw.line(20, 20, 3980, 20).stroke({ color: "#dd3f1b", width: 10 });
+        // draw.line(20, 3980, 3980, 3980).stroke({ color: "#00aaff", width: 10 });
+        // draw.line(3980, 4, 3980, 3980).stroke({ color: "#00fbcd", width: 10 });
+        // const draw = SVG().addTo(divDomElement.current).size("100%", "100%").zoom(1);
+
+        // svgRef.current.css({ overflow: "hidden", position: "relative" });
+
+        setMouseEventsListeners(svgRef.current, true);
+
         function unmount() {
-            mouseEventsSetListeners(svgRef.current, false);
+            setMouseEventsListeners(svgRef.current, false);
             divDomElement?.current?.removeChild(svgRef.current.node);
         }
-        mouseEventsSetListeners(svgRef.current, true);
 
         return unmount;
     }
 
-    useEffect(setup, []);
+    useEffect(setupSvg, []);
+    useEffect(() => SetDefs(svgRef.current), []);
+    useEffect(() => LayersUtils.setLayers(svgRef.current), []);
+    useEffect(resizeEvent, [useWindowSize()]);
+    // const size = useWindowSize();
 
     // console.log(`toolbarname=${activeToolBar.current?.name} inside SketchPad!!`);
     // color.current = getBackgroundColor(activeToolBar.current?.name ?? "");
-    // console.log(color.current);
-    return <div ref={divDomElement} className={clsx(styles.sketchpad, "h-100")} />;
+
+    return (
+        // <div ref={divDomElement} className="w-100 h-100">
+        //     {/* <svg height="100%" width="100%" className={clsx(styles.sketchpad)} /> */}
+        // </div>
+        <div ref={divDomElement} className="w-100 h-100">
+            {/* <svg
+                // height="100%"
+                // width="100%"
+                preserveAspectRatio="xMinYMin slice"
+                viewBox="0 0 1000 1000"
+                className={clsx(styles.sketchpad)}
+            /> */}
+        </div>
+    );
 }
 
 SketchPad.defaultProps = {

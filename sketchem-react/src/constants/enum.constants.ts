@@ -46,6 +46,13 @@ export enum LayersNames {
     Selection = "selection",
 }
 
+export enum MouseMode {
+    Default = -1,
+    EmptyPress = 1,
+    atomPressed,
+    bondPressed,
+}
+
 export enum BondOrder {
     Single = 1,
     Double = 2,

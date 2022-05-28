@@ -168,7 +168,10 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             }
         } else {
             this.selectionMode = SelectionMode.Empty;
+            this.resetSelection();
         }
+
+        this.doAction();
 
         // !! can be removed later
         const endTime = performance.now();
@@ -249,7 +252,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
             if (onlyOneAtom) {
                 SelectTemplate.selectedAtoms.forEach((atom) => {
-                    atom.moveTo(mouseCurrentLocation);
+                    atom.updateAttributes({ center: mouseCurrentLocation });
                 });
             } else if (onlyOneBond) {
                 SelectTemplate.selectedBonds.forEach((bond) => {
@@ -309,6 +312,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             this.selectBond(element.id);
         });
 
+        this.doAction();
+
         // for testing
         // this.arrayy.forEach((cir) => {
         //     cir.fill("#ff00aa");
@@ -350,9 +355,11 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     abstract updateShape(eventHolder: MouseEventCallBackProperties): void;
 
     abstract removeShape(): void;
+
+    doAction(): void {}
 }
 
-class SimpleSelect extends SelectTemplate {
+export class SimpleSelect extends SelectTemplate {
     rect: Rect | undefined;
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {

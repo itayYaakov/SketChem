@@ -41,6 +41,8 @@ export class Atom {
 
     private nodeObj: any;
 
+    private lastTreeNode: NamedPoint | undefined;
+
     constructor(args: IAtom) {
         let id;
         let color;
@@ -71,15 +73,34 @@ export class Atom {
     }
 
     private modifyTree(add: boolean = true) {
-        const entry = {
-            id: this.attributes.id,
-            point: this.attributes.center,
-            entityType: EntityType.Atom,
-        } as NamedPoint;
         if (add) {
-            EntitiesMapsStorage.atomsTree.insert(entry);
+            this.lastTreeNode = {
+                id: this.attributes.id,
+                point: this.attributes.center,
+                entityType: EntityType.Atom,
+            };
+            EntitiesMapsStorage.atomsTree.insert(this.lastTreeNode);
         } else {
-            EntitiesMapsStorage.atomsTree.remove(entry);
+            if (!this.lastTreeNode) return;
+            EntitiesMapsStorage.atomsTree.remove(this.lastTreeNode);
+
+            // for debugging
+            /* 
+            const treeBefore = EntitiesMapsStorage.atomsTree.all();
+            const treeSizeBefore = treeBefore.length;
+            console.log("Atoms tree size before remove = ", treeSizeBefore);
+            EntitiesMapsStorage.atomsTree.remove(this.lastTreeNode);
+            const treeAfter = EntitiesMapsStorage.atomsTree.all();
+            const treeSizeAfter = treeAfter.length;
+            console.log("Atoms tree size after remove = ", treeSizeAfter);
+            if (treeSizeBefore === treeSizeAfter) {
+                console.error("Atoms tree remove error!");
+                EntitiesMapsStorage.atomsTree.remove(this.lastTreeNode);
+                // const treeAfter2 = EntitiesMapsStorage.atomsTree.all();
+                // const treeSizeAfter2 = treeAfter2.length;
+                // console.log("Atoms tree size after doube remove = ", treeSizeAfter2);
+            }
+            */
         }
     }
 
@@ -93,11 +114,9 @@ export class Atom {
         this.modifyTree(true);
     }
 
-    // !!! why no usage?
-    private removeInstanceFromMap() {
+    private removeInstanceFromMapAndTree() {
         const map = EntitiesMapsStorage.atomsMap;
-        if (map.has(this.attributes.id)) return;
-        map.delete(this.attributes.id);
+        if (map.has(this.attributes.id)) map.delete(this.attributes.id);
         this.modifyTree(false);
     }
 
@@ -107,22 +126,13 @@ export class Atom {
 
     moveByDelta(delta: Vector2, ignoreNotifyBondsIds: number[] = []) {
         const newPosition = this.attributes.center.addNew(delta);
-        this.moveTo(newPosition, ignoreNotifyBondsIds);
-    }
-
-    moveTo(newPosition: Vector2, ignoreNotifyBondsIds: number[] = []) {
-        this.modifyTree(false);
-        this.attributes.center = newPosition;
-        this.modifyTree(true);
-        // should be inside update attribues
-        this.draw();
-        this.notifyConnectedBonds(ignoreNotifyBondsIds);
+        this.updateAttributes({ center: newPosition }, ignoreNotifyBondsIds);
     }
 
     getConnectedBonds() {
         const { bondsMap } = EntitiesMapsStorage;
         const connectedBonds = new Set<Bond>();
-        const connectedBondsKekule: any[] | [] = this.nodeObj.getLinkedBonds();
+        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
 
         connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
@@ -135,7 +145,7 @@ export class Atom {
 
     getConnectedBondsIds() {
         const connectedBondsIds = new Set<number>();
-        const connectedBondsKekule: any[] | [] = this.nodeObj.getLinkedBonds();
+        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
 
         connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
@@ -153,6 +163,24 @@ export class Atom {
             }
             bond.movedByAtomId(this.attributes.id);
         });
+    }
+
+    private removeConnectedBonds() {
+        const ignoreAtomRemove: number[] = [this.getId()];
+        const connectedBonds = this.getConnectedBonds();
+        console.log("Remove atom", this.getId(), "connected bonds", ...connectedBonds);
+        connectedBonds.forEach((bond: Bond) => {
+            bond?.destroy(ignoreAtomRemove);
+        });
+    }
+
+    private undraw() {
+        this.backgroundRect?.remove();
+        this.backgroundCircle?.remove();
+        this.chargeBackgroundCircle?.remove();
+        this.hoverCircle?.remove();
+        this.symbolLabel?.remove();
+        this.chargeLabel?.remove();
     }
 
     // ! should be private
@@ -308,23 +336,38 @@ export class Atom {
         return { ...this.attributes };
     }
 
-    updateAttributes(newAttributes: Partial<AtomAttributes>) {
+    updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
         this.attributes = { ...this.attributes, ...newAttributes };
 
         const moved = newAttributes.center !== undefined;
         const redrawCharge = newAttributes.charge !== undefined || moved;
         const redrawLabel = newAttributes.charge !== undefined || newAttributes.symbol !== undefined || moved;
 
-        if (redrawCharge) {
-            this.drawCharge();
-        }
-        if (redrawLabel) {
-            this.drawLabel();
-        }
         if (moved) {
+            this.modifyTree(false);
             // !!! remove kekule update in here
             this.nodeObj.setCoord2D({ x: newAttributes.center!.x, y: newAttributes.center!.y });
-            //     this.drawLabel();
+            this.draw();
+            this.modifyTree(true);
+            this.notifyConnectedBonds(ignoreNotifyBondsIds);
+        } else {
+            if (redrawCharge) {
+                this.drawCharge();
+            }
+            if (redrawLabel) {
+                this.drawLabel();
+            }
+        }
+    }
+
+    destroy() {
+        if (this.nodeObj) {
+            this.undraw();
+            this.removeConnectedBonds();
+
+            this.removeInstanceFromMapAndTree();
+            KekuleUtils.destroy(this.nodeObj);
+            this.nodeObj = undefined;
         }
     }
 

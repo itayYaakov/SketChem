@@ -62,7 +62,7 @@ function App() {
                 <ToolbarItems {...LeftToolbarProps} />
             </div>
 
-            <div className={styles.sketchpad}>
+            <div className={styles.draw}>
                 <SketchPad />
             </div>
 

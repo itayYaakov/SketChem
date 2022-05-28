@@ -21,15 +21,15 @@ export class Bond {
         stereo: BondStereoKekule.NONE,
     };
 
-    attributes: BondAttributes;
+    private attributes: BondAttributes;
 
-    elem: Rect | undefined;
+    private elem: Rect | undefined;
 
-    startAtom: Atom;
+    startAtom: Atom | undefined;
 
-    endAtom: Atom;
+    endAtom: Atom | undefined;
 
-    center!: Vector2;
+    private center!: Vector2;
 
     centralMarks: Circle[] = [
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
@@ -38,6 +38,8 @@ export class Bond {
     ];
 
     connectorObj: any;
+
+    private lastTreeNode: NamedPoint | undefined;
 
     constructor(args: IBond) {
         let type: BondOrder;
@@ -63,13 +65,18 @@ export class Bond {
 
         this.attributes = { ...Bond.DefaultAttributes, id, order: type, stereo, atomStartId, atomEndId };
         this.connectorObj = this.connectorObj ?? KekuleUtils.registerBondFromAttributes(this.attributes);
-        const { getAtomById } = EntitiesMapsStorage;
-        this.startAtom = getAtomById(this.attributes.atomStartId);
-        this.endAtom = getAtomById(this.attributes.atomEndId);
 
+        this.updateAtomsReference(this.attributes);
         this.setBondCenter();
-
         this.addInstanceToMap();
+    }
+
+    updateAtomsReference(attributes?: Partial<BondAttributes>) {
+        if (!attributes) return;
+
+        const { getAtomById } = EntitiesMapsStorage;
+        if (this.attributes.atomStartId) this.startAtom = getAtomById(this.attributes.atomStartId);
+        if (this.attributes.atomEndId) this.endAtom = getAtomById(this.attributes.atomEndId);
     }
 
     setBondCenter() {
@@ -90,30 +97,33 @@ export class Bond {
     //     this.center = new Vector2((bbox.x + bbox.x2) / 2, (bbox.y + bbox.y2) / 2);
     // }
 
-    modifyTree(add: boolean = true) {
-        const entry = { id: this.attributes.id, point: this.center, entityType: EntityType.Bond } as NamedPoint;
+    private modifyTree(add: boolean = true) {
         if (add) {
-            EntitiesMapsStorage.bondsTree.insert(entry);
+            this.lastTreeNode = {
+                id: this.attributes.id,
+                point: this.center,
+                entityType: EntityType.Bond,
+            };
+            EntitiesMapsStorage.bondsTree.insert(this.lastTreeNode);
         } else {
-            EntitiesMapsStorage.bondsTree.remove(entry);
+            if (!this.lastTreeNode) return;
+            EntitiesMapsStorage.bondsTree.remove(this.lastTreeNode);
         }
     }
 
     addInstanceToMap() {
         const map = EntitiesMapsStorage.bondsMap;
         if (map.has(this.attributes.id)) {
-            console.error("Object already exists!");
+            throw new Error(`Bond object already exists! ${this.attributes.id}`);
         }
-        if (map.has(this.attributes.id)) return;
         map.set(this.attributes.id, this);
         this.modifyTree(true);
     }
 
-    removeInstanceFromMap() {
+    private removeInstanceFromMapAndTree() {
         const map = EntitiesMapsStorage.bondsMap;
-        if (!map.has(this.attributes.id)) return;
-        map.delete(this.attributes.id);
-        this.modifyTree(true);
+        if (map.has(this.attributes.id)) map.delete(this.attributes.id);
+        this.modifyTree(false);
     }
 
     getId() {
@@ -121,11 +131,12 @@ export class Bond {
     }
 
     move() {
+        if (!this.startAtom || !this.endAtom) return;
+
         const startPosition = this.startAtom.getCenter();
         const endPosition = this.endAtom.getCenter();
 
         const angle = VectorUtils.radToDeg(endPosition.angle(startPosition));
-        // if (angle === 0 || angle === 90) return;
         const distance = startPosition.distance(endPosition);
 
         this.elem =
@@ -143,6 +154,8 @@ export class Bond {
         });
 
         this.setBondCenter();
+
+        // only draw circles
 
         if (this.centralMarks[1].cx() === 0) {
             this.centralMarks[1].show().radius(BondConstants.SelectDistance).fill("#ff0000").opacity(0.1);
@@ -167,6 +180,11 @@ export class Bond {
         this.centralMarks[0].cx(startPosition.x).cy(startPosition.y);
 
         this.centralMarks[2].cx(endPosition.x).cy(endPosition.y);
+    }
+
+    private undraw() {
+        this.elem?.remove();
+        this.centralMarks?.forEach((mark) => mark.remove());
     }
 
     draw() {
@@ -213,16 +231,30 @@ export class Bond {
 
     getConnectedAtoms() {
         const connectedAtoms = new Set<Atom>();
-        connectedAtoms.add(this.startAtom);
-        connectedAtoms.add(this.endAtom);
+        if (this.startAtom) connectedAtoms.add(this.startAtom);
+        if (this.endAtom) connectedAtoms.add(this.endAtom);
         return connectedAtoms;
     }
 
     getConnectedAtomsIds() {
         const connectedAtoms = new Set<number>();
-        connectedAtoms.add(this.startAtom.getId());
-        connectedAtoms.add(this.endAtom.getId());
+        if (this.startAtom) connectedAtoms.add(this.startAtom.getId());
+        if (this.endAtom) connectedAtoms.add(this.endAtom.getId());
         return connectedAtoms;
+    }
+
+    removeConnectedAtoms(ignoreAtomRemove: number[] = []) {
+        [this.startAtom, this.endAtom].forEach((atom) => {
+            if (atom?.getId() && ignoreAtomRemove.indexOf(atom.getId()) !== -1) return;
+            const atomNeighbors = atom?.getConnectedBondsIds().delete(this.attributes.id);
+
+            // delete connected atom only if he will stay orphan
+            if (!atomNeighbors) {
+                atom?.destroy();
+            }
+        });
+        this.startAtom = undefined;
+        this.endAtom = undefined;
     }
 
     movedByAtomId(movedAtomId?: number) {
@@ -238,22 +270,20 @@ export class Bond {
 
     moveByDelta(delta: Vector2, shouldNotify: boolean = true) {
         if (shouldNotify) {
-            this.startAtom.moveByDelta(delta, [this.attributes.id]);
-            this.endAtom.moveByDelta(delta, [this.attributes.id]);
+            this.startAtom?.moveByDelta(delta, [this.attributes.id]);
+            this.endAtom?.moveByDelta(delta, [this.attributes.id]);
         }
 
-        // this.modifyTree(false);
-        // this.modifyTree(true);
         this.movedByAtomId();
-        // this.attributes.center = newPosition;
     }
 
     getCenter() {
         return this.center;
     }
 
-    static getElementStringId(idNum: number) {
-        return IdUtils.getBondElemId(idNum);
+    getAttributes() {
+        // return a copy of attributes
+        return { ...this.attributes };
     }
 
     updateAttributes(newAttributes: Partial<BondAttributes>) {
@@ -263,10 +293,22 @@ export class Bond {
         const redraw = newAttributes.order !== undefined || newAttributes.stereo !== undefined;
 
         if (moved) {
+            this.updateAtomsReference(newAttributes);
             this.move();
         }
         if (redraw) {
             this.drawStereoAndOrder();
+        }
+    }
+
+    destroy(ignoreAtomRemove: number[] = []) {
+        if (this.connectorObj) {
+            this.undraw();
+            this.removeConnectedAtoms(ignoreAtomRemove);
+
+            this.removeInstanceFromMapAndTree();
+            KekuleUtils.destroy(this.connectorObj);
+            this.connectorObj = null;
         }
     }
 

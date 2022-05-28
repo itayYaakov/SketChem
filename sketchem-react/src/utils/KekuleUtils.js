@@ -4,6 +4,15 @@ import { EntitiesMapsStorage } from "@features/shared/storage";
 
 // Kekule.js is imported in ./public/index.html
 
+let chemDocument = 8;
+chemDocument = new Kekule.ChemDocument(1);
+const mol = new Kekule.Molecule();
+chemDocument.appendChild(mol);
+
+export function getChemDocument() {
+    return chemDocument;
+}
+
 export function getFileFormatsOptions(rawKekuleFormats) {
     // Example for rawKekuleFormat
     // {
@@ -48,6 +57,12 @@ export function getKekule() {
     return Kekule;
 }
 
+export function importMoleculeFromFile(file, format) {
+    const fileMol = Kekule.IO.loadFormatData(file, format);
+    chemDocument.appendChild(fileMol);
+    return fileMol;
+}
+
 export function enableBabel() {
     Kekule.OpenBabel.enable(); // .enableOpenBabelFormats();
     //  ! should take a few seconds, may be check if the following is true and create a callback:
@@ -66,6 +81,18 @@ export function getSupportedReadFormats() {
 export function getSupportedWriteFormats() {
     const formats = Kekule.IO.ChemDataWriterManager.getAllWritableFormats();
     return getFileFormatsOptions(formats);
+}
+
+export function getLinkedBonds(node) {
+    return node.getLinkedBonds();
+}
+
+export function isAtom(bond) {
+    return node.getLinkedBonds();
+}
+
+export function destroy(item) {
+    return item.finalize();
 }
 
 export function getNumericId(id) {
@@ -92,11 +119,14 @@ export function registerAtomFromAttributes(attributes) {
     // symbol: string;
     // color: string;
     const atom = new Kekule.Atom();
+    mol.appendNode(atom);
+
     atom.id = attributes.id;
     const { symbol, charge, center } = attributes;
     atom.setSymbol(symbol);
     atom.setCharge(charge);
     atom.setCoord2D(center.get());
+
     return atom;
 }
 
@@ -113,6 +143,8 @@ export function registerBondFromAttributes(attributes) {
     const endAtom = EntitiesMapsStorage.getAtomById(atomEndId).getKekuleNode();
 
     const bond = new Kekule.Bond();
+    mol.appendConnector(bond);
+
     bond.setId(id);
     bond.setBondOrder(order);
     bond.setConnectedObjs([startAtom, endAtom]);
