@@ -62,9 +62,10 @@ export class Bond {
         }
 
         this.attributes = { ...Bond.DefaultAttributes, id, order: type, stereo, atomStartId, atomEndId };
-        const { atomsMap } = EntitiesMapsStorage;
-        this.startAtom = EntitiesMapsStorage.getMapInstanceById(atomsMap, this.attributes.atomStartId);
-        this.endAtom = EntitiesMapsStorage.getMapInstanceById(atomsMap, this.attributes.atomEndId);
+        this.connectorObj = this.connectorObj ?? KekuleUtils.registerBondFromAttributes(this.attributes);
+        const { getAtomById } = EntitiesMapsStorage;
+        this.startAtom = getAtomById(this.attributes.atomStartId);
+        this.endAtom = getAtomById(this.attributes.atomEndId);
 
         this.setBondCenter();
 
@@ -76,8 +77,7 @@ export class Bond {
             this.center = Vector2.zero();
             return;
         }
-        const center = this.startAtom.getCenter().add(this.endAtom.getCenter());
-        this.center = center.scale(0.5);
+        this.center = this.startAtom.getCenter().addNew(this.endAtom.getCenter()).scaleSelf(0.5);
         // this.center.x -= BondConstants.padding / 2;
     }
 
@@ -120,15 +120,7 @@ export class Bond {
         return this.attributes.id;
     }
 
-    draw() {
-        // !!! MOVE TO REDUX ???
-        const result = this.addBondToCanvas();
-        if (!result) {
-            console.error("result=", result, "in Bond.ts");
-        }
-    }
-
-    private addBondToCanvas(): Rect | undefined {
+    move() {
         const startPosition = this.startAtom.getCenter();
         const endPosition = this.endAtom.getCenter();
 
@@ -136,28 +128,15 @@ export class Bond {
         // if (angle === 0 || angle === 90) return;
         const distance = startPosition.distance(endPosition);
 
-        const rect = LayersUtils.getLayer(LayersNames.Bond).rect(BondConstants.padding, distance);
-        if (this.attributes.stereo === BondStereoKekule.NONE) {
-            rect.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondOrder[this.attributes.order])));
-        } else {
-            console.log("stereo=", this.attributes.stereo, BondStereoKekule[this.attributes.stereo]);
-            rect.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondStereoKekule[this.attributes.stereo])));
-        }
+        this.elem =
+            this.elem ??
+            LayersUtils.getLayer(LayersNames.Bond).rect(0, 0).id(IdUtils.getBondElemId(this.attributes.id));
 
-        rect.move(startPosition.x, startPosition.y).id(IdUtils.getBondElemId(this.attributes.id));
+        this.elem.width(BondConstants.padding).height(distance);
 
-        switch (this.attributes.stereo) {
-            case BondStereoKekule.DOWN:
-            case BondStereoKekule.UP:
-                rect.attr("clip-path", IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.poly_clip_id)));
-                break;
+        this.elem.move(startPosition.x, startPosition.y);
 
-            default:
-                break;
-        }
-
-        rect.height(distance);
-        rect.transform({
+        this.elem.transform({
             translate: [-BondConstants.padding / 2, 0],
             origin: "top center",
             rotate: angle - 90,
@@ -165,41 +144,69 @@ export class Bond {
 
         this.setBondCenter();
 
-        this.centralMarks[1]
-            .show()
-            .radius(BondConstants.SelectDistance)
-            .cx(this.center.x)
-            .cy(this.center.y)
-            .fill("#ff0000");
+        if (this.centralMarks[1].cx() === 0) {
+            this.centralMarks[1].show().radius(BondConstants.SelectDistance).fill("#ff0000").opacity(0.1);
+        }
+        if (this.centralMarks[0].cx() === 0) {
+            this.centralMarks[0]
+                // .show()
+                .radius(4)
+                .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
+                .fill("#00ff00");
+        }
+        if (this.centralMarks[2].cx() === 0) {
+            this.centralMarks[2]
+                // .show()
+                .radius(4)
+                .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
+                .fill("#00ff00");
+        }
 
-        // this.centralMarks[0]
-        //     .show()
-        //     .radius(4)
-        //     .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
-        //     .fill("#00ff00");
+        this.centralMarks[1].cx(this.center.x).cy(this.center.y);
 
-        // this.centralMarks[2]
-        //     .show()
-        //     .radius(4)
-        //     .cx(this.endAtom.getCenter().x)
-        //     .cy(this.endAtom.getCenter().y)
-        //     .fill("#0000ff");
+        this.centralMarks[0].cx(startPosition.x).cy(startPosition.y);
 
-        return rect;
+        this.centralMarks[2].cx(endPosition.x).cy(endPosition.y);
+    }
+
+    draw() {
+        this.move();
+        this.drawStereoAndOrder();
+    }
+
+    drawStereoAndOrder() {
+        if (!this.elem) throw new Error("Rect is not defined");
+
+        if (this.attributes.stereo === BondStereoKekule.NONE) {
+            this.elem.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondOrder[this.attributes.order])));
+        } else {
+            this.elem.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondStereoKekule[this.attributes.stereo])));
+        }
+
+        switch (this.attributes.stereo) {
+            case BondStereoKekule.DOWN:
+            case BondStereoKekule.UP:
+                this.elem.attr("clip-path", IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.poly_clip_id)));
+                break;
+
+            default:
+                this.elem.attr("clip-path", "");
+        }
     }
 
     select(isSelected: boolean) {
-        const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
+        if (!this.elem) throw new Error("Rect is not defined");
+
         if (isSelected) {
-            rect.attr({ filter: IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.hoverFilter)) });
+            this.elem.attr({ filter: IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.hoverFilter)) });
 
             if (this.attributes.stereo === BondStereoKekule.UP) {
-                rect.attr({ "fill-opacity": 0.7 });
+                this.elem.attr({ "fill-opacity": 0.7 });
             }
         } else {
-            rect.attr({ filter: "" });
+            this.elem.attr({ filter: "" });
             if (this.attributes.stereo === BondStereoKekule.UP) {
-                rect.attr({ "fill-opacity": 1 });
+                this.elem.attr({ "fill-opacity": 1 });
             }
         }
     }
@@ -218,62 +225,14 @@ export class Bond {
         return connectedAtoms;
     }
 
-    private moveBondOnCanvas(movedAtomId?: number) {
-        // !!! remove this svg search
-        const rect: Rect | null = SVG(`#${IdUtils.getBondElemId(this.attributes.id)}`) as Rect;
-        if (!rect) {
-            console.error(
-                "rect is undefined!",
-                `#${IdUtils.getBondElemId(this.attributes.id)}`,
-                rect,
-                this.attributes.id
-            );
-            return;
-        }
-
-        if (rect == null) return;
-
-        const startPosition = this.startAtom.getCenter();
-        const endPosition = this.endAtom.getCenter();
-
-        rect.move(this.startAtom.getCenter().x, this.startAtom.getCenter().y);
-        // !!! I need this for reverse?
-        // if (movedAtomId) {
-        //     if (movedAtomId === this.startAtom.attributes.id) {
-        //         rect.move(this.startAtom.attributes.center.x, this.startAtom.attributes.center.y);
-        //     }
-        //     // if (movedAtomId === endAtom.attributes.id && movedAtomId > 1) {
-        //     //     rect.move(endAtom.attributes.center.x, endAtom.attributes.center.y);
-        //     // }
-        // }
-
-        const angle = VectorUtils.radToDeg(endPosition.angle(startPosition));
-        // if (angle === 0 || angle === 90) return;
-        const distance = startPosition.distance(endPosition);
-
-        rect.height(distance);
-        rect.transform({
-            translate: [-BondConstants.padding / 2, 0],
-            origin: "top center",
-            rotate: angle - 90,
-        });
-        this.setBondCenter();
-
-        this.centralMarks[1].cx(this.center.x).cy(this.center.y);
-
-        this.centralMarks[0].move(this.startAtom.getCenter().x, this.startAtom.getCenter().y);
-
-        this.centralMarks[2].cx(this.endAtom.getCenter().x).cy(this.endAtom.getCenter().y);
-    }
-
     movedByAtomId(movedAtomId?: number) {
         this.modifyTree(false);
-        this.moveBondOnCanvas(movedAtomId);
+        this.move();
         this.modifyTree(true);
     }
 
     moveTo(newPosition: Vector2, shouldNotify: boolean = true) {
-        const delta = newPosition.sub(this.center);
+        const delta = newPosition.subNew(this.center);
         this.moveByDelta(delta, shouldNotify);
     }
 
@@ -288,24 +247,6 @@ export class Bond {
         this.movedByAtomId();
         // this.attributes.center = newPosition;
     }
-    // moveTo(newPosition: Vector2, ignoreNotifyAtomsId: number[] = []) {
-    //     const delta = newPosition.sub(this.center);
-    //     this.moveByDelta(delta, ignoreNotifyAtomsId);
-    // }
-
-    // moveByDelta(delta: Vector2, ignoreNotifyAtomsId: number[] = []) {
-    //     if (!ignoreNotifyAtomsId.includes(this.startAtom.getId())) {
-    //         this.startAtom.moveByDelta(delta, [this.attributes.id]);
-    //     }
-    //     if (!ignoreNotifyAtomsId.includes(this.endAtom.getId())) {
-    //         this.endAtom.moveByDelta(delta, [this.attributes.id]);
-    //     }
-
-    //     // this.modifyTree(false);
-    //     // this.modifyTree(true);
-    //     this.movedByAtomId();
-    //     // this.attributes.center = newPosition;
-    // }
 
     getCenter() {
         return this.center;
@@ -313,6 +254,20 @@ export class Bond {
 
     static getElementStringId(idNum: number) {
         return IdUtils.getBondElemId(idNum);
+    }
+
+    updateAttributes(newAttributes: Partial<BondAttributes>) {
+        this.attributes = { ...this.attributes, ...newAttributes };
+
+        const moved = newAttributes.atomEndId !== undefined || newAttributes.atomStartId !== undefined;
+        const redraw = newAttributes.order !== undefined || newAttributes.stereo !== undefined;
+
+        if (moved) {
+            this.move();
+        }
+        if (redraw) {
+            this.drawStereoAndOrder();
+        }
     }
 
     static generateNewId() {

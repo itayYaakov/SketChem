@@ -100,7 +100,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         }
 
         const anchorCenter = anchorObject.getCenter();
-        delta = mouse.sub(anchorCenter);
+        delta = mouse.subNew(anchorCenter);
         return delta;
     }
 
@@ -113,16 +113,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     selectAtom(id: number) {
-        const { atomsMap } = EntitiesMapsStorage;
-        const atom = EntitiesMapsStorage.getMapInstanceById(atomsMap, id);
+        const atom = EntitiesMapsStorage.getAtomById(id);
         atom.select(true);
         // console.log("Selected Atom id=", id);
         SelectTemplate.selectedAtoms.set(id, atom);
     }
 
     selectBond(id: number) {
-        const { bondsMap } = EntitiesMapsStorage;
-        const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, id);
+        const bond = EntitiesMapsStorage.getBondById(id);
         bond.select(true);
         SelectTemplate.selectedBonds.set(id, bond);
     }
@@ -215,14 +213,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
         shouldMoveAtomsIds.forEach((atomId) => {
             const { atomsMap } = EntitiesMapsStorage;
-            const atom = EntitiesMapsStorage.getMapInstanceById(atomsMap, atomId);
+            const atom = EntitiesMapsStorage.getAtomById(atomId);
             shouldMoveAtoms.add(atom);
             // atom.moveByDelta(delta, movedBondsId);
         });
 
         shouldMoveBondsIds.forEach((bondId) => {
             const { bondsMap } = EntitiesMapsStorage;
-            const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, bondId);
+            const bond = EntitiesMapsStorage.getBondById(bondId);
             shouldMoveBonds.add(bond);
             // bond.moveByDelta(delta, false);
         });
@@ -380,7 +378,7 @@ class SimpleSelect extends SelectTemplate {
     updateShape(eventHolder: MouseEventCallBackProperties): void {
         if (!this.rect) return;
         const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
-        const diff = mouseCurrentLocation.sub(mouseDownLocation);
+        const diff = mouseCurrentLocation.subNew(mouseDownLocation);
         const width = Math.abs(diff.x);
         const height = Math.abs(diff.y);
 

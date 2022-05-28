@@ -1,3 +1,5 @@
+import { AtomConstants } from "@constants/atom.constants";
+import { BondConstants } from "@constants/bond.constants";
 import { EntityType } from "@constants/enum.constants";
 import type { Atom, Bond } from "@entities";
 import Vector2 from "@src/utils/mathsTs/Vector2";
@@ -52,8 +54,16 @@ function getMapInstanceById<Type>(map: Map<number, Type>, idNum: number): Type {
     return entity;
 }
 
+function getAtomById(idNum: number): Atom {
+    return getMapInstanceById(atomsMap, idNum);
+}
+
+function getBondById(idNum: number): Bond {
+    return getMapInstanceById(bondsMap, idNum);
+}
+
 function knnFromMultipleMaps(
-    trees: RBush<any>[],
+    trees: PointRBush[],
     point: Vector2,
     n?: number,
     maxDistances?: number[],
@@ -71,12 +81,46 @@ function knnFromMultipleMaps(
     return result;
 }
 
+function elementAtPoint(
+    point: Vector2,
+    tree: PointRBush,
+    maxDistance: number,
+    entityType: EntityType
+): NamedPoint | undefined {
+    const NeighborsToFind = 1;
+
+    const closetSomethings = knn(tree, point.x, point.y, NeighborsToFind, maxDistance);
+    const [closest] = closetSomethings;
+
+    if (!closest) return undefined;
+
+    const closestNode = closest.node as NamedPoint;
+
+    if (closestNode.entityType !== entityType) return undefined;
+
+    return closestNode;
+}
+
+function atomAtPoint(point: Vector2): NamedPoint | undefined {
+    const atomMaxDistance = AtomConstants.SelectDistance;
+    return elementAtPoint(point, atomsTree, atomMaxDistance, EntityType.Atom);
+}
+
+function bondAtPoint(point: Vector2): NamedPoint | undefined {
+    const bondMaxDistance = BondConstants.SelectDistance;
+    return elementAtPoint(point, bondsTree, bondMaxDistance, EntityType.Bond);
+}
+
 export const EntitiesMapsStorage = {
     atomsTree,
     bondsTree,
     atomsMap,
     bondsMap,
     getMapInstanceById,
+    getAtomById,
+    getBondById,
     knn,
     knnFromMultipleMaps,
+    atomAtPoint,
+    bondAtPoint,
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-dupe-class-members */
 /** **************************************************************************
 MIT License
 
@@ -67,22 +68,26 @@ export default class Vector2 {
 
     get = () => ({ x: this.x, y: this.y });
 
-    distance = (b: Vector2): number => this.sub(b).mag();
+    distance = (b: Vector2): number => this.subNew(b).mag();
 
-    sub = (a: Vector2): Vector2 => new Vector2(this.x - a.x, this.y - a.y);
+    subNew = (a: Vector2): Vector2 => new Vector2(this.x - a.x, this.y - a.y);
 
-    subSelf = (a: Vector2, b: Vector2) => {
-        this.x = a.x - b.x;
-        this.y = a.y - b.y;
+    subValues = (x: number, y: number): Vector2 => new Vector2(this.x - x, this.y - y);
+
+    subSelf = (a: Vector2) => {
+        this.x -= a.x;
+        this.y -= a.y;
+        return this;
     };
 
-    add = (a: Vector2): Vector2 => new Vector2(this.x + a.x, this.y + a.y);
+    addNew = (a: Vector2): Vector2 => new Vector2(this.x + a.x, this.y + a.y);
 
     addValues = (x: number, y: number): Vector2 => new Vector2(this.x + x, this.y + y);
 
-    addSelf = (a: Vector2, b: Vector2) => {
-        this.x = a.x + b.x;
-        this.y = a.y + b.y;
+    addSelf = (a: Vector2) => {
+        this.x += a.x;
+        this.y += a.y;
+        return this;
     };
 
     static min = (a: Vector2, b: Vector2) => {
@@ -104,18 +109,65 @@ export default class Vector2 {
     minSelf = (b: Vector2) => {
         if (b.x < this.x) this.x = b.x;
         if (b.y < this.y) this.y = b.y;
+        return this;
     };
 
     maxSelf = (b: Vector2) => {
         if (b.x > this.x) this.x = b.x;
         if (b.y > this.y) this.y = b.y;
+        return this;
     };
 
-    scale = (f: number) => new Vector2(this.x * f, this.y * f);
+    scaleNew = (f: number) => new Vector2(this.x * f, this.y * f);
+
+    scaleSelf = (f: number) => {
+        this.x *= f;
+        this.y *= f;
+        return this;
+    };
 
     clone = () => new Vector2(this.x, this.y);
 
-    normalize = () => this.scale(1.0 / this.mag());
+    normalize = () => this.scaleNew(1.0 / this.mag());
+
+    // normalize = () => this.scaleNew(1.0 / this.mag());
+
+    rotate(angle: number): Vector2 {
+        if (angle === 0) return this.clone();
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const newX = this.x * cos - this.y * sin;
+        const newY = this.x * sin + this.y * cos;
+
+        return new Vector2(newX, newY);
+    }
+
+    rotateDegSelf(angle: number) {
+        if (angle === 0) return this;
+
+        const cos = Math.cos((angle / 180) * Math.PI);
+        const sin = Math.sin((angle / 180) * Math.PI);
+
+        const newX = this.x * cos - this.y * sin;
+        const newY = this.x * sin + this.y * cos;
+        this.x = newX;
+        this.y = newY;
+        return this;
+    }
+
+    rotateRadSelf(angle: number) {
+        if (angle === 0) return this;
+
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const newX = this.x * cos - this.y * sin;
+        const newY = this.x * sin + this.y * cos;
+        this.x = newX;
+        this.y = newY;
+        return this;
+    }
 
     /**
      * Calculates the angle product of the two-element vectors `this` and `b`
@@ -124,7 +176,7 @@ export default class Vector2 {
      * @returns the angle between `a` and `b`
      */
     angle = (b: Vector2): number => {
-        const diff = this.sub(b);
+        const diff = this.subNew(b);
         return Math.atan2(diff.y, diff.x);
     };
 

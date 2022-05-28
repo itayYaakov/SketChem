@@ -43,7 +43,7 @@ class Charge implements ActiveToolbarItem {
         if (closestNode.entityType !== EntityType.Atom) return;
 
         const { id } = closestNode;
-        const atom = EntitiesMapsStorage.getMapInstanceById(atomsMap, id);
+        const atom = EntitiesMapsStorage.getAtomById(id);
 
         const attrs = atom.getAttributes();
         attrs.charge += this.charge;

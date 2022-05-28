@@ -106,7 +106,7 @@ export class Atom {
     }
 
     moveByDelta(delta: Vector2, ignoreNotifyBondsIds: number[] = []) {
-        const newPosition = this.attributes.center.add(delta);
+        const newPosition = this.attributes.center.addNew(delta);
         this.moveTo(newPosition, ignoreNotifyBondsIds);
     }
 
@@ -126,7 +126,7 @@ export class Atom {
 
         connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
-            const bond = EntitiesMapsStorage.getMapInstanceById(bondsMap, id);
+            const bond = EntitiesMapsStorage.getBondById(id);
             connectedBonds.add(bond);
         });
 
@@ -194,8 +194,16 @@ export class Atom {
 
         const textBbox = this.symbolLabel.bbox();
 
+        // !!! Why 0.8 decrease height?
+        // LayersUtils.getLayer(LayersNames.AtomLabelHover)
+        //     .rect(textBbox.width, textBbox.height * 0.8)
+        //     .cx(textBbox.cx)
+        //     .cy(textBbox.cy)
+        //     .fill("#ff00a8");
+
         this.backgroundCircle
-            .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1.1)
+            .radius((Math.max(textBbox.width, textBbox.height * 0.8) / 2) * 1)
+            // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
             .center(textBbox.cx, textBbox.cy);
     }
 
@@ -248,6 +256,7 @@ export class Atom {
         this.chargeLabel.dmove(chargeOffset.x, chargeOffset.y);
 
         chargeTextBbox = this.chargeLabel.bbox();
+
         this.chargeBackgroundCircle =
             this.chargeBackgroundCircle ??
             LayersUtils.getLayer(LayersNames.AtomLabelBackground)
@@ -312,9 +321,11 @@ export class Atom {
         if (redrawLabel) {
             this.drawLabel();
         }
-        // if (moved) {
-        //     this.drawLabel();
-        // }
+        if (moved) {
+            // !!! remove kekule update in here
+            this.nodeObj.setCoord2D({ x: newAttributes.center!.x, y: newAttributes.center!.y });
+            //     this.drawLabel();
+        }
     }
 
     static generateNewId() {

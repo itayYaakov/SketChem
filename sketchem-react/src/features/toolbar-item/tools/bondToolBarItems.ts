@@ -1,10 +1,21 @@
+import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
+import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
+import { EntitiesMapsStorage } from "@features/shared/storage";
+import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
+import Vector2 from "@src/utils/mathsTs/Vector2";
 import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 
+enum MouseMode {
+    Default = -1,
+    EmptyPress = 1,
+    atomPressed,
+    bondPressed,
+}
 class BondToolBarItem implements ActiveToolbarItem {
     name: string;
 
@@ -14,11 +25,22 @@ class BondToolBarItem implements ActiveToolbarItem {
 
     keyboardKeys?: string[];
 
+    mode: MouseMode;
+
+    context: {
+        startAtom?: Atom;
+        endAtom?: Atom;
+        bond?: Bond;
+        rotation?: number;
+    };
+
     constructor(name: string, bondType: BondOrder, bondStereo: BondStereoKekule, keyboardKeys?: string[]) {
         this.name = name;
         this.bondOrder = bondType;
         this.bondStereo = bondStereo;
         this.keyboardKeys = keyboardKeys ?? undefined;
+        this.mode = MouseMode.Default;
+        this.context = {};
     }
 
     static lastBond: Bond;
@@ -26,53 +48,162 @@ class BondToolBarItem implements ActiveToolbarItem {
     static lastAtom: Atom;
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
+        this.context = {};
+        this.mode = MouseMode.Default;
         const { mouseDownLocation } = eventHolder;
 
-        let startAtom;
-        let endAtom;
-        if (!BondToolBarItem.lastAtom) {
-            startAtom = new Atom({ props: { symbol: "C", center: mouseDownLocation } } as IAtom);
-            endAtom = new Atom({ props: { symbol: "C", center: mouseDownLocation } } as IAtom);
+        const { getAtomById, atomAtPoint, bondAtPoint } = EntitiesMapsStorage;
 
-            startAtom.draw();
-            endAtom.draw();
-        } else {
-            startAtom = BondToolBarItem.lastAtom;
-            endAtom = new Atom({ props: { symbol: "Xe", center: mouseDownLocation } } as IAtom);
-
-            endAtom.draw();
+        const atomWasPressed = atomAtPoint(mouseDownLocation);
+        if (atomWasPressed) {
+            this.mode = MouseMode.atomPressed;
+            const atom = getAtomById(atomWasPressed.id);
+            this.context.startAtom = atom;
+            this.context.rotation = Math.random() * 360;
+            return;
         }
 
+        const bondWasPressed = bondAtPoint(mouseDownLocation);
+        if (bondWasPressed) {
+            this.mode = MouseMode.bondPressed;
+            return;
+        }
+
+        this.mode = MouseMode.EmptyPress;
+        const startAtomCenter = mouseDownLocation;
+        this.context.startAtom = new Atom({ props: { symbol: "C", center: startAtomCenter } } as IAtom);
+    }
+
+    onMouseMove(eventHolder: MouseEventCallBackProperties) {
+        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
+
+        if (this.mode === MouseMode.Default) {
+            // !!! add hover
+            return;
+        }
+
+        // if (this.mode === MouseMode.atomPressed) {
+        //     // !!! add bond to atom
+        //     return;
+        // }
+
+        if (this.mode === MouseMode.bondPressed) {
+            // !!! change bond type
+            return;
+        }
+
+        if (this.context.startAtom === undefined) {
+            // !!! error
+            return;
+        }
+
+        const distance = mouseCurrentLocation.distance(mouseDownLocation);
+        // console.log("distance=", distance);
+
+        const BondVector = new Vector2(1, 0).scaleSelf(EditorConstants.Scale);
+
+        if (distance > ToolsConstants.ValidMouseMoveDistance) {
+            BondVector.rotateRadSelf(mouseCurrentLocation.angle(mouseDownLocation));
+        }
+
+        const endAtomCenter = this.context.startAtom?.getCenter().addNew(BondVector);
+
+        if (this.context.endAtom === undefined) {
+            this.context.endAtom = new Atom({ props: { symbol: "C", center: endAtomCenter } } as IAtom);
+            this.context.startAtom.draw();
+            this.context.endAtom.draw();
+        } else {
+            this.context.endAtom.updateAttributes({ center: endAtomCenter });
+        }
+
+        this.context.bond = this.context.bond ?? this.createBond();
+
+        this.context.bond.movedByAtomId(this.context.endAtom.getId());
+    }
+
+    crDeg = 0;
+
+    onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        const { getAtomById, atomAtPoint, bondAtPoint } = EntitiesMapsStorage;
+        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
+
+        if (this.mode === MouseMode.Default) {
+            // !!! ??? what to do
+            return;
+        }
+
+        if (this.mode === MouseMode.atomPressed) {
+            // !!! ??? what to do
+            // return;
+        }
+
+        if (this.mode === MouseMode.bondPressed) {
+            // !!! ??? what to do
+        }
+
+        if (this.mode === MouseMode.EmptyPress && this.context.endAtom) {
+            // !!! ??? all is draw - just need to send action?
+            return;
+        }
+
+        if (this.context.endAtom === undefined) {
+            const BondVector = new Vector2(1, 0).scaleNew(EditorConstants.Scale);
+
+            if (this.context.rotation) {
+                const kekuleAtom = this.context.startAtom?.getKekuleNode();
+                const currentRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, this.bondOrder);
+
+                // const dSingleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Single);
+                // const dDoubleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Double);
+                // const dTripleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Triple);
+                // const dWedgeFrontResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeFront);
+                // const dWedgeBackResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeBack);
+
+                // const dSingleResultDeg = (dSingleResultRad * 180) / Math.PI;
+                // const dDoubleResultDeg = (dDoubleResultRad * 180) / Math.PI;
+                // const dTripleResultDeg = (dTripleResultRad * 180) / Math.PI;
+                // const dWedgeFrontResultDeg = (dWedgeFrontResultRad * 180) / Math.PI;
+                // const dWedgeBackResultDeg = (dWedgeBackResultRad * 180) / Math.PI;
+
+                // BondVector.rotateSelf(this.context.rotation);
+                // BondVector.rotateSelf(-(this.crDeg * Math.PI) / 180);
+                const rotation = KekuleUtils.calcPreferred2DBondGrowingDirection(kekuleAtom, currentRad, true);
+                const currentDeg = (rotation * 180) / Math.PI;
+
+                // BondVector.rotateRadSelf(rotation);
+                BondVector.rotateRadSelf(-rotation);
+                this.crDeg += 30;
+            } else {
+                BondVector.rotateRadSelf(this.bondOrder === BondOrder.Single ? -(Math.PI / 6) : 0);
+            }
+
+            const endAtomCenter = this.context.startAtom?.getCenter().addNew(BondVector);
+
+            this.context.endAtom = new Atom({ props: { symbol: "C", center: endAtomCenter } } as IAtom);
+            this.context.startAtom!.draw();
+            this.context.endAtom.draw();
+        }
+
+        this.context.bond = this.context.bond ?? this.createBond();
+        this.context.bond.movedByAtomId(this.context.endAtom.getId());
+        this.context = {};
+    }
+
+    createBond() {
         const bondArgs = {
             props: {
                 order: this.bondOrder,
                 stereo: this.bondStereo,
-                atomStartId: startAtom.getId(),
-                atomEndId: endAtom.getId(),
+                atomStartId: this.context.startAtom!.getId(),
+                atomEndId: this.context.endAtom!.getId(),
             },
         } as IBond;
 
         const bond = new Bond(bondArgs);
-        BondToolBarItem.lastAtom = endAtom;
-        BondToolBarItem.lastBond = bond;
         bond.draw();
-    }
 
-    onMouseMove(eventHolder: MouseEventCallBackProperties) {
-        if (!BondToolBarItem.lastBond) return;
-        if (!BondToolBarItem.lastAtom) return;
-        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
-        // console.log(
-        //     "mouseCurrentLocation=",
-        //     mouseCurrentLocation,
-        //     "BondToolBarItem.lastAtom center=",
-        //     BondToolBarItem.lastAtom.attributes.center
-        // );
-        BondToolBarItem.lastAtom.moveTo(mouseCurrentLocation);
-        BondToolBarItem.lastBond.movedByAtomId(BondToolBarItem.lastAtom.getId());
+        return bond;
     }
-
-    onMouseUp(eventHolder: MouseEventCallBackProperties) {}
 }
 
 const singleBond = new BondToolBarItem("Bond Single", BondOrder.Single, BondStereoKekule.NONE, ["A"]);
