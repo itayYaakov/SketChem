@@ -1,5 +1,5 @@
 import { EditorConstants } from "@constants/editor.constant";
-import { BondOrder, BondStereoKekule, LayersNames } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
@@ -10,12 +10,6 @@ import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@typ
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 
-enum MouseMode {
-    Default = -1,
-    EmptyPress = 1,
-    atomPressed,
-    bondPressed,
-}
 export class BondToolBarItem implements ActiveToolbarItem {
     name: string;
 
@@ -62,15 +56,13 @@ export class BondToolBarItem implements ActiveToolbarItem {
         if (bondWasPressed) {
             this.mode = MouseMode.bondPressed;
             const bond = getBondById(bondWasPressed.id);
-            const { order: pressedBondOrder, stereo: pressedBondStereo } = bond.getAttributes();
-            const pressedBondNoneStereo = pressedBondStereo === BondStereoKekule.NONE;
-            if (
-                this.bondOrder === BondOrder.Single &&
-                this.bondStereo === BondStereoKekule.NONE &&
-                pressedBondNoneStereo
-            ) {
+            const pressedBondAttributes = bond.getAttributes();
+            const pressedBondNoneStereo = pressedBondAttributes.stereo === BondStereoKekule.NONE;
+            const pressedBonOrderIsSingle = pressedBondAttributes.order === BondOrder.Single;
+            const thisBondOrderSingle = this.bondOrder === BondOrder.Single;
+            if (thisBondOrderSingle && this.bondStereo === BondStereoKekule.NONE && pressedBondNoneStereo) {
                 let newBondOrder;
-                switch (pressedBondOrder) {
+                switch (pressedBondAttributes.order) {
                     case BondOrder.Single:
                         newBondOrder = BondOrder.Double;
                         break;
@@ -86,10 +78,22 @@ export class BondToolBarItem implements ActiveToolbarItem {
                 bond.updateAttributes({ order: newBondOrder });
                 return;
             }
+            if (
+                this.bondStereo === pressedBondAttributes.stereo &&
+                this.bondOrder === pressedBondAttributes.order &&
+                this.bondOrder === BondOrder.Single &&
+                (this.bondStereo === BondStereoKekule.DOWN || this.bondStereo === BondStereoKekule.UP)
+            ) {
+                bond.updateAttributes({
+                    atomStartId: pressedBondAttributes.atomEndId,
+                    atomEndId: pressedBondAttributes.atomStartId,
+                });
+                return;
+            }
 
             const newAttributes: Partial<BondAttributes> = {};
-            if (pressedBondOrder !== this.bondOrder) newAttributes.order = this.bondOrder;
-            if (pressedBondStereo !== this.bondStereo) newAttributes.stereo = this.bondStereo;
+            if (pressedBondAttributes.order !== this.bondOrder) newAttributes.order = this.bondOrder;
+            if (pressedBondAttributes.stereo !== this.bondStereo) newAttributes.stereo = this.bondStereo;
             if (newAttributes) bond.updateAttributes(newAttributes);
             return;
         }
@@ -146,8 +150,6 @@ export class BondToolBarItem implements ActiveToolbarItem {
         this.context.bond.movedByAtomId(this.context.endAtom.getId());
     }
 
-    crDeg = 0;
-
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
         const { getAtomById, atomAtPoint, bondAtPoint } = EntitiesMapsStorage;
         const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
@@ -174,33 +176,10 @@ export class BondToolBarItem implements ActiveToolbarItem {
         if (this.context.endAtom === undefined) {
             const BondVector = new Vector2(1, 0).scaleNew(EditorConstants.Scale);
 
-            if (this.context.rotation) {
-                const kekuleAtom = this.context.startAtom?.getKekuleNode();
-                const currentRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, this.bondOrder);
+            const rotation = this.calculateOptimalAngle(this.context.startAtom!);
+            const currentDeg = (rotation * 180) / Math.PI;
 
-                // const dSingleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Single);
-                // const dDoubleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Double);
-                // const dTripleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Triple);
-                // const dWedgeFrontResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeFront);
-                // const dWedgeBackResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeBack);
-
-                // const dSingleResultDeg = (dSingleResultRad * 180) / Math.PI;
-                // const dDoubleResultDeg = (dDoubleResultRad * 180) / Math.PI;
-                // const dTripleResultDeg = (dTripleResultRad * 180) / Math.PI;
-                // const dWedgeFrontResultDeg = (dWedgeFrontResultRad * 180) / Math.PI;
-                // const dWedgeBackResultDeg = (dWedgeBackResultRad * 180) / Math.PI;
-
-                // BondVector.rotateSelf(this.context.rotation);
-                // BondVector.rotateSelf(-(this.crDeg * Math.PI) / 180);
-                const rotation = KekuleUtils.calcPreferred2DBondGrowingDirection(kekuleAtom, currentRad, true);
-                const currentDeg = (rotation * 180) / Math.PI;
-
-                // BondVector.rotateRadSelf(rotation);
-                BondVector.rotateRadSelf(-rotation);
-                this.crDeg += 30;
-            } else {
-                BondVector.rotateRadSelf(this.bondOrder === BondOrder.Single ? -(Math.PI / 6) : 0);
-            }
+            BondVector.rotateRadSelf(-rotation);
 
             const endAtomCenter = this.context.startAtom?.getCenter().addNew(BondVector);
 
@@ -212,6 +191,14 @@ export class BondToolBarItem implements ActiveToolbarItem {
         this.context.bond = this.context.bond ?? this.createBond();
         this.context.bond.movedByAtomId(this.context.endAtom.getId());
         this.context = {};
+    }
+
+    calculateOptimalAngle(atom: Atom) {
+        const kekuleAtom = atom.getKekuleNode();
+        const currentRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, this.bondOrder);
+
+        const rotation = KekuleUtils.calcPreferred2DBondGrowingDirection(kekuleAtom, currentRad, true);
+        return rotation;
     }
 
     createBond() {
