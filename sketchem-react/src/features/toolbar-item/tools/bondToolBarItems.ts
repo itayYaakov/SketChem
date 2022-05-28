@@ -16,7 +16,7 @@ enum MouseMode {
     atomPressed,
     bondPressed,
 }
-class BondToolBarItem implements ActiveToolbarItem {
+export class BondToolBarItem implements ActiveToolbarItem {
     name: string;
 
     bondOrder: BondOrder;
@@ -43,29 +43,54 @@ class BondToolBarItem implements ActiveToolbarItem {
         this.context = {};
     }
 
-    static lastBond: Bond;
-
-    static lastAtom: Atom;
-
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
         this.context = {};
         this.mode = MouseMode.Default;
         const { mouseDownLocation } = eventHolder;
 
-        const { getAtomById, atomAtPoint, bondAtPoint } = EntitiesMapsStorage;
+        const { getAtomById, atomAtPoint, getBondById, bondAtPoint } = EntitiesMapsStorage;
 
         const atomWasPressed = atomAtPoint(mouseDownLocation);
         if (atomWasPressed) {
             this.mode = MouseMode.atomPressed;
             const atom = getAtomById(atomWasPressed.id);
             this.context.startAtom = atom;
-            this.context.rotation = Math.random() * 360;
             return;
         }
 
         const bondWasPressed = bondAtPoint(mouseDownLocation);
         if (bondWasPressed) {
             this.mode = MouseMode.bondPressed;
+            const bond = getBondById(bondWasPressed.id);
+            const { order: pressedBondOrder, stereo: pressedBondStereo } = bond.getAttributes();
+            const pressedBondNoneStereo = pressedBondStereo === BondStereoKekule.NONE;
+            if (
+                this.bondOrder === BondOrder.Single &&
+                this.bondStereo === BondStereoKekule.NONE &&
+                pressedBondNoneStereo
+            ) {
+                let newBondOrder;
+                switch (pressedBondOrder) {
+                    case BondOrder.Single:
+                        newBondOrder = BondOrder.Double;
+                        break;
+                    case BondOrder.Double:
+                        newBondOrder = BondOrder.Triple;
+                        break;
+                    case BondOrder.Triple:
+                        newBondOrder = BondOrder.Single;
+                        break;
+                    default:
+                        return;
+                }
+                bond.updateAttributes({ order: newBondOrder });
+                return;
+            }
+
+            const newAttributes: Partial<BondAttributes> = {};
+            if (pressedBondOrder !== this.bondOrder) newAttributes.order = this.bondOrder;
+            if (pressedBondStereo !== this.bondStereo) newAttributes.stereo = this.bondStereo;
+            if (newAttributes) bond.updateAttributes(newAttributes);
             return;
         }
 
@@ -133,12 +158,12 @@ class BondToolBarItem implements ActiveToolbarItem {
         }
 
         if (this.mode === MouseMode.atomPressed) {
-            // !!! ??? what to do
+            // !!! ??? nothing special to do?
             // return;
         }
 
         if (this.mode === MouseMode.bondPressed) {
-            // !!! ??? what to do
+            return;
         }
 
         if (this.mode === MouseMode.EmptyPress && this.context.endAtom) {
