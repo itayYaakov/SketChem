@@ -71,6 +71,13 @@ export enum EntityType {
     Bond = 2,
 }
 
+export enum EntityLifeStage {
+    New = 1,
+    Initialized,
+    DestroyInit,
+    Destroyed,
+}
+
 export enum BondStereoMol {
     // export enum BondStereo {
     // for single

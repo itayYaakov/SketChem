@@ -34,6 +34,7 @@ function SketchPad(props: Props) {
     const activeToolBar = useRef<ActiveToolbarItem>(null!);
     const initialZoomRatio = useRef<number>(0);
     activeToolBar.current = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
+    activeToolBar.current?.onActivate?.();
 
     // const color = useRef<string>(getBackgroundColor(""));
 

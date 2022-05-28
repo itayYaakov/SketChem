@@ -1,5 +1,5 @@
 import { BondConstants } from "@constants/bond.constants";
-import { BondOrder, BondStereoKekule, EntityType, LayersNames } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
@@ -31,6 +31,8 @@ export class Bond {
 
     private center!: Vector2;
 
+    private lifeStage: EntityLifeStage;
+
     centralMarks: Circle[] = [
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
@@ -42,6 +44,7 @@ export class Bond {
     private lastTreeNode: NamedPoint | undefined;
 
     constructor(args: IBond) {
+        this.lifeStage = EntityLifeStage.New;
         let type: BondOrder;
         let stereo: BondStereoKekule;
         let atomStartId: number;
@@ -69,6 +72,7 @@ export class Bond {
         this.updateAtomsReference(this.attributes);
         this.setBondCenter();
         this.addInstanceToMap();
+        this.lifeStage = EntityLifeStage.Initialized;
     }
 
     updateAtomsReference(attributes?: Partial<BondAttributes>) {
@@ -246,11 +250,12 @@ export class Bond {
     removeConnectedAtoms(ignoreAtomRemove: number[] = []) {
         [this.startAtom, this.endAtom].forEach((atom) => {
             if (atom?.getId() && ignoreAtomRemove.indexOf(atom.getId()) !== -1) return;
-            const atomNeighbors = atom?.getConnectedBondsIds().delete(this.attributes.id);
+            const atomNeighbors = atom?.getConnectedBondsIds();
+            atomNeighbors?.delete(this.attributes.id);
 
             // delete connected atom only if he will stay orphan
-            if (!atomNeighbors) {
-                atom?.destroy();
+            if (atomNeighbors?.size === 0) {
+                atom?.destroy([this.attributes.id]);
             }
         });
         this.startAtom = undefined;
@@ -302,6 +307,10 @@ export class Bond {
     }
 
     destroy(ignoreAtomRemove: number[] = []) {
+        if (this.lifeStage === EntityLifeStage.DestroyInit || this.lifeStage === EntityLifeStage.Destroyed) {
+            return;
+        }
+        this.lifeStage = EntityLifeStage.DestroyInit;
         if (this.connectorObj) {
             this.undraw();
             this.removeConnectedAtoms(ignoreAtomRemove);
@@ -310,6 +319,7 @@ export class Bond {
             KekuleUtils.destroy(this.connectorObj);
             this.connectorObj = null;
         }
+        this.lifeStage = EntityLifeStage.Destroyed;
     }
 
     static generateNewId() {

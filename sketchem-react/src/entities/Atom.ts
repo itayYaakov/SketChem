@@ -1,7 +1,7 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData } from "@constants/elements.constants";
-import { EntityType, LayersNames } from "@constants/enum.constants";
+import { EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
@@ -43,7 +43,10 @@ export class Atom {
 
     private lastTreeNode: NamedPoint | undefined;
 
+    private lifeStage: EntityLifeStage;
+
     constructor(args: IAtom) {
+        this.lifeStage = EntityLifeStage.New;
         let id;
         let color;
         if (args.props) {
@@ -70,6 +73,7 @@ export class Atom {
         this.attributes.color = color ?? element?.jmolColor ?? "#000000";
 
         this.addInstanceToMap();
+        this.lifeStage = EntityLifeStage.Initialized;
     }
 
     private modifyTree(add: boolean = true) {
@@ -165,11 +169,14 @@ export class Atom {
         });
     }
 
-    private removeConnectedBonds() {
+    private removeConnectedBonds(ignoreBondRemove: number[] = []) {
         const ignoreAtomRemove: number[] = [this.getId()];
         const connectedBonds = this.getConnectedBonds();
         console.log("Remove atom", this.getId(), "connected bonds", ...connectedBonds);
         connectedBonds.forEach((bond: Bond) => {
+            if (bond && ignoreBondRemove.includes(bond.getId())) {
+                return;
+            }
             bond?.destroy(ignoreAtomRemove);
         });
     }
@@ -360,15 +367,20 @@ export class Atom {
         }
     }
 
-    destroy() {
+    destroy(ignoreBondRemove: number[] = []) {
+        if (this.lifeStage === EntityLifeStage.DestroyInit || this.lifeStage === EntityLifeStage.Destroyed) {
+            return;
+        }
+        this.lifeStage = EntityLifeStage.DestroyInit;
         if (this.nodeObj) {
             this.undraw();
-            this.removeConnectedBonds();
+            this.removeConnectedBonds(ignoreBondRemove);
 
             this.removeInstanceFromMapAndTree();
             KekuleUtils.destroy(this.nodeObj);
             this.nodeObj = undefined;
         }
+        this.lifeStage = EntityLifeStage.Destroyed;
     }
 
     static generateNewId() {

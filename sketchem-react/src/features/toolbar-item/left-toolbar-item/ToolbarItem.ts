@@ -9,10 +9,11 @@ import { ToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
 // !!! delete
 import { actions } from "../toolbarItemsSlice";
-import { bondToolBarItems, Chain } from "../tools";
+import { bondToolBarItems, Chain, Delete } from "../tools";
 
 let i = 0;
 const toolbarItemsList: ToolbarItem[] = [
+    Delete.deleteBox,
     bondToolBarItems.singleBond,
     bondToolBarItems.doubleBond,
     bondToolBarItems.tripleBond,

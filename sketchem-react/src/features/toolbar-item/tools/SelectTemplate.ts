@@ -34,9 +34,9 @@ interface IMovesItem {
 abstract class SelectTemplate implements ActiveToolbarItem {
     name: string;
 
-    static selectedAtoms: Map<number, Atom>;
+    private static selectedAtoms: Map<number, Atom>;
 
-    static selectedBonds: Map<number, Bond>;
+    private static selectedBonds: Map<number, Bond>;
 
     keyboardKeys?: string[];
 
@@ -58,6 +58,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.selectionMode = SelectionMode.Empty;
         this.resetAnchor();
         this.movesItem = undefined;
+    }
+
+    getSelectedBonds() {
+        return SelectTemplate.selectedBonds;
+    }
+
+    getSelectedAtoms() {
+        return SelectTemplate.selectedAtoms;
     }
 
     unselectAll() {
@@ -170,8 +178,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             this.selectionMode = SelectionMode.Empty;
             this.resetSelection();
         }
-
-        this.doAction();
 
         // !! can be removed later
         const endTime = performance.now();
@@ -312,8 +318,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             this.selectBond(element.id);
         });
 
-        this.doAction();
-
         // for testing
         // this.arrayy.forEach((cir) => {
         //     cir.fill("#ff00aa");
@@ -323,7 +327,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         // });
     }
 
-    onMouseUp(eventHolder: MouseEventCallBackProperties) {
+    cancel(eventHolder: MouseEventCallBackProperties) {
+        this.doAction();
         switch (this.selectionMode) {
             case SelectionMode.Empty:
                 this.resetSelection();
@@ -335,15 +340,12 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         }
     }
 
-    onMouseLeave(eventHolder: MouseEventCallBackProperties) {
-        switch (this.selectionMode) {
-            case SelectionMode.Multiple:
-                this.removeShape();
-                break;
+    onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        this.cancel(eventHolder);
+    }
 
-            default:
-                break;
-        }
+    onMouseLeave(eventHolder: MouseEventCallBackProperties) {
+        this.cancel(eventHolder);
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;
@@ -359,7 +361,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     doAction(): void {}
 }
 
-export class SimpleSelect extends SelectTemplate {
+export class BoxSelect extends SelectTemplate {
     rect: Rect | undefined;
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {
@@ -470,7 +472,7 @@ class LassoSelect extends SelectTemplate {
     }
 }
 
-const simpleSelect = new SimpleSelect("Select", ["A"]);
+const simpleSelect = new BoxSelect("Select", ["A"]);
 const lassoSelect = new LassoSelect("Lasso Select", ["A"]);
 
 export { lassoSelect, simpleSelect };
