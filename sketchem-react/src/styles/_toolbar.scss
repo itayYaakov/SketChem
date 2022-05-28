@@ -11,6 +11,7 @@
 @mixin horizontal-toolbar() {
     @include toolbar;
     flex-direction: row;
+    height: 100%;
 }
 
 @mixin vertical-toolbar() {

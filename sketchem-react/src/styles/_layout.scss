@@ -1,0 +1,33 @@
+$toolbar-min-size: 80%;
+$toolbar-max-size: 96%;
+
+.app {
+    max-width: 100%;
+    position: relative;
+    display: grid;
+    grid-template-areas:    "top top top"
+                            "left sketchpad right"
+                            "bottom bottom bottom";
+    grid-template-rows: auto minmax($toolbar-min-size, $toolbar-max-size) auto;
+    grid-template-columns: auto minmax($toolbar-min-size, $toolbar-max-size) auto;
+}
+  
+.sketchpad {
+grid-area: sketchpad;
+}
+
+.top {
+grid-area: top;
+}
+
+.left {
+grid-area: left;
+}
+
+.right {
+grid-area: right;
+}
+
+.bottom {
+grid-area: bottom;
+}

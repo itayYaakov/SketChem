@@ -25,6 +25,8 @@ import { actions } from "./toolbarItemsSlice";
 interface IToolbarItemsProps {
     toolbarItemsList: ToolbarItem[];
     direction: Direction;
+    // eslint-disable-next-line react/require-default-props
+    className?: string;
 }
 
 type Props = IToolbarItemsProps;
@@ -33,7 +35,8 @@ export function ToolbarItems(props: Props) {
     const dispatch = useAppDispatch();
     const { toolbarItemsList } = props;
     const { direction } = props;
-    const className: string = `toolbar-${Direction[direction].toLowerCase()}`;
+    const { className } = props;
+    const thisClassName: string = `toolbar-${Direction[direction].toLowerCase()}`;
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
@@ -51,7 +54,7 @@ export function ToolbarItems(props: Props) {
     };
 
     return (
-        <div className={clsx(styles[className], className)}>
+        <div className={clsx(styles[thisClassName], thisClassName, styles[className])}>
             {toolbarItemsList.map((item) => (
                 <button
                     type="button"

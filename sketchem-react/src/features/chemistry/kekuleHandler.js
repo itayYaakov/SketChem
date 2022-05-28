@@ -17,7 +17,6 @@ const getBoundingBox = (mol) => {
 };
 
 const drawMol = (mol) => {
-    // const canvas = LayersUtils.getLayer(LayersNames.Zoom);
     const canvas = LayersUtils.getLayer(LayersNames.Root);
 
     const firstAtomDelta = new Vector2(0, 0);
