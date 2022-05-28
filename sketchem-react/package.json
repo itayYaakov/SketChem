@@ -42,7 +42,6 @@
     },
     "scripts": {
         "start": "craco start",
-        "set_github_pages": "git subtree push --prefix sketchem-react/build origin gh-pages",
         "pretty": "yarn run lint_fix && yarn run prettier:write",
         "build": "yarn run lint_fix && yarn run prettier:write && craco build",
         "test": "craco test",
