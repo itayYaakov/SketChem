@@ -2,25 +2,29 @@ import { useAppDispatch } from "@app/hooks";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
 import SelectSearch from "react-select-search";
 
 import { DummyToolbarItem } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 
+let isLibsEnabled = false;
+
 function SupportedFiles(props: any) {
     /**
      * The options array should contain objects.
      * Required keys are "name" and "value" but you can have and use any number of key/value pairs.
      */
-    const { selectOptions } = props;
+    const { selectOptions, initialFormat, onFormatChange } = props;
 
     return (
         //
-        <Form.Select aria-label="Default select example">
+        <Form.Select value={initialFormat} onChange={(e: any) => onFormatChange(e.target.value)}>
             {selectOptions.map((element: any) => (
-                <option value={element.value}>{element.name}</option>
+                <option value={element.value} key={element.value}>
+                    {element.name}
+                </option>
             ))}
         </Form.Select>
         // <SelectSearch
@@ -34,6 +38,9 @@ function SupportedFiles(props: any) {
 
 function ImportFileTab(props: any) {
     const { onHide, title } = props;
+    const [format, setFormat] = useState("mol");
+    console.log(format);
+
     const dispatch = useAppDispatch();
 
     const inputRef = React.createRef<HTMLTextAreaElement>();
@@ -45,14 +52,20 @@ function ImportFileTab(props: any) {
         console.log(textValue);
         const payload = {
             content: textValue,
-            format: "mol",
+            format,
             replace: true,
         };
         dispatch(actions.load_file(payload));
         onHide();
     };
 
-    KekuleUtils.enableBabel();
+    // !!!! find a better place
+    useEffect(() => {
+        if (isLibsEnabled) return;
+        KekuleUtils.enableBabel();
+        KekuleUtils.enableIndigo();
+        isLibsEnabled = true;
+    }, []);
     const options = KekuleUtils.getSupportedReadFormats();
 
     return (
@@ -60,7 +73,7 @@ function ImportFileTab(props: any) {
             <Modal.Body className="show-grid">
                 <Container fluid>
                     <Row>
-                        <SupportedFiles selectOptions={options} />
+                        <SupportedFiles selectOptions={options} onFormatChange={setFormat} initialFormat={format} />
                     </Row>
                     <Row>
                         <Col>

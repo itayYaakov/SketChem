@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-import { getFileContent, getMoleculeCommands } from "@app/selectors";
+import { getFileContent as getFileImportContext, getMoleculeCommands } from "@app/selectors";
 import { EditorConstants } from "@constants/editor.constant";
 import { LayersNames } from "@constants/enum.constants";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
@@ -95,20 +95,26 @@ const drawMol = (mol) => {
     }
 };
 
-const drawMolOneTime = (fileContent) => {
-    if (!fileContent) return;
-    const mol = KekuleUtils.importMoleculeFromFile(fileContent, "mol");
+const drawMolOneTime = (fileContext) => {
+    // getFileContent: interface LoadFileAction {
+    //     content: string;
+    //     format: string;
+    //     replace?: boolean;
+    // }
+    if (!fileContext.format || !fileContext.content) return;
+    const mol = KekuleUtils.importMoleculeFromFile(fileContext.content, fileContext.format);
+    if (mol === undefined) return;
     drawMol(mol);
 };
 
 export function KekuleShow() {
-    const fileContent = useSelector(getFileContent);
+    const fileContext = useSelector(getFileImportContext);
 
     function setup() {}
     useEffect(setup, []);
-    useEffect(() => drawMolOneTime(fileContent), [fileContent]);
+    useEffect(() => drawMolOneTime(fileContext), [fileContext]);
 
-    if (!fileContent) return null;
+    if (!fileContext) return null;
 
     // setCount(count.current + 10);
     // console.log(Object.keys(K.Kekule.));

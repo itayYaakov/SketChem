@@ -58,18 +58,24 @@ export function getKekule() {
 }
 
 export function importMoleculeFromFile(file, format) {
-    const fileMol = Kekule.IO.loadFormatData(file, format);
-    chemDocument.appendChild(fileMol);
-    return fileMol;
+    try {
+        const fileMol = Kekule.IO.loadFormatData(file, format);
+        chemDocument.appendChild(fileMol);
+        return fileMol;
+    } catch (error) {
+        console.error(error);
+        return undefined;
+    }
 }
 
 export function enableBabel() {
+    if (Kekule.OpenBabel.isScriptLoaded() === true) return;
     Kekule.OpenBabel.enable(); // .enableOpenBabelFormats();
     //  ! should take a few seconds, may be check if the following is true and create a callback:
-    // Kekule.Indigo.isScriptLoaded()
 }
 
 export function enableIndigo() {
+    if (Kekule.Indigo.isScriptLoaded() === true) return;
     Kekule.Indigo.enable();
 }
 
