@@ -472,7 +472,7 @@ class LassoSelect extends SelectTemplate {
     }
 }
 
-const simpleSelect = new BoxSelect("Select", ["A"]);
+const boxSelect = new BoxSelect("Box Select", ["A"]);
 const lassoSelect = new LassoSelect("Lasso Select", ["A"]);
 
-export { lassoSelect, simpleSelect };
+export { lassoSelect, boxSelect as simpleSelect };

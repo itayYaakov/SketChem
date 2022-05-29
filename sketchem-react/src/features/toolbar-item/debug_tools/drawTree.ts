@@ -28,8 +28,9 @@ class DrawTree implements ActiveToolbarItem {
         this.drawnCircles = [];
     }
 
-    onMouseClick(eventHolder: MouseEventCallBackProperties) {
+    onActivate() {
         if (this.drawnCircles.length > 0) {
+            console.log("Debug tool remove", this.name);
             this.drawnCircles.forEach((circle) => circle.remove());
             this.drawnCircles = [];
             return;
@@ -38,7 +39,7 @@ class DrawTree implements ActiveToolbarItem {
         let color = "#a91f03";
         let radius = 9;
         let map: Map<number, Atom | Bond> = bondsMap;
-        if (this.name.endsWith("Atoms")) {
+        if (this.name.endsWith("atoms (debug)")) {
             color = "#00a9f3";
             radius = 12;
             map = atomsMap;
@@ -60,10 +61,11 @@ class DrawTree implements ActiveToolbarItem {
                 .cy(y);
             this.drawnCircles.push(circle);
         });
+        console.log("Debug tool draw", this.name);
     }
 }
 
-const DrawAtoms = new DrawTree("drawAtoms", atomsTree, ["A"]);
-const DrawBonds = new DrawTree("drawBonds", bondsTree, ["A"]);
+const DrawAtoms = new DrawTree("draw atoms (debug)", atomsTree, ["A"]);
+const DrawBonds = new DrawTree("draw bonds (debug) ", bondsTree, ["A"]);
 
 export { DrawAtoms, DrawBonds };

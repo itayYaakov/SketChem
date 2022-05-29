@@ -6,17 +6,9 @@ import { bondToolBarItems, Export, Import, selectToolBarItems } from "../tools";
 
 const toolbarItemsList: ActiveToolbarItem[] = [
     Import,
-    Export,
-    bondToolBarItems.tripleBond,
+    // Export,
     selectToolBarItems.simpleSelect,
     selectToolBarItems.lassoSelect,
-    {
-        name: "Atom 3",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ActiveToolbarItem,
 ];
 
 const props: IToolbarItemsProps = {

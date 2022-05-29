@@ -21,15 +21,8 @@ const toolbarItemsList: ToolbarItem[] = [
     bondToolBarItems.wedgeFrontBond,
     Chain,
     {
-        name: "Atom",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ToolbarItem,
-    {
-        name: "Load mol file",
-        onMouseDown: () => {
+        name: "Load an example .mol file (debug)",
+        onActivate: () => {
             if (i !== 0) {
                 return;
             }
@@ -42,8 +35,6 @@ const toolbarItemsList: ToolbarItem[] = [
             };
             store.dispatch(actions.load_file(payload));
         },
-        onMouseMove: () => {},
-        onMouseUp: () => {},
         keyboardKeys: ["A"],
     } as ToolbarItem,
     DebugTools.DrawAtoms,

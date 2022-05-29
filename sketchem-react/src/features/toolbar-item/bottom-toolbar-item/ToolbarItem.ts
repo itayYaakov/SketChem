@@ -5,21 +5,7 @@ import type { IToolbarItemsProps } from "../ToolbarItems";
 
 const toolbarItemsList: ToolbarItem[] = [
     {
-        name: "Clear",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ToolbarItem,
-    {
-        name: "Clear 2",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ToolbarItem,
-    {
-        name: "Clear 3",
+        name: "Empty Button 1",
         onMouseDown: () => {},
         onMouseMove: () => {},
         onMouseUp: () => {},

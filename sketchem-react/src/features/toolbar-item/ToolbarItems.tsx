@@ -43,10 +43,10 @@ export function ToolbarItems(props: Props) {
 
     const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
         event.stopPropagation();
-
         if (isDummyToolbarItem(toolbarItem)) {
             dispatch(actions.dialog(toolbarItem.name));
         } else {
+            toolbarItem.onActivate?.();
             dispatch(actions.press(toolbarItem.name));
         }
         // const button: HTMLButtonElement = event.currentTarget;
