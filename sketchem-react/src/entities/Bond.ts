@@ -7,7 +7,7 @@ import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import { BondAttributes, IBond } from "@types";
-import * as VectorUtils from "@utils/vector";
+import { AngleUtils } from "@utils/AngleUtils";
 
 // !!! MOVE TO REDUX??
 import { Atom } from "./Atom";
@@ -140,7 +140,7 @@ export class Bond {
         const startPosition = this.startAtom.getCenter();
         const endPosition = this.endAtom.getCenter();
 
-        const angle = VectorUtils.radToDeg(endPosition.angle(startPosition));
+        const angle = AngleUtils.radToDeg(endPosition.angle(startPosition));
         const distance = startPosition.distance(endPosition);
 
         this.elem =

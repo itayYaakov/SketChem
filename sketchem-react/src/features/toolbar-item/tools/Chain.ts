@@ -7,6 +7,7 @@ import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
+import { AngleUtils } from "@utils/AngleUtils";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 import { BondToolBarItem } from "./bondToolBarItems";
@@ -58,13 +59,21 @@ class ChainToolBar extends BondToolBarItem {
         let lastAtom = this.context.startAtom;
         let endAtomCenter;
 
-        const angle = mouseCurrentLocation.angle(mouseDownLocation);
+        let angle = mouseCurrentLocation.angle(mouseDownLocation);
+        angle = AngleUtils.limitInSteps(angle, (1 / 12) * Math.PI);
+        angle = AngleUtils.clampPosAngleRad(angle);
+        // angle = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
         //     // this.initialAngle = angle;
         this.initialAngle = angle + (1 / 6) * Math.PI;
-        // clamp angle in steps of 15 degrees
-        this.initialAngle -= this.initialAngle % ((1 / 12) * Math.PI);
-        // console.log("angle=", (angle / Math.PI) * 180, "initialAngle=", (this.initialAngle / Math.PI) * 180);
-        // }
+
+        console.log(
+            "angle=",
+            (AngleUtils.clampPosAngleRad(mouseCurrentLocation.angle(mouseDownLocation)) / Math.PI) * 180,
+            "angle clamped =",
+            (angle / Math.PI) * 180,
+            "initialAngle=",
+            (this.initialAngle / Math.PI) * 180
+        );
 
         for (let index = 0; index < chainLength; index += 1) {
             let chainAtom = this.chainAddedAtoms[index];
@@ -75,14 +84,16 @@ class ChainToolBar extends BondToolBarItem {
             } else {
                 rotation = this.initialAngle;
             }
+            rotation = AngleUtils.clampPosAngleRad(rotation);
             const BondVector = new Vector2(1, 0).scaleSelf(EditorConstants.Scale).rotateRadSelf(rotation);
             endAtomCenter = lastAtom.getCenter().addNew(BondVector);
 
             if (chainAtom === undefined) {
                 chainAtom = new Atom({ props: { symbol: "C", center: endAtomCenter } } as IAtom);
 
+                console.log("Added atom", index, "sectors=", chainLength, this.chainAddedAtoms);
                 this.chainAddedAtoms.push(chainAtom);
-                // console.log("Added bond", index, "sectors=", chainLength, this.chainAddedAtoms);
+                console.log(index, "Added bond", index, "sectors=", chainLength, this.chainAddedAtoms);
 
                 this.context.startAtom.draw();
                 chainAtom.draw();
@@ -97,6 +108,7 @@ class ChainToolBar extends BondToolBarItem {
                 } as IBond;
 
                 const bond = new Bond(bondArgs);
+                console.log(`${index}: Added bond ${bond.getId()} Added atom ${chainAtom.getId()}`);
                 bond.draw();
 
                 // console.log(
@@ -117,14 +129,20 @@ class ChainToolBar extends BondToolBarItem {
             lastAtom = chainAtom;
         }
 
-        for (let index = chainLength; index < this.chainAddedAtoms.length; index += 1) {
-            console.log("Removed atom", index);
-            const chainRemovedAtom = this.chainAddedAtoms[index];
-            if (chainRemovedAtom !== undefined) {
-                chainRemovedAtom.destroy();
+        for (let index = chainLength; index < this.chainAddedBonds.length; index += 1) {
+            const chainRemovedBond = this.chainAddedBonds[index];
+            if (chainRemovedBond !== undefined) {
+                console.log(`${index}: Remove bond ${chainRemovedBond.getId()}`);
+                if (index === 0) {
+                    chainRemovedBond.destroy([this.context.startAtom.getId()]);
+                } else {
+                    chainRemovedBond.destroy();
+                }
             }
         }
+        console.log("Atoms length", this.chainAddedAtoms.length, "Bonds length", this.chainAddedBonds.length);
         this.chainAddedAtoms = this.chainAddedAtoms.slice(0, chainLength);
+        this.chainAddedBonds = this.chainAddedBonds.slice(0, chainLength);
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
