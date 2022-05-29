@@ -228,7 +228,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         });
 
         shouldMoveBondsIds.forEach((bondId) => {
-            const { bondsMap } = EntitiesMapsStorage;
             const bond = EntitiesMapsStorage.getBondById(bondId);
             shouldMoveBonds.add(bond);
             // bond.moveByDelta(delta, false);

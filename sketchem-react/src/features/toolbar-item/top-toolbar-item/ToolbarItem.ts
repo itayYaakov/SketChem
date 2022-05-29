@@ -2,9 +2,10 @@ import { Direction } from "@constants/enum.constants";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
-import { bondToolBarItems, Export, Import, selectToolBarItems } from "../tools";
+import { bondToolBarItems, ClearCanvas, Export, Import, selectToolBarItems } from "../tools";
 
 const toolbarItemsList: ActiveToolbarItem[] = [
+    ClearCanvas,
     Import,
     // Export,
     selectToolBarItems.simpleSelect,

@@ -134,7 +134,6 @@ export class Atom {
     }
 
     getConnectedBonds() {
-        const { bondsMap } = EntitiesMapsStorage;
         const connectedBonds = new Set<Bond>();
         const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
 
