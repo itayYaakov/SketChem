@@ -2,4 +2,4 @@ build/
 dist/
 node_modules/
 .vscode/
-src/utils/kekule-js-dist/
+public/

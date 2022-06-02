@@ -1,12 +1,20 @@
 import { useAppDispatch, useAppSelector } from "@app/hooks";
 import { Direction } from "@constants/enum.constants";
+import { ToolbarAction } from "@src/types";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { ActiveToolbarItem, DummyToolbarItem, isDummyToolbarItem, ToolbarItem } from "./ToolbarItem";
+import {
+    ActiveToolbarItem,
+    DialogToolbarItem,
+    isDialogToolbarItem,
+    ToolbarItem,
+    ToolbarItemButton,
+} from "./ToolbarItem";
 import { actions } from "./toolbarItemsSlice";
+import { GetToolbarByName } from "./tools/ToolsMapper.helper";
 
 // eslint-disable-next-line no-restricted-syntax
 // for (const [key, value] of Object.entries(styles)) {
@@ -23,7 +31,7 @@ import { actions } from "./toolbarItemsSlice";
 
 // true === event.ctrlKey && 'b' === event.key (to detect ctrl+b)
 interface IToolbarItemsProps {
-    toolbarItemsList: ToolbarItem[];
+    toolbarItemsList: ToolbarItemButton[];
     direction: Direction;
     // eslint-disable-next-line react/require-default-props
     className?: string;
@@ -41,13 +49,22 @@ export function ToolbarItems(props: Props) {
 
     // const [activeToolbarItem, setActiveToolbarItem] = useState('')
 
-    const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItem) => {
+    const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItemButton) => {
         event.stopPropagation();
-        if (isDummyToolbarItem(toolbarItem)) {
-            dispatch(actions.dialog(toolbarItem.name));
+        const tool = GetToolbarByName(toolbarItem.toolName);
+
+        if (!tool) {
+            console.log(`ToolbarItem: ${toolbarItem.toolName} not found`);
+        } else if (isDialogToolbarItem(tool)) {
+            dispatch(actions.dialog(toolbarItem.toolName));
         } else {
-            toolbarItem.onActivate?.();
-            dispatch(actions.press(toolbarItem.name));
+            tool.onActivate?.(toolbarItem.attributes);
+            const atomLabel = toolbarItem.attributes?.label;
+            const payload: ToolbarAction = {
+                button: toolbarItem.toolName,
+                atomLabel,
+            };
+            dispatch(actions.tool_change(payload));
         }
         // const button: HTMLButtonElement = event.currentTarget;
         // setActiveToolbarItem(toolbarItem.name);

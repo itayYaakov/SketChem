@@ -1,4 +1,5 @@
 import { useAppDispatch } from "@app/hooks";
+import { ToolsConstants } from "@constants/tools.constants";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -6,8 +7,9 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
 import SelectSearch from "react-select-search";
 
-import { DummyToolbarItem } from "../ToolbarItem";
+import { DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
+import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 let isLibsEnabled = false;
 
@@ -143,7 +145,7 @@ export function DialogLoadWindow(props: any) {
     );
 }
 
-class ImportToolBarTemplate implements DummyToolbarItem {
+class ImportToolBarTemplate implements DialogToolbarItem {
     name: string;
 
     keyboardKeys?: string[];
@@ -157,6 +159,14 @@ class ImportToolBarTemplate implements DummyToolbarItem {
     }
 }
 
-const Import = new ImportToolBarTemplate("Import", DialogLoadWindow, ["D"]);
+RegisterToolbarWithName(ToolsConstants.ToolsNames.Import, {
+    DialogRender: DialogLoadWindow,
+});
+
+const Import: ToolbarItemButton = {
+    name: "Import",
+    toolName: ToolsConstants.ToolsNames.Import,
+    keyboardKeys: ["D"],
+};
 
 export default Import;

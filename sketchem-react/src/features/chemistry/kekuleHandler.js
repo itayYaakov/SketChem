@@ -6,7 +6,7 @@ import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@utils/mathsTs/Vector2";
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 
 import { Atom, Bond } from "../../entities";
 
@@ -108,7 +108,7 @@ const drawMolOneTime = (fileContext) => {
 };
 
 export function KekuleShow() {
-    const fileContext = useSelector(getFileImportContext);
+    const fileContext = useSelector(getFileImportContext, shallowEqual);
 
     function setup() {}
     useEffect(setup, []);

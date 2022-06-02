@@ -1,9 +1,7 @@
 import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
 
 export interface ActiveToolbarItem {
-    readonly name: string;
-
-    readonly onActivate?: () => void;
+    readonly onActivate?: (params?: any) => void;
 
     readonly onMouseDown?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
@@ -16,19 +14,41 @@ export interface ActiveToolbarItem {
     readonly onMouseLeave?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
 
     readonly onDeactivate?: () => void;
-
-    readonly keyboardKeys?: string[];
 }
 
-export interface DummyToolbarItem {
-    readonly name: string;
-
+export interface DialogToolbarItem {
     readonly DialogRender: (props: any) => JSX.Element;
-
-    readonly keyboardKeys?: string[];
 }
 
-export type ToolbarItem = ActiveToolbarItem | DummyToolbarItem;
+export interface ChargeToolbarData {
+    readonly charge: number;
+}
 
-export const isDummyToolbarItem = (o: ToolbarItem): o is DummyToolbarItem =>
-    (o as DummyToolbarItem).DialogRender !== undefined;
+export type ToolbarItem = ActiveToolbarItem | DialogToolbarItem;
+export interface SimpleToolbarItemButton {
+    name: string;
+
+    toolName: string;
+
+    keyboardKeys?: string[];
+}
+export interface ToolbarItemButton extends SimpleToolbarItemButton {
+    attributes?: any;
+}
+
+export class SimpleToolbarItemButtonBuilder implements SimpleToolbarItemButton {
+    name: string;
+
+    toolName: string;
+
+    keyboardKeys?: string[];
+
+    constructor(name: string, toolName: string, keyboardKeys?: string[]) {
+        this.name = name;
+        this.toolName = toolName;
+        this.keyboardKeys = keyboardKeys;
+    }
+}
+
+export const isDialogToolbarItem = (o: ToolbarItem): o is DialogToolbarItem =>
+    (o as DialogToolbarItem).DialogRender !== undefined;

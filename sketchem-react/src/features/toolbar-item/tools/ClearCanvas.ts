@@ -1,24 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AtomConstants } from "@constants/atom.constants";
 import { EntityType } from "@constants/enum.constants";
+import { ToolsConstants } from "@constants/tools.constants";
 import type { Atom, Bond } from "@entities";
 import knn from "@features/shared/rbushKnn";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 
-import { ActiveToolbarItem } from "../ToolbarItem";
+import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { BoxSelect } from "./SelectTemplate";
+import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 class ClearCanvas implements ActiveToolbarItem {
-    name: string;
-
-    keyboardKeys?: string[];
-
-    constructor(name: string, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys;
-    }
-
     onActivate(): void {
         const { atomsMap, bondsMap } = EntitiesMapsStorage;
 
@@ -32,6 +25,10 @@ class ClearCanvas implements ActiveToolbarItem {
     }
 }
 
-const clearCanvas = new ClearCanvas("clean", ["A"]);
+const clearCanvasTool = new ClearCanvas();
+
+RegisterToolbarWithName(ToolsConstants.ToolsNames.Clear, clearCanvasTool);
+
+const clearCanvas = new SimpleToolbarItemButtonBuilder("Clear Canvas", ToolsConstants.ToolsNames.Clear, ["B"]);
 
 export default clearCanvas;

@@ -1,6 +1,6 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
-import { ElementsData } from "@constants/elements.constants";
+import { ElementsData, PtElement } from "@constants/elements.constants";
 import { EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
@@ -69,11 +69,16 @@ export class Atom {
             throw new Error(`Atom constructor not implement args = ${args}`);
         }
 
-        const element = ElementsData.elementsMap.get(this.attributes.symbol);
-        this.attributes.color = color ?? element?.jmolColor ?? "#000000";
+        const elementsMap = ElementsData.elementsBySymbolMap;
+        const element = elementsMap.get(this.attributes.symbol);
+        this.attributes.color = this.getColor(element, color);
 
         this.addInstanceToMap();
         this.lifeStage = EntityLifeStage.Initialized;
+    }
+
+    getColor(element: PtElement | undefined, color?: string) {
+        return color ?? element?.cpkColor ?? element?.jmolColor ?? "#000000";
     }
 
     private modifyTree(add: boolean = true) {
@@ -337,6 +342,10 @@ export class Atom {
         return this.attributes.center.clone();
     }
 
+    getSymbol() {
+        return this.attributes.symbol;
+    }
+
     getAttributes() {
         // return a copy of attributes
         return { ...this.attributes };
@@ -361,7 +370,10 @@ export class Atom {
                 this.drawCharge();
             }
             if (redrawLabel) {
+                const element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
+                this.attributes.color = this.getColor(element);
                 this.drawLabel();
+                this.drawCharge();
             }
         }
     }

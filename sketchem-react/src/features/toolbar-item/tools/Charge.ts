@@ -1,23 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AtomConstants } from "@constants/atom.constants";
 import { EntityType } from "@constants/enum.constants";
+import { ToolsConstants } from "@constants/tools.constants";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { MouseEventCallBackProperties } from "@src/types";
 
-import { ActiveToolbarItem } from "../ToolbarItem";
+import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { RegisterToolbarWithName } from "./ToolsMapper.helper";
+
+interface IChargeAttributes {
+    readonly charge: number;
+}
+export interface ChargeToolbarItemButton extends ToolbarItemButton {
+    attributes: IChargeAttributes;
+}
 
 class Charge implements ActiveToolbarItem {
-    name: string;
+    private charge: number = 0;
 
-    keyboardKeys?: string[];
-
-    private charge: number;
-
-    constructor(name: string, charge: number, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys ?? undefined;
-        this.charge = charge;
+    onActivate(attributes: IChargeAttributes) {
+        this.charge = attributes.charge;
     }
 
     onMouseClick(eventHolder: MouseEventCallBackProperties) {
@@ -25,7 +28,7 @@ class Charge implements ActiveToolbarItem {
 
         const atomMaxDistance = AtomConstants.SelectDistance;
         const NeighborsToFind = 1;
-        const { atomsTree, atomsMap, knn } = EntitiesMapsStorage;
+        const { atomsTree, knn } = EntitiesMapsStorage;
 
         const closetSomethings = knn(
             atomsTree,
@@ -51,7 +54,22 @@ class Charge implements ActiveToolbarItem {
     }
 }
 
-const ChargePlus = new Charge("Charge Plus", 1, ["A"]);
-const ChargeMinus = new Charge("Charge Minus", -1, ["A"]);
+const charge = new Charge();
+
+RegisterToolbarWithName(ToolsConstants.ToolsNames.Charge, charge);
+
+const ChargeMinus: ChargeToolbarItemButton = {
+    name: "Charge Minus",
+    toolName: ToolsConstants.ToolsNames.Charge,
+    attributes: { charge: -1 },
+    keyboardKeys: ["A"],
+};
+
+const ChargePlus: ChargeToolbarItemButton = {
+    name: "Charge Plus",
+    toolName: ToolsConstants.ToolsNames.Charge,
+    attributes: { charge: 1 },
+    keyboardKeys: ["A"],
+};
 
 export { ChargeMinus, ChargePlus };

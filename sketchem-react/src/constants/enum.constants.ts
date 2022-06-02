@@ -49,8 +49,8 @@ export enum LayersNames {
 export enum MouseMode {
     Default = -1,
     EmptyPress = 1,
-    atomPressed,
-    bondPressed,
+    AtomPressed,
+    BondPressed,
 }
 
 export enum BondOrder {

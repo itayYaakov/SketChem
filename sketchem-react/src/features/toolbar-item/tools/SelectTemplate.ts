@@ -12,7 +12,8 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BoundingBox, MouseEventCallBackProperties } from "@types";
 
-import { ActiveToolbarItem } from "../ToolbarItem";
+import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 enum SelectionMode {
     Empty = -1,
@@ -32,13 +33,9 @@ interface IMovesItem {
 }
 
 abstract class SelectTemplate implements ActiveToolbarItem {
-    name: string;
-
     private static selectedAtoms: Map<number, Atom>;
 
     private static selectedBonds: Map<number, Bond>;
-
-    keyboardKeys?: string[];
 
     minBoundingBoxPoint!: Vector2;
 
@@ -50,9 +47,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     movesItem?: IMovesItem;
 
-    constructor(name: string, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys ?? undefined;
+    constructor() {
         SelectTemplate.selectedAtoms = new Map<number, Atom>();
         SelectTemplate.selectedBonds = new Map<number, Bond>();
         this.selectionMode = SelectionMode.Empty;
@@ -441,7 +436,7 @@ class LassoSelect extends SelectTemplate {
         return inside;
     }
 
-    pointIsInShape(x: number, y: number, bBox: BoundingBox) {
+    pointIsInShape(x: number, y: number) {
         return this.pointIsInPolygon(x, y, this.polygon);
     }
 
@@ -458,7 +453,7 @@ class LassoSelect extends SelectTemplate {
     }
 
     updateShape(eventHolder: MouseEventCallBackProperties): void {
-        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
+        const { mouseCurrentLocation } = eventHolder;
         if (!this.path || !this.pathArray) return;
 
         this.polygon.push([mouseCurrentLocation.x, mouseCurrentLocation.y]);
@@ -471,7 +466,16 @@ class LassoSelect extends SelectTemplate {
     }
 }
 
-const boxSelect = new BoxSelect("Box Select", ["A"]);
-const lassoSelect = new LassoSelect("Lasso Select", ["A"]);
+const boxSelectTool = new BoxSelect();
+const lassoSelectTool = new LassoSelect();
+
+// !!!! delete later !! not needed
+export { boxSelectTool };
+
+RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectBox, boxSelectTool);
+RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectLasso, lassoSelectTool);
+
+const boxSelect = new SimpleToolbarItemButtonBuilder("Box Select", ToolsConstants.ToolsNames.SelectBox, ["A"]);
+const lassoSelect = new SimpleToolbarItemButtonBuilder("Lasso Select", ToolsConstants.ToolsNames.SelectLasso, ["A"]);
 
 export { lassoSelect, boxSelect as simpleSelect };

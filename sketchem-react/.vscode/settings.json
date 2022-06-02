@@ -28,7 +28,8 @@
     "files.exclude": {
         "**/*.min.js": true,
         "build/": true,
-        "node_modules/": true
+        "node_modules/": true,
+        "public/": true
     },
     "explorer.fileNesting.enabled": true
 }

@@ -4,8 +4,13 @@ import "./svgpanzoom";
 import { useWindowSize } from "@app/resizeHook";
 import { getToolbarItem } from "@app/selectors";
 import { Direction, LayersNames, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
-import GetToolbarByName from "@features/toolbar-item/GetToolbarByName";
-import { ActiveToolbarItem } from "@features/toolbar-item/ToolbarItem";
+import {
+    ActiveToolbarItem,
+    isDialogToolbarItem,
+    ToolbarItem,
+    ToolbarItemButton,
+} from "@features/toolbar-item/ToolbarItem";
+import { GetToolbarByName } from "@features/toolbar-item/tools/ToolsMapper.helper";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import styles from "@styles/index.module.scss";
 import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
@@ -14,7 +19,7 @@ import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 // import panzoom, { PanZoom } from "panzoom";
 import React, { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 
 import SetDefs from "./SetDefs";
 
@@ -31,9 +36,26 @@ function getBackgroundColor(stringInput: string): string {
 
 function SketchPad(props: Props) {
     const divDomElement = useRef<HTMLDivElement>(null!);
-    const activeToolBar = useRef<ActiveToolbarItem>(null!);
     const initialZoomRatio = useRef<number>(0);
-    activeToolBar.current = GetToolbarByName(useSelector(getToolbarItem).selectedToolbarItem);
+
+    const toolbarButtonRef = useRef<ToolbarItem>(null!);
+    const activeToolbarButton = useRef<ActiveToolbarItem | undefined>(undefined);
+    const currentToolbarName = useSelector(getToolbarItem, shallowEqual).selectedToolbarItem;
+
+    if (currentToolbarName) {
+        const currentToolbar = GetToolbarByName(currentToolbarName);
+
+        if (currentToolbar) {
+            toolbarButtonRef.current = currentToolbar;
+            if (isDialogToolbarItem(toolbarButtonRef.current)) {
+                activeToolbarButton.current = undefined;
+            } else {
+                activeToolbarButton.current = toolbarButtonRef.current;
+            }
+        } else {
+            activeToolbarButton.current = undefined;
+        }
+    }
 
     // const color = useRef<string>(getBackgroundColor(""));
 
@@ -64,7 +86,7 @@ function SketchPad(props: Props) {
                 mouseUpLocation: mouseCurrentLocation,
             } as MouseEventCallBackProperties;
 
-            const response = activeToolBar.current?.onMouseClick?.(args);
+            const response = activeToolbarButton.current?.onMouseClick?.(args);
             previousMouseLocation = mouseCurrentLocation;
         }
 
@@ -78,11 +100,11 @@ function SketchPad(props: Props) {
                 e,
                 canvas: svgRef.current,
                 previousMouseLocation,
-                mouseDownLocation,
-                mouseCurrentLocation: mouseDownLocation,
+                mouseDownLocation: mouseDownLocation.clone(),
+                mouseCurrentLocation: mouseDownLocation.clone(),
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;
-            activeToolBar.current?.onMouseDown?.(args);
+            activeToolbarButton.current?.onMouseDown?.(args);
             previousMouseLocation = mouseDownLocation;
         }
 
@@ -97,28 +119,30 @@ function SketchPad(props: Props) {
                 e,
                 canvas: svgRef.current,
                 previousMouseLocation,
-                mouseDownLocation,
+                mouseDownLocation: mouseDownLocation.clone(),
                 mouseCurrentLocation,
                 mouseUpLocation: undefined,
             } as MouseEventCallBackProperties;
             // !!! remove response?
-            const response = activeToolBar.current?.onMouseMove?.(args);
+            const response = activeToolbarButton.current?.onMouseMove?.(args);
             previousMouseLocation = mouseCurrentLocation;
         }
 
         function handleMouseUp(e: MouseEvent) {
             e.preventDefault();
 
+            if (!mouseDownLocation) return;
+
             mouseUpLocation = calculateLocation(e);
             const args = {
                 e,
                 canvas: svgRef.current,
                 previousMouseLocation,
-                mouseDownLocation,
+                mouseDownLocation: mouseDownLocation.clone(),
                 mouseCurrentLocation: mouseUpLocation,
                 mouseUpLocation,
             } as MouseEventCallBackProperties;
-            activeToolBar.current?.onMouseUp?.(args);
+            activeToolbarButton.current?.onMouseUp?.(args);
 
             mouseDownLocation = undefined;
             previousMouseLocation = mouseUpLocation;
@@ -136,7 +160,7 @@ function SketchPad(props: Props) {
                 mouseCurrentLocation,
                 mouseUpLocation,
             } as MouseEventCallBackProperties;
-            activeToolBar.current?.onMouseLeave?.(args);
+            activeToolbarButton.current?.onMouseLeave?.(args);
 
             mouseDownLocation = undefined;
             previousMouseLocation = mouseCurrentLocation;

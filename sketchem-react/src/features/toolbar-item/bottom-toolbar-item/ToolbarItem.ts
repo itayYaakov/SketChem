@@ -1,17 +1,9 @@
 import { Direction } from "@constants/enum.constants";
 
-import { ToolbarItem } from "../ToolbarItem";
+import { ToolbarItemButton } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
 
-const toolbarItemsList: ToolbarItem[] = [
-    {
-        name: "Empty Button 1",
-        onMouseDown: () => {},
-        onMouseMove: () => {},
-        onMouseUp: () => {},
-        keyboardKeys: ["A"],
-    } as ToolbarItem,
-];
+const toolbarItemsList: ToolbarItemButton[] = [];
 
 const props: IToolbarItemsProps = {
     toolbarItemsList,

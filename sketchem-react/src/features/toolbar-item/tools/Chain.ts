@@ -10,7 +10,8 @@ import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@typ
 import { AngleUtils } from "@utils/AngleUtils";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
-import { BondToolBarItem } from "./bondToolBarItems";
+import { BondToolBarItem, BondToolbarItemButton } from "./BondToolBarItems";
+import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 class ChainToolBar extends BondToolBarItem {
     chainAddedBonds: Bond[] = [];
@@ -34,7 +35,7 @@ class ChainToolBar extends BondToolBarItem {
             return;
         }
 
-        if (this.mode === MouseMode.bondPressed) {
+        if (this.mode === MouseMode.BondPressed) {
             // !!! change bond type
             return;
         }
@@ -145,62 +146,25 @@ class ChainToolBar extends BondToolBarItem {
         this.chainAddedBonds = this.chainAddedBonds.slice(0, chainLength);
     }
 
-    onMouseUp(eventHolder: MouseEventCallBackProperties) {
-        // const { getAtomById, atomAtPoint, bondAtPoint } = EntitiesMapsStorage;
-        // const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
-        // if (this.mode === MouseMode.Default) {
-        //     // !!! ??? what to do
-        //     return;
-        // }
-        // if (this.mode === MouseMode.atomPressed) {
-        //     // !!! ??? what to do
-        //     // return;
-        // }
-        // if (this.mode === MouseMode.bondPressed) {
-        //     // !!! ??? what to do
-        // }
-        // if (this.mode === MouseMode.EmptyPress && this.context.endAtom) {
-        //     // !!! ??? all is draw - just need to send action?
-        //     return;
-        // }
-        // if (this.context.endAtom === undefined) {
-        //     const BondVector = new Vector2(1, 0).scaleNew(EditorConstants.Scale);
-        //     if (this.context.rotation) {
-        //         const kekuleAtom = this.context.startAtom?.getKekuleNode();
-        //         const currentRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, this.bondOrder);
-        //         // const dSingleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Single);
-        //         // const dDoubleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Double);
-        //         // const dTripleResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.Triple);
-        //         // const dWedgeFrontResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeFront);
-        //         // const dWedgeBackResultRad = KekuleUtils.getNewBondDefAngle(kekuleAtom, BondOrder.WedgeBack);
-        //         // const dSingleResultDeg = (dSingleResultRad * 180) / Math.PI;
-        //         // const dDoubleResultDeg = (dDoubleResultRad * 180) / Math.PI;
-        //         // const dTripleResultDeg = (dTripleResultRad * 180) / Math.PI;
-        //         // const dWedgeFrontResultDeg = (dWedgeFrontResultRad * 180) / Math.PI;
-        //         // const dWedgeBackResultDeg = (dWedgeBackResultRad * 180) / Math.PI;
-        //         // BondVector.rotateSelf(this.context.rotation);
-        //         // BondVector.rotateSelf(-(this.crDeg * Math.PI) / 180);
-        //         const rotation = KekuleUtils.calcPreferred2DBondGrowingDirection(kekuleAtom, currentRad, true);
-        //         const currentDeg = (rotation * 180) / Math.PI;
-        //         // BondVector.rotateRadSelf(rotation);
-        //         BondVector.rotateRadSelf(-rotation);
-        //     } else {
-        //         BondVector.rotateRadSelf(this.bondOrder === BondOrder.Single ? -(Math.PI / 6) : 0);
-        //     }
-        //     const endAtomCenter = this.context.startAtom?.getCenter().addNew(BondVector);
-        //     this.context.endAtom = new Atom({ props: { symbol: "C", center: endAtomCenter } } as IAtom);
-        //     this.context.startAtom!.draw();
-        //     this.context.endAtom.draw();
-        // }
-        // this.context.bond = this.context.bond ?? this.createBond();
-        // this.context.bond.movedByAtomId(this.context.endAtom.getId());
-        // this.context = {};
-    }
+    onMouseUp(eventHolder: MouseEventCallBackProperties) {}
 
     cancel() {
         this.context = {};
     }
 }
 
-const Chain = new ChainToolBar("Chain", BondOrder.Single, BondStereoKekule.NONE, ["A"]);
+const chain = new ChainToolBar();
+
+RegisterToolbarWithName(ToolsConstants.ToolsNames.Chain, chain);
+
+const Chain: BondToolbarItemButton = {
+    name: "Chain",
+    toolName: ToolsConstants.ToolsNames.Chain,
+    attributes: {
+        bondOrder: BondOrder.Single,
+        bondStereo: BondStereoKekule.NONE,
+    },
+    keyboardKeys: ["A"],
+};
+
 export default Chain;

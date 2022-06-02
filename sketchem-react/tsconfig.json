@@ -38,7 +38,7 @@
     ],
     "exclude": [
         "./node_modules/",
-        "./public/kekule-js-dist",
+        "./public/kekule-js-dist/*",
         ".vscode",
         "src/features/counter/",
         "./src/features/counter/*",

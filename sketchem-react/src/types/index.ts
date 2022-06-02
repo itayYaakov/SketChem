@@ -74,11 +74,24 @@ export interface LoadFileAction {
 export interface SaveFileAction {
     format: string;
 }
+
+export interface ToolbarAction {
+    button: string;
+    // if pressed button is an atom element from the periodic table
+    atomLabel?: string;
+}
+
+export interface FrequentAtoms {
+    atoms: string[];
+    currentAtom: string;
+}
+
 export interface ToolbarItemState {
     selectedToolbarItem: string;
     dialogWindow: string;
     importContext: LoadFileAction;
     exportContext: SaveFileAction;
+    frequentAtoms: FrequentAtoms;
     // bondMouseEvent: BondMouseEventState;
 }
 export interface ChemistryState {
