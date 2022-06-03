@@ -1,12 +1,15 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AtomConstants } from "@constants/atom.constants";
+import { ElementsData } from "@constants/elements.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
-import type { Atom, Bond } from "@entities";
+import { Atom, Bond } from "@entities";
 import type { NamedPoint, PointRBush } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import { MouseEventCallBackProperties } from "@src/types";
+import { IAtom, MouseEventCallBackProperties } from "@src/types";
 import { LayersUtils } from "@src/utils/LayersUtils";
+import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle } from "@svgdotjs/svg.js";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
@@ -14,6 +17,27 @@ import { RegisterToolbarWithName } from "../ToolsMapper.helper";
 
 const { atomsTree, atomsMap, bondsTree, bondsMap } = EntitiesMapsStorage;
 
+class DrawAllPeriodicTable implements ActiveToolbarItem {
+    onActivate() {
+        const startX = 1000;
+        const atomCenter = new Vector2(startX, 500);
+        // for (let index = 1; index < 119; index += 1) {
+        for (let index = 1; index < 112; index += 1) {
+            const elem = ElementsData.elementsByAtomicNumberMap.get(index);
+            if (!elem) throw new Error(`Element with atomic number ${index} not found`);
+            if ((index - 1) % 14 === 0) {
+                atomCenter.x = startX - 80;
+                atomCenter.x = startX;
+                atomCenter.y += 80;
+            }
+
+            atomCenter.addValuesSelf(80, 0);
+
+            const atom = new Atom({ props: { symbol: elem.symbol, center: atomCenter } } as IAtom);
+            atom.draw();
+        }
+    }
+}
 class DrawTree implements ActiveToolbarItem {
     tree: PointRBush;
 
@@ -91,9 +115,11 @@ class DrawTree implements ActiveToolbarItem {
 
 const atomsDrawTree = new DrawTree(atomsTree, true);
 const bondsDrawTree = new DrawTree(bondsTree, false);
+const drawAllPeriodic = new DrawAllPeriodicTable();
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawAtomTree, atomsDrawTree);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawBondTree, bondsDrawTree);
+RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawAllPeriodic, drawAllPeriodic);
 
 const DrawAtoms = new SimpleToolbarItemButtonBuilder(
     "draw atoms (debug)",
@@ -106,4 +132,10 @@ const DrawBonds = new SimpleToolbarItemButtonBuilder(
     ["A"]
 );
 
-export { DrawAtoms, DrawBonds };
+const DrawAllPeriodic = new SimpleToolbarItemButtonBuilder(
+    "draw all periodic (debug) ",
+    ToolsConstants.ToolsNames.DebugDrawAllPeriodic,
+    ["A"]
+);
+
+export { DrawAllPeriodic, DrawAtoms, DrawBonds };

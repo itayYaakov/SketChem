@@ -1,0 +1,112 @@
+// @import "../../node_modules/bootstrap/scss/functions";
+// @import "../node_modules/bootstrap/scss/variables";
+// @import "../node_modules/bootstrap/scss/mixins";
+
+$toolbar-min-size: 80%;
+$toolbar-max-size: 96%;
+
+.periodic_table {
+    width: 100%;
+    height: 100%;
+    table-layout: fixed ;
+    display: table;
+    color: #252525;
+    background-color: #fff;
+}
+
+.periodic_table_row {
+    display: table-row;
+}
+
+.periodic_table_cell {
+    display: table-cell;
+    padding: 0.1em;
+
+}
+
+.periodic_table_cell_button{
+    // color: rgb(6, 118, 135)
+    width: 100%;
+    height: 100%;
+    min-width: 0.5em;
+    min-height: 0.5em;
+    padding: 0.1em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-radius: 0.1em !important;
+    // color:#252525;
+    // background-color: #c0c1c1 !important;
+    // border-style: none !important;
+    // min-width: 6em;
+    // min-height: 5em;
+
+}
+
+.periodic_table_number {
+    text-align: left;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.periodic_table_symbol {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.periodic_table_name {
+    text-align: center;
+    font-size: 0.7em;
+}
+
+
+$btnText: #ffffff;
+
+$btnBorderColor: #0f0f0f10;
+// @mixin button-variant(
+//   $background,
+//   $border,
+//   $color: color-contrast($background),
+// }
+.periodic_table_category_diatomic_nonmetal {
+    @include button-variant(#66cf68, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_unknown {
+    @include button-variant(#a5b4b5, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_noble_gas {
+    @include button-variant(#7adce7, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_alkali_metal {
+    @include button-variant(#ef5350, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_alkaline_earth_metal {
+    @include button-variant(#dfb566, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_metalloid {
+    @include button-variant(#d9db6b, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_polyatomic_nonmetal {
+    @include button-variant(#868760, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_post-transition_metal {
+    @include button-variant(#9b9797, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_transition_metal {
+    @include button-variant(#df6c80, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_lanthanide {
+    @include button-variant(#ab84ef, $btnBorderColor, $btnText);
+}
+
+.periodic_table_category_actinide {
+    @include button-variant(#ba43cf, $btnBorderColor, $btnText);
+}

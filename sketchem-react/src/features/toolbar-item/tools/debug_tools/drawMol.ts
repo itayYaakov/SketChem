@@ -21,7 +21,7 @@ class DrawMolClass implements ActiveToolbarItem {
             format: "mol",
             replace: true,
         };
-        store.dispatch(actions.load_file(payload));
+        store.dispatch(actions.loadFile(payload));
     }
     // {
     //     name: "Load an example .mol file (debug)",

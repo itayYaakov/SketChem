@@ -163,13 +163,24 @@ export function registerBondFromAttributes(attributes) {
 
 const defBondAngles = [];
 const angle120 = (Math.PI * 2) / 3;
-defBondAngles[0] = angle120; // default value for unset bonds
+const angle30 = (Math.PI * 30) / 180;
 // !!! disabled for now
 // defBondAngles[BondOrder.EXPLICIT_AROMATIC] = [angle120];
-defBondAngles[BondOrder.Triple] = [Math.PI];
-defBondAngles[BondOrder.Double] = [angle120];
-defBondAngles[BondOrder.Double][BondOrder.Double] = Math.PI;
+// defBondAngles[0] = 0; // default value for unset bonds
+// defBondAngles[BondOrder.Single] = [angle30];
+// defBondAngles[BondOrder.Double][BondOrder.Double] = Math.PI;
+// defBondAngles[BondOrder.Double] = [0];
+// defBondAngles[BondOrder.Triple] = [0];
+
+defBondAngles[0] = angle120; // default value for unset bonds
 defBondAngles[BondOrder.Single] = [angle120];
+defBondAngles[BondOrder.Double] = [angle120];
+// defBondAngles[BondOrder.Double][BondOrder.Single] = angle30 * 4;
+defBondAngles[BondOrder.Double][BondOrder.Double] = Math.PI;
+defBondAngles[BondOrder.Triple] = [Math.PI];
+defBondAngles[BondOrder.Triple][BondOrder.Single] = Math.PI; // !!! my addition
+defBondAngles[BondOrder.Triple][BondOrder.Double] = angle120; // !!! my addition
+// defBondAngles[BondOrder.Triple][BondOrder.Triple] = Math.PI; // !!! my addition
 
 /**
  * Get the default bond angle of two valence bonds.
@@ -221,12 +232,14 @@ export function getNewBondDefAngle(startObj, newBondOrder = 0) {
         const existingConnector = startObj.getLinkedConnectorAt(0);
         if (existingConnector && existingConnector.getConnectedObjs().indexOf(surroundingObjs[0]) >= 0) {
             const existingBondOrder = existingConnector.getBondOrder ? existingConnector.getBondOrder() : null;
-            if (Kekule.ObjUtils.notUnset(existingBondOrder))
+            if (Kekule.ObjUtils.notUnset(existingBondOrder)) {
                 result = getDefAngleOfBonds(newBondOrder, existingBondOrder);
+            }
         }
     } else if (surroundingObjs.length === 0) {
         // no connected bond, use initialDirection
-        result = (30 * Math.PI) / 180;
+        result = 0;
+        if (newBondOrder === BondOrder.Single) result = (30 * Math.PI) / 180;
     } else {
         result = getDefAngleOfBonds(newBondOrder, 0);
     }

@@ -84,6 +84,12 @@ export default class Vector2 {
 
     addValues = (x: number, y: number): Vector2 => new Vector2(this.x + x, this.y + y);
 
+    addValuesSelf = (x: number, y: number): Vector2 => {
+        this.x += x;
+        this.y += y;
+        return this;
+    };
+
     addSelf = (a: Vector2) => {
         this.x += a.x;
         this.y += a.y;

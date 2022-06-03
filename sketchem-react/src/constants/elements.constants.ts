@@ -9,6 +9,7 @@ export interface PtElement {
     x: number;
     y: number;
     atomicMass: number;
+    customColor?: string;
     cpkColor?: string;
     rasmolColor?: string;
     jmolColor?: string;
@@ -1656,6 +1657,8 @@ const elementsArray: Array<PtElement> = [
 const elementsBySymbolMap = new Map<string, PtElement>();
 const elementsByAtomicNumberMap = new Map<number, PtElement>();
 const elementsByXYMap = new Map<string, PtElement>();
+// Kekule.js at the moment only support atoms up to 112
+const MaxAtomicNumber = 112;
 
 elementsArray.forEach((element) => {
     elementsBySymbolMap.set(element.symbol, element);
@@ -1663,8 +1666,19 @@ elementsArray.forEach((element) => {
     elementsByXYMap.set(`${element.x}|${element.y}`, element);
 });
 
+elementsBySymbolMap.get("H")!.customColor = "#000000";
+elementsBySymbolMap.get("He")!.customColor = "#009e9e";
+elementsBySymbolMap.get("N")!.customColor = "#2136aa";
+elementsBySymbolMap.get("O")!.customColor = "#659154";
+elementsBySymbolMap.get("S")!.customColor = "#e7a186";
+elementsBySymbolMap.get("Cl")!.customColor = "#179d4d";
+elementsBySymbolMap.get("Pt")!.customColor = "#a6a6b3";
+elementsBySymbolMap.get("Nd")!.customColor = "#8bb28b";
+elementsBySymbolMap.get("Ce")!.customColor = "#e5e5b3";
+
 export const ElementsData = {
     elementsBySymbolMap,
     elementsByAtomicNumberMap,
     elementsByXYMap,
+    MaxAtomicNumber,
 };

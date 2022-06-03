@@ -8,8 +8,8 @@ import Vector2 from "@utils/mathsTs/Vector2";
 export interface ActionItem {
     command: "ADD" | "CHANGE" | "REMOVE";
     type: "ATOM" | "BOND";
-    atomAttributes: AtomAttributes;
-    bondAttributes: BondAttributes;
+    atomAttributes?: AtomAttributes;
+    bondAttributes?: BondAttributes;
 }
 
 // interface ActionItems {
@@ -59,6 +59,42 @@ export interface IBond {
 }
 
 //= =============================================================================
+// Actions Attributes
+//= =============================================================================
+
+export interface IAtomAttributes {
+    readonly label: string;
+    readonly color: string;
+}
+
+export interface IBondAttributes {
+    readonly bondOrder: BondOrder;
+
+    readonly bondStereo: BondStereoKekule;
+}
+
+export interface IChargeAttributes {
+    readonly charge: number;
+}
+
+export type ToolbarItemButtonAttributes = IAtomAttributes | IBondAttributes | IChargeAttributes;
+
+export const isIAtomAttributes = (o: ToolbarItemButtonAttributes): o is IAtomAttributes =>
+    (o as IAtomAttributes).label !== undefined;
+
+export const isIBondAttributes = (o: ToolbarItemButtonAttributes): o is IBondAttributes =>
+    (o as IBondAttributes).bondOrder !== undefined;
+
+export const isIChargeAttributes = (o: ToolbarItemButtonAttributes): o is IChargeAttributes =>
+    (o as IChargeAttributes).charge !== undefined;
+
+export interface ToolbarAction {
+    button: string;
+    // if pressed button has it's own attributes (like charge, atom label or bond order)
+    attributes?: ToolbarItemButtonAttributes;
+}
+
+//= =============================================================================
 // State
 //= =============================================================================
 // export interface BondMouseEventState {
@@ -75,19 +111,13 @@ export interface SaveFileAction {
     format: string;
 }
 
-export interface ToolbarAction {
-    button: string;
-    // if pressed button is an atom element from the periodic table
-    atomLabel?: string;
-}
-
 export interface FrequentAtoms {
     atoms: string[];
     currentAtom: string;
 }
 
 export interface ToolbarItemState {
-    selectedToolbarItem: string;
+    toolbarContext: ToolbarAction;
     dialogWindow: string;
     importContext: LoadFileAction;
     exportContext: SaveFileAction;
@@ -95,7 +125,7 @@ export interface ToolbarItemState {
     // bondMouseEvent: BondMouseEventState;
 }
 export interface ChemistryState {
-    items?: ActionItem[];
+    items: ActionItem[][];
 }
 
 export interface RootState {
