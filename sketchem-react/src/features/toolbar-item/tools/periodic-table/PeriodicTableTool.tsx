@@ -5,7 +5,7 @@ import { IAtomAttributes, ToolbarAction } from "@src/types";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
 
 import { DialogToolbarItem, ToolbarItemButton } from "../../ToolbarItem";
 import { RegisterToolbarWithName } from "../ToolsMapper.helper";
@@ -44,12 +44,22 @@ export function PeriodicTableWindow(props: any) {
             aria-labelledby="contained-modal-title-vcenter"
             centered
         >
-            <div>
-                <PeriodicTable onAtomClick={onAtomClick} />
-                <Button className="m-2" onClick={hideMe}>
-                    Close
-                </Button>
-            </div>
+            <Card>
+                <Card.Header as="h5">Periodic Table</Card.Header>
+                <Card.Body>
+                    <div>
+                        <PeriodicTable onAtomClick={onAtomClick} />
+                    </div>
+                    <footer>
+                        <Button className={clsx("m-2", styles.buttons_close)} onClick={hideMe}>
+                            Close
+                        </Button>
+                        {/* <Button className={clsx("m-2", styles.buttons_ok)} onClick={hideMe}>
+                    Select (List)
+                </Button> */}
+                    </footer>
+                </Card.Body>
+            </Card>
         </Modal>
     );
 }

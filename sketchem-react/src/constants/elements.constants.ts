@@ -1671,10 +1671,15 @@ elementsBySymbolMap.get("He")!.customColor = "#009e9e";
 elementsBySymbolMap.get("N")!.customColor = "#2136aa";
 elementsBySymbolMap.get("O")!.customColor = "#659154";
 elementsBySymbolMap.get("S")!.customColor = "#e7a186";
+elementsBySymbolMap.get("Sc")!.customColor = "#b0b0b0";
 elementsBySymbolMap.get("Cl")!.customColor = "#179d4d";
 elementsBySymbolMap.get("Pt")!.customColor = "#a6a6b3";
 elementsBySymbolMap.get("Nd")!.customColor = "#8bb28b";
 elementsBySymbolMap.get("Ce")!.customColor = "#e5e5b3";
+elementsBySymbolMap.get("Gd")!.customColor = "#25cc9a";
+elementsBySymbolMap.get("Pm")!.customColor = "#85d6a5";
+elementsBySymbolMap.get("Pr")!.customColor = "#b0d99c";
+elementsBySymbolMap.get("Y")!.customColor = "#74d4d4";
 
 export const ElementsData = {
     elementsBySymbolMap,

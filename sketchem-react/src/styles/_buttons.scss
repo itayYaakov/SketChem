@@ -1,0 +1,19 @@
+@use "material_colors"as c;
+
+$btnBorderColor: #0f0f0f10;
+$txtColor: #fefefe;
+
+@mixin buttons_category_base($baseColor, $hoverColor) {
+    @include button-variant($baseColor, $btnBorderColor, $txtColor, $hoverColor, $btnBorderColor, $txtColor);
+    // @include button-variant($baseColor, $btnBorderColor, $txtColor);
+    font-weight: 700;
+    // @include border-radius($border-radius, 0)
+}
+
+.buttons_ok {
+    @include buttons_category_base(c.$blue-gray-500, c.$blue-gray-400);
+}
+
+.buttons_close {
+    @include buttons_category_base(c.$red-A700, c.$red-A400);
+}

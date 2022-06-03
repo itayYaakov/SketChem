@@ -16,19 +16,48 @@ interface PeriodicTableProps {
 
 function buildCell(props: PeriodicTableProps, j: number, i: number) {
     const { onAtomClick } = props;
+    const key = `periodic_table_cell-${i}-${j}`;
+
     let cell;
+    let scope;
+    let uniqueStyle;
     if (i === 0 && j === 0) {
         cell = null;
+        scope = "col";
+        uniqueStyle = { width: "1em", height: "auto" };
     } else if (i === 0) {
         cell = j;
+        scope = "col";
     } else if (j === 0) {
         if (i > 7) {
             cell = null;
         } else {
             cell = i;
         }
-    } else {
-        const ff = ElementsData.elementsByXYMap;
+        scope = "row";
+    }
+
+    // handle labels header and first column
+    if (scope) {
+        return (
+            <th scope={scope} style={uniqueStyle} key={key} className={clsx(styles.periodic_table_cell)}>
+                {cell}
+            </th>
+        );
+    }
+
+    let group: string[] = [];
+    if ((i === 6 && j === 3) || (i === 9 && j === 2)) {
+        cell = "*";
+        group = [styles.periodic_table_category_lanthanide, styles.periodic_table_symbol, styles.unclickable_div];
+    } else if ((i === 7 && j === 3) || (i === 10 && j === 2)) {
+        cell = "**";
+        group = [styles.periodic_table_category_actinide, styles.periodic_table_symbol, styles.unclickable_div];
+    } else if (i === 8) {
+        uniqueStyle = { height: "3em" };
+    }
+
+    if (!cell) {
         const element = ElementsData.elementsByXYMap.get(`${i}|${j}`);
         if (!element || element.number > ElementsData.MaxAtomicNumber) {
             cell = null;
@@ -41,13 +70,12 @@ function buildCell(props: PeriodicTableProps, j: number, i: number) {
             });
         }
     }
-    const key = `periodic_table_cell-${i}-${j}`;
 
     // <div key={key} className={clsx(styles.periodic_table_cell, "rounded-0")}>
     return (
-        <div key={key} className={clsx(styles.periodic_table_cell)}>
+        <td key={key} style={uniqueStyle} className={clsx(styles.periodic_table_cell, group)}>
             {cell}
-        </div>
+        </td>
     );
 }
 
@@ -58,9 +86,9 @@ function buildRow(props: PeriodicTableProps, i: number) {
     }
     const key = `periodic_table_row-${i}`;
     return (
-        <div key={key} className={clsx(styles.periodic_table_row)}>
+        <tr key={key} className={clsx(styles.periodic_table_row)}>
             {cells}
-        </div>
+        </tr>
     );
 }
 
@@ -78,7 +106,7 @@ function PeriodicTable(props: PeriodicTableProps) {
     const table = buildTable(props);
     const { className } = props;
     const fullClassName = clsx(styles.periodic_table, className ?? "");
-    return <div className={fullClassName}>{table}</div>;
+    return <table className={fullClassName}>{table}</table>;
 }
 
 PeriodicTable.defaultProps = {
