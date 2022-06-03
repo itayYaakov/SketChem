@@ -1,12 +1,14 @@
 import { BondConstants } from "@constants/bond.constants";
 import { BondOrder, BondStereoKekule, EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
+import { actions } from "@features/chemistry/chemistrySlice";
+// import { addHistoryItem } from "@features/editor/Editor";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
-import { BondAttributes, IBond } from "@types";
+import { ActionItem, BondAttributes, IBond } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
 // !!! MOVE TO REDUX??
@@ -73,6 +75,15 @@ export class Bond {
         this.setBondCenter();
         this.addInstanceToMap();
         this.lifeStage = EntityLifeStage.Initialized;
+
+        const historyItem: ActionItem = {
+            command: "ADD",
+            type: "BOND",
+            atomAttributes: undefined,
+            bondAttributes: this.attributes,
+        };
+
+        // addHistoryItem(historyItem);
     }
 
     updateAtomsReference(attributes?: Partial<BondAttributes>) {
@@ -304,22 +315,42 @@ export class Bond {
         if (redraw) {
             this.drawStereoAndOrder();
         }
+
+        const historyItem: ActionItem = {
+            command: "CHANGE",
+            type: "BOND",
+            atomAttributes: undefined,
+            bondAttributes: this.attributes,
+        };
+
+        // addHistoryItem(historyItem);
     }
 
-    destroy(ignoreAtomRemove: number[] = []) {
+    destroy(ignoreAtomRemove: number[] = [], IShouldNotifyAtoms: boolean = true) {
         if (this.lifeStage === EntityLifeStage.DestroyInit || this.lifeStage === EntityLifeStage.Destroyed) {
             return;
         }
         this.lifeStage = EntityLifeStage.DestroyInit;
         if (this.connectorObj) {
             this.undraw();
-            this.removeConnectedAtoms(ignoreAtomRemove);
+            if (IShouldNotifyAtoms) {
+                this.removeConnectedAtoms(ignoreAtomRemove);
+            }
 
             this.removeInstanceFromMapAndTree();
             KekuleUtils.destroy(this.connectorObj);
             this.connectorObj = null;
         }
         this.lifeStage = EntityLifeStage.Destroyed;
+
+        const historyItem: ActionItem = {
+            command: "REMOVE",
+            type: "BOND",
+            atomAttributes: undefined,
+            bondAttributes: this.attributes,
+        };
+
+        // addHistoryItem(historyItem);
     }
 
     static generateNewId() {

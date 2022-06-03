@@ -57,7 +57,7 @@ function ExportFileTab(props: any) {
             format,
             replace: true,
         };
-        dispatch(actions.load_file(payload));
+        dispatch(actions.loadFile(payload));
         onHide();
     };
 

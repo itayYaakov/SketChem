@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AtomConstants } from "@constants/atom.constants";
-import { EntityType } from "@constants/enum.constants";
+import { store } from "@app/store";
 import { ToolsConstants } from "@constants/tools.constants";
-import type { Atom, Bond } from "@entities";
-import knn from "@features/shared/rbushKnn";
-import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
-import { BoxSelect } from "./SelectTemplate";
+import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 class ClearCanvas implements ActiveToolbarItem {
@@ -16,12 +12,16 @@ class ClearCanvas implements ActiveToolbarItem {
         const { atomsMap, bondsMap } = EntitiesMapsStorage;
 
         bondsMap.forEach((bond) => {
-            bond.destroy();
+            bond.destroy([], false);
         });
 
         atomsMap.forEach((atom) => {
-            atom.destroy();
+            atom.destroy([], false);
         });
+
+        store.dispatch(actions.clearCanvas());
+
+        // !!! need to reset the tool to "" or selection
     }
 }
 

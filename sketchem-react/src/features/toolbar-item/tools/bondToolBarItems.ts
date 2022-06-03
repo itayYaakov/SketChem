@@ -6,17 +6,12 @@ import { EntitiesMapsStorage } from "@features/shared/storage";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
+import { BondAttributes, IAtom, IBond, IBondAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { EntityBaseTool } from "./EntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
-interface IBondAttributes {
-    readonly bondOrder: BondOrder;
-
-    readonly bondStereo: BondStereoKekule;
-}
 export interface BondToolbarItemButton extends ToolbarItemButton {
     attributes: IBondAttributes;
 }

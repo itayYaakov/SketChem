@@ -2,13 +2,14 @@ import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
+import { editorObj } from "@features/editor/Editor";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import styles from "@styles/index.module.scss";
 import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
-import { AtomAttributes, IAtom } from "@types";
+import { ActionItem, AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 
@@ -72,13 +73,24 @@ export class Atom {
         const elementsMap = ElementsData.elementsBySymbolMap;
         const element = elementsMap.get(this.attributes.symbol);
         this.attributes.color = this.getColor(element, color);
+        this.attributes.center = this.attributes.center.clone();
 
         this.addInstanceToMap();
         this.lifeStage = EntityLifeStage.Initialized;
+
+        const historyItem: ActionItem = {
+            command: "ADD",
+            type: "ATOM",
+            atomAttributes: this.attributes,
+            bondAttributes: undefined,
+        };
+        editorObj?.addHistoryItem(historyItem);
+        editorObj?.sealHistory();
     }
 
     getColor(element: PtElement | undefined, color?: string) {
-        return color ?? element?.cpkColor ?? element?.jmolColor ?? "#000000";
+        return color ?? element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000";
+        // return color ?? element?.customColor ?? element?.jmolColor ?? element?.cpkColor ?? "#000000";
     }
 
     private modifyTree(add: boolean = true) {
@@ -376,21 +388,41 @@ export class Atom {
                 this.drawCharge();
             }
         }
+
+        const historyItem: ActionItem = {
+            command: "CHANGE",
+            type: "ATOM",
+            atomAttributes: this.attributes,
+            bondAttributes: undefined,
+        };
+
+        // addHistoryItem(historyItem);
     }
 
-    destroy(ignoreBondRemove: number[] = []) {
+    destroy(ignoreBondRemove: number[] = [], IShouldNotifyBonds: boolean = true) {
         if (this.lifeStage === EntityLifeStage.DestroyInit || this.lifeStage === EntityLifeStage.Destroyed) {
             return;
         }
         this.lifeStage = EntityLifeStage.DestroyInit;
         if (this.nodeObj) {
             this.undraw();
-            this.removeConnectedBonds(ignoreBondRemove);
+            if (IShouldNotifyBonds) {
+                this.removeConnectedBonds(ignoreBondRemove);
+            }
 
             this.removeInstanceFromMapAndTree();
             KekuleUtils.destroy(this.nodeObj);
             this.nodeObj = undefined;
         }
+        const historyItem: ActionItem = {
+            command: "REMOVE",
+            type: "ATOM",
+            atomAttributes: this.attributes,
+            bondAttributes: undefined,
+        };
+
+        // addHistoryItem(historyItem);
+
         this.lifeStage = EntityLifeStage.Destroyed;
     }
 

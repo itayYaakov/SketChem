@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-pascal-case */
 import { useAppDispatch } from "@app/hooks";
-import { getToolbarItem } from "@app/selectors";
+import { getToolbarDialog } from "@app/selectors";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React, { useRef, useState } from "react";
@@ -13,7 +13,7 @@ import { GetToolbarByName } from "./tools/ToolsMapper.helper";
 
 export function DialogShow() {
     const dispatch = useAppDispatch();
-    const dialogWindowName = useSelector(getToolbarItem, shallowEqual).dialogWindow;
+    const dialogWindowName = useSelector(getToolbarDialog, shallowEqual);
     const props = {
         onHide: () => dispatch(actions.dialog("")),
     };

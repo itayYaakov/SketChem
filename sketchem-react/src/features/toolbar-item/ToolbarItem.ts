@@ -1,4 +1,5 @@
-import { MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
+import { BondOrder, BondStereoKekule } from "@constants/enum.constants";
+import { MouseEventCallBackProperties, MouseEventCallBackResponse, ToolbarItemButtonAttributes } from "@types";
 
 export interface ActiveToolbarItem {
     readonly onActivate?: (params?: any) => void;
@@ -32,8 +33,9 @@ export interface SimpleToolbarItemButton {
 
     keyboardKeys?: string[];
 }
+
 export interface ToolbarItemButton extends SimpleToolbarItemButton {
-    attributes?: any;
+    attributes?: ToolbarItemButtonAttributes;
 }
 
 export class SimpleToolbarItemButtonBuilder implements SimpleToolbarItemButton {

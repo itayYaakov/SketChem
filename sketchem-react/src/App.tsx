@@ -1,7 +1,7 @@
 /* eslint-disable react/style-prop-object */
 import "@styles/App.scss";
 
-import { KekuleShow } from "@features/chemistry/kekuleHandler";
+import Editor from "@features/editor/Editor";
 import SketchPad from "@features/sketchpad/SketchPad";
 import {
     BottomToolbarProps,
@@ -27,7 +27,7 @@ function App() {
     return (
         // <div className={clsx("App", "w-100", "h-100", styles.app)}>
         <div className={clsx("App", styles.app)}>
-            <KekuleShow />
+            {/* <KekuleShow /> */}
             {/* <SketchPad /> */}
 
             {/* <div style={{ backgroundColor: "rgba(0,255,0,.2)", border: "3px solid #00f" }} className={styles.top}>
@@ -63,7 +63,9 @@ function App() {
             </div>
 
             <div className={styles.draw}>
-                <SketchPad />
+                <Editor>
+                    <SketchPad />
+                </Editor>
             </div>
 
             {/* <SketchPad className="sketchpad"/>

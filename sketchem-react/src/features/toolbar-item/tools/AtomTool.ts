@@ -1,25 +1,15 @@
 import { AtomConstants } from "@constants/atom.constants";
-import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData, PtElement } from "@constants/elements.constants";
-import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
-import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import * as KekuleUtils from "@src/utils/KekuleUtils";
-import { LayersUtils } from "@src/utils/LayersUtils";
-import Vector2 from "@src/utils/mathsTs/Vector2";
-import { AtomAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
+import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
-import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { EntityBaseTool } from "./EntityBaseTool.helper";
-import { BoxSelect, boxSelectTool, simpleSelect } from "./SelectTemplate";
+import { boxSelectTool } from "./SelectTemplate";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
-
-interface IAtomAttributes {
-    readonly label: string;
-    readonly color: string;
-}
 
 export interface AtomToolbarItemButton extends ToolbarItemButton {
     attributes: IAtomAttributes;
@@ -48,18 +38,15 @@ export class AtomToolBarItem extends EntityBaseTool {
     changeSelectionAtoms() {
         // !!! remove lasso from this - be a more generic with editor context
         const selectedAtoms = boxSelectTool.getSelectedAtoms();
-        const selectedBonds = boxSelectTool.getSelectedBonds();
 
         const mySymbol = this.atomElement.symbol;
         selectedAtoms.forEach((atom) => {
             if (mySymbol !== atom.getSymbol()) {
                 atom.updateAttributes({ symbol: mySymbol });
-                atom.select(false);
             }
         });
-        selectedBonds.forEach((bond) => {
-            bond.select(false);
-        });
+
+        boxSelectTool.resetSelection();
         actions.reset_tool();
     }
 

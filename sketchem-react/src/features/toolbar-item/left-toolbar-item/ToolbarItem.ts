@@ -17,6 +17,7 @@ const toolbarItemsList: ToolbarItemButton[] = [
     DebugTools.DrawMol,
     DebugTools.DrawAtoms,
     DebugTools.DrawBonds,
+    DebugTools.DrawAllPeriodic,
 ];
 
 const props: IToolbarItemsProps = {

@@ -4,14 +4,11 @@ import { EntityType } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import { MouseEventCallBackProperties } from "@src/types";
+import { IChargeAttributes, MouseEventCallBackProperties } from "@src/types";
 
 import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
-interface IChargeAttributes {
-    readonly charge: number;
-}
 export interface ChargeToolbarItemButton extends ToolbarItemButton {
     attributes: IChargeAttributes;
 }

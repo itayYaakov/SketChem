@@ -58,12 +58,11 @@ export function ToolbarItems(props: Props) {
         } else if (isDialogToolbarItem(tool)) {
             dispatch(actions.dialog(toolbarItem.toolName));
         } else {
-            tool.onActivate?.(toolbarItem.attributes);
-            const atomLabel = toolbarItem.attributes?.label;
             const payload: ToolbarAction = {
                 button: toolbarItem.toolName,
-                atomLabel,
             };
+            const { attributes } = toolbarItem;
+            if (attributes) payload.attributes = attributes;
             dispatch(actions.tool_change(payload));
         }
         // const button: HTMLButtonElement = event.currentTarget;

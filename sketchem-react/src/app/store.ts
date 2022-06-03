@@ -1,18 +1,16 @@
-import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
-import thunkMiddleware from "redux-thunk";
+import { configureStore } from "@reduxjs/toolkit";
 
 import RootReducer from "./RootReducer";
-
-// import counterReducer from '../features/counter/counterSlice';
 
 const preloadedState = {};
 
 export const store = configureStore({
     reducer: RootReducer,
+    // !!! enable this?
     // devTools: process.env.NODE_ENV !== 'production',
     devTools: true,
     preloadedState,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
+    // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(),
     // middleware: (getDefaultMiddleware) =>
     //   getDefaultMiddleware().concat(thunkMiddleware),
 });
