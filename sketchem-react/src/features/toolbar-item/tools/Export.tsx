@@ -1,5 +1,6 @@
 import { useAppDispatch } from "@app/hooks";
 import { ToolsConstants } from "@constants/tools.constants";
+import { SaveFileAction } from "@src/types";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -11,7 +12,7 @@ import { DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
-let isLibsEnabled = false;
+const isLibsEnabled = false;
 
 function SupportedFiles(props: any) {
     /**
@@ -45,30 +46,18 @@ function ExportFileTab(props: any) {
 
     const dispatch = useAppDispatch();
 
-    const inputRef = React.createRef<HTMLTextAreaElement>();
+    // const inputRef = React.createRef<HTMLTextAreaElement>();
 
     const loadText = () => {
-        console.log("Print text");
-        const textValue = inputRef?.current?.value;
-        if (!textValue) return;
-        console.log(textValue);
-        const payload = {
-            content: textValue,
+        console.log("Export file from export.tsx");
+        const payload: SaveFileAction = {
             format,
-            replace: true,
         };
-        dispatch(actions.loadFile(payload));
+        dispatch(actions.exportToFile(payload));
         onHide();
     };
 
-    // !!!! find a better place
-    useEffect(() => {
-        if (isLibsEnabled) return;
-        KekuleUtils.enableBabel();
-        KekuleUtils.enableIndigo();
-        isLibsEnabled = true;
-    }, []);
-    const options = KekuleUtils.getSupportedReadFormats();
+    const options = KekuleUtils.getSupportedWriteFormats();
 
     return (
         <>
@@ -78,14 +67,14 @@ function ExportFileTab(props: any) {
                         <SupportedFiles selectOptions={options} onFormatChange={setFormat} initialFormat={format} />
                     </Row>
                     <Row>
-                        <Col>
+                        {/* <Col>
                             <textarea
                                 ref={inputRef}
                                 rows={12}
                                 className="w-100"
                                 placeholder="Paste content of any file (from the supported formats)"
                             />
-                        </Col>
+                        </Col> */}
                     </Row>
                 </Container>
             </Modal.Body>

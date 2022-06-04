@@ -16,6 +16,10 @@ const getBoundingBox = (mol) => {
 };
 
 const drawMol = (mol) => {
+    // const removed = KekuleUtils.getRemovedNodesAndConnectorsAfterFunction(
+    //     mol,
+    //     mol.clearExplicitBondHydrogens.bind(mol)
+    // )();
     const canvas = LayersUtils.getLayer(LayersNames.Root);
 
     const firstAtomDelta = new Vector2(0, 0);
@@ -87,6 +91,7 @@ const drawMol = (mol) => {
     // iterate all connectors(bonds)
     for (let i = 0, l = mol.getConnectorCount(); i < l; i += 1) {
         const connector = mol.getConnectorAt(i);
+        const isHydrogenBondFlag = KekuleUtils.isHydrogenBond(connector);
         const id = Bond.generateNewId();
         connector.id = id;
         const bond = new Bond({ connectorObj: connector });

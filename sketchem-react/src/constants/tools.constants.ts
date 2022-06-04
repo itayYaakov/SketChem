@@ -15,6 +15,7 @@ enum ToolsNames {
     DebugDrawAtomTree = "debug_draw_atom_tree",
     DebugDrawBondTree = "debug_draw_bond_tree",
     DebugDrawAllPeriodic = "debug_draw_all_periodic",
+    DebugExportMolToConsole = "debug_export_mol_to_console",
 }
 
 export const ToolsConstants = {

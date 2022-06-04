@@ -14,10 +14,7 @@ const toolbarItemsList: ToolbarItemButton[] = [
     bondToolBarItems.wedgeBackBond,
     bondToolBarItems.wedgeFrontBond,
     Chain,
-    DebugTools.DrawMol,
-    DebugTools.DrawAtoms,
-    DebugTools.DrawBonds,
-    DebugTools.DrawAllPeriodic,
+    ...DebugTools,
 ];
 
 const props: IToolbarItemsProps = {

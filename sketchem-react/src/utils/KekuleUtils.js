@@ -68,6 +68,16 @@ export function importMoleculeFromFile(file, format) {
     }
 }
 
+export function exportFileFromMolecule(format) {
+    try {
+        const data = Kekule.IO.saveFormatData(chemDocument, format);
+        return data;
+    } catch (error) {
+        console.error(error);
+        return "";
+    }
+}
+
 export function enableBabel() {
     if (Kekule.OpenBabel.isScriptLoaded() === true) return;
     Kekule.OpenBabel.enable(); // .enableOpenBabelFormats();
@@ -159,7 +169,107 @@ export function registerBondFromAttributes(attributes) {
     return bond;
 }
 
-// Imported from kekule.js
+export function getImplicitHydrogensCount(atom) {
+    const count = atom.getImplicitHydrogenCount();
+    if (Number.isNaN(count)) {
+        return 0;
+    }
+    return count;
+}
+
+export function getImplicitValence(atom) {
+    const count = atom.getImplicitValence();
+    if (Number.isNaN(count)) {
+        return 0;
+    }
+    return count;
+}
+
+// try catch wrapper for functions with arguments that can throw an error
+function tryCatchWrapper(func, ...args) {
+    try {
+        return func(...args);
+    } catch (error) {
+        console.error(`Kekule error: ${error}`);
+        return undefined;
+    }
+}
+
+export function getAtomConnectorsList(atom) {
+    return tryCatchWrapper(() => {
+        const result = [];
+        atom.getLinkedConnectors().forEach((connector) => {
+            if (connector instanceof Kekule.Bond) {
+                result.push(connector);
+            }
+        });
+
+        return result;
+    });
+}
+
+export function isHydrogenBond(bond) {
+    return tryCatchWrapper(() => {
+        if (!(bond instanceof Kekule.Bond)) return false;
+        let isHydrogenBondFlag = false;
+        bond.getConnectedObjs().forEach((node) => {
+            if (node instanceof Kekule.Atom) {
+                if (node.isHydrogenAtom()) isHydrogenBondFlag = true;
+            }
+        });
+        return isHydrogenBondFlag;
+    });
+}
+
+export function getAtomConnectorsObjectWithHydrogenData(atom) {
+    return tryCatchWrapper(() => {
+        const result = {
+            hydrogensBonds: [],
+            nonHydrogensBonds: [],
+        };
+        getAtomConnectorsList(atom).forEach((connector) => {
+            if (connector instanceof Kekule.Bond) {
+                if (isHydrogenBond(connector)) {
+                    result.hydrogensBonds.push(connector);
+                    return;
+                }
+                result.nonHydrogensBonds.push(connector);
+            }
+        });
+
+        return result;
+    });
+}
+
+// calculate sum of bond orders based on bond order enum
+export function getBondOrderSum(bonds) {
+    return bonds.reduce((acc, bond) => {
+        if (!(bond instanceof Kekule.Bond)) return acc;
+
+        switch (bond.getBondOrder()) {
+            case Kekule.BondOrder.COVALENT:
+            case Kekule.BondOrder.SINGLE:
+            case Kekule.BondOrder.DEFAULT:
+            case Kekule.BondOrder.OTHER:
+                return acc + 1;
+            case Kekule.BondOrder.DOUBLE:
+                return acc + 2;
+            case Kekule.BondOrder.TRIPLE:
+                return acc + 3;
+            case Kekule.BondOrder.QUADRUPLE:
+                return acc + 4;
+            case Kekule.BondOrder.UNSET:
+                return acc;
+            case Kekule.BondOrder.EXPLICIT_AROMATIC:
+                return acc + 1.5;
+
+            default:
+                return acc;
+        }
+    }, 0);
+}
+
+// modified from kekule.js
 
 const defBondAngles = [];
 const angle120 = (Math.PI * 2) / 3;
@@ -291,6 +401,30 @@ export function calcMostEmptyDirectionAngleOfChemObj(obj, linkedObjs, allowCoord
     }
     const result = angles[index] + max / 2;
     return result;
+}
+
+// wrapper for function, print before and after
+export function getRemovedNodesAndConnectorsAfterFunction(my_mol, func) {
+    return function (...args) {
+        const nodesBefore = my_mol.getConnectors().map((x) => x.id);
+        const connectorsBefore = my_mol.getNodes().map((x) => x.id);
+
+        const result = func(...args);
+        // const result = my_mol.clearExplicitBondHydrogens();
+
+        const nodesAfter = my_mol.getConnectors().map((x) => x.id);
+        const connectorsAfter = my_mol.getNodes().map((x) => x.id);
+        // check which nodes and connectors were removed after the function
+        const removedNodes = nodesBefore.filter((x) => !nodesAfter.includes(x));
+        const removedConnectors = connectorsBefore.filter((x) => !connectorsAfter.includes(x));
+
+        // wrap them together in an object
+        const removed = {
+            nodes: removedNodes,
+            connectors: removedConnectors,
+        };
+        return removed;
+    };
 }
 
 /**

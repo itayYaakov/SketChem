@@ -54,4 +54,4 @@ const DrawMol = new SimpleToolbarItemButtonBuilder(
     ["A"]
 );
 
-export { DrawMol };
+export default [DrawMol];

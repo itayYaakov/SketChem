@@ -7,7 +7,7 @@ import { bondToolBarItems, ClearCanvas, Export, Import, selectToolBarItems } fro
 const toolbarItemsList: ToolbarItemButton[] = [
     ClearCanvas,
     Import,
-    // Export,
+    Export,
     selectToolBarItems.simpleSelect,
     selectToolBarItems.lassoSelect,
 ];

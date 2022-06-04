@@ -7,8 +7,9 @@ import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
+import * as ValenceUtils from "@src/utils/ValenceUtils";
 import styles from "@styles/index.module.scss";
-import { Circle, Rect, SVG, Svg, Text } from "@svgdotjs/svg.js";
+import { Circle, Rect, SVG, Svg, Text, Tspan } from "@svgdotjs/svg.js";
 import { ActionItem, AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
@@ -46,6 +47,8 @@ export class Atom {
 
     private lifeStage: EntityLifeStage;
 
+    private element: PtElement | undefined;
+
     constructor(args: IAtom) {
         this.lifeStage = EntityLifeStage.New;
         let id;
@@ -71,8 +74,8 @@ export class Atom {
         }
 
         const elementsMap = ElementsData.elementsBySymbolMap;
-        const element = elementsMap.get(this.attributes.symbol);
-        this.attributes.color = this.getColor(element, color);
+        this.element = elementsMap.get(this.attributes.symbol);
+        this.attributes.color = this.getColor(this.element, color);
         this.attributes.center = this.attributes.center.clone();
 
         this.addInstanceToMap();
@@ -218,23 +221,31 @@ export class Atom {
             this.symbolLabel ??
             LayersUtils.getLayer(LayersNames.AtomLabelLabel)
                 .text("")
-                .addClass(styles.atoms_labels)
+                .hide()
+                .addClass(styles.atom_label_text)
                 .font({
-                    // "font-weight": "bold",
                     family: EditorConstants.atomFontSize,
                     size: EditorConstants.atomFontSize,
                     anchor: "middle",
                 })
+                .attr({ "text-anchor": "middle" })
                 .id(IdUtils.getAtomElemId(this.attributes.id));
 
         const { symbol, center, color } = this.attributes;
 
-        this.symbolLabel
-            .text(symbol)
-            .font({
-                fill: color,
-            })
-            .center(center.x, center.y);
+        this.symbolLabel.text(symbol).font({
+            fill: color,
+        });
+
+        // important for tspan to not replace previous text
+        this.symbolLabel.build(true);
+
+        this.drawLabelHydrogen(this.symbolLabel);
+        this.symbolLabel.build(false);
+        this.symbolLabel.center(center.x, center.y);
+
+        // reset position for each child of label
+        this.symbolLabel.children().each((item) => item.attr({ x: null, y: null, dx: null, dy: null }));
 
         this.backgroundCircle =
             this.backgroundCircle ??
@@ -256,6 +267,63 @@ export class Atom {
             .radius((Math.max(textBbox.width, textBbox.height * 0.8) / 2) * 1)
             // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
             .center(textBbox.cx, textBbox.cy);
+
+        this.symbolLabel.show();
+    }
+
+    private drawLabelHydrogen(label: Text) {
+        if (!this.element) return;
+
+        const hydrogenConnectorsObject = KekuleUtils.getAtomConnectorsObjectWithHydrogenData(this.nodeObj);
+        const { hydrogensBonds, nonHydrogensBonds } = hydrogenConnectorsObject;
+        const hydrogenBondsSum = KekuleUtils.getBondOrderSum(hydrogensBonds);
+        const nonHydrogenBondsSum = KekuleUtils.getBondOrderSum(nonHydrogensBonds);
+        const totalBondsSum = hydrogenBondsSum + nonHydrogenBondsSum;
+
+        // !!! *** for debug ***
+        const allBondsForDebug = KekuleUtils.getAtomConnectorsList(this.nodeObj);
+        const allBondsSum = KekuleUtils.getBondOrderSum(allBondsForDebug);
+        if (totalBondsSum !== allBondsSum) {
+            console.error("Bonds sum mismatch", totalBondsSum, allBondsSum);
+        }
+        // !!! *** for debug ***
+
+        let hydrogenCount = ValenceUtils.calculateImplicitHydrogenCount(
+            this.element?.number,
+            this.attributes.charge,
+            hydrogenBondsSum,
+            totalBondsSum
+        );
+
+        // let hydrogenCount: {
+        //     hydrogensBonds: never[];
+        //     bonds: never[];
+        // }
+        // let hydrogenCount = KekuleUtils.getImplicitHydrogensCount(this.nodeObj);
+        if (hydrogenCount === 0) {
+            return;
+        }
+
+        let isHydrogenOnLeft = false;
+        // if this.attributes.symbol is on list of atoms with hydrogen on left
+        const atomsWithHydrogenOnLeft = ["O", "F", "S", "Cl", "Se", "Br", "I"];
+        if (atomsWithHydrogenOnLeft.includes(this.attributes.symbol)) {
+            isHydrogenOnLeft = true;
+        }
+
+        if (this.attributes.symbol !== "H") {
+            label.tspan("H").addClass(styles.atom_label_text);
+        } else {
+            hydrogenCount += 1;
+        }
+
+        if (hydrogenCount > 1) {
+            label.tspan(`${hydrogenCount}`).addClass(styles.atom_label_hydrogen_text);
+        }
+
+        if (isHydrogenOnLeft) {
+            label.children()[0].front();
+        }
     }
 
     private drawCharge() {
@@ -272,7 +340,7 @@ export class Atom {
             this.chargeLabel ??
             LayersUtils.getLayer(LayersNames.AtomLabelCharge)
                 .text("")
-                .addClass(styles.atoms_labels)
+                .addClass(styles.atom_label_text)
                 .font({
                     // "font-weight": "bold",
                     family: EditorConstants.atomFontSize,
@@ -282,7 +350,11 @@ export class Atom {
                 .id(IdUtils.getAtomElemId(this.attributes.id));
 
         let text = "";
-        if (charge < 0) {
+        if (charge === -1) {
+            text = "-";
+        } else if (charge === 1) {
+            text = "+";
+        } else if (charge < 0) {
             text = `${absCharge}-`;
         } else {
             text = `${absCharge}+`;
@@ -379,11 +451,15 @@ export class Atom {
             this.notifyConnectedBonds(ignoreNotifyBondsIds);
         } else {
             if (redrawCharge) {
+                this.nodeObj.setCharge(this.attributes.charge);
                 this.drawCharge();
+                // !!! see if this can be removed
+                this.drawLabel();
             }
             if (redrawLabel) {
-                const element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
-                this.attributes.color = this.getColor(element);
+                this.nodeObj.setSymbol(this.attributes.symbol);
+                this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
+                this.attributes.color = this.getColor(this.element);
                 this.drawLabel();
                 this.drawCharge();
             }

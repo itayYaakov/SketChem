@@ -10,6 +10,7 @@ import {
     ToolbarAction,
     ToolbarItemState,
 } from "@types";
+import { exportFileFromMolecule } from "@utils/KekuleUtils";
 
 const initialLoadFileAction = {
     content: "",
@@ -115,6 +116,21 @@ const loadFile = createAsyncThunk<void, LoadFileAction>("load_file", async (file
     drawMolFromFile(fileContext);
 });
 
+const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", async (saveAction: SaveFileAction) => {
+    const file = exportFileFromMolecule(saveAction.format);
+    console.log("file content:");
+    console.log(file);
+    return;
+    // convert string to blob with mime type and download it
+    const blob = new Blob([file], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "file.txt";
+    link.click();
+    window.URL.revokeObjectURL(url);
+});
+
 // eslint-disable-next-line no-unused-vars
 const clearCanvas = createAsyncThunk<void>("clear_canvas", async (_, thunkApi) => {
     thunkApi.dispatch(
@@ -124,5 +140,5 @@ const clearCanvas = createAsyncThunk<void>("clear_canvas", async (_, thunkApi) =
     );
 });
 
-export const actions = { ...slice.actions, loadFile, clearCanvas };
+export const actions = { ...slice.actions, loadFile, clearCanvas, exportToFile };
 export default slice.reducer;

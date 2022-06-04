@@ -83,6 +83,10 @@ export class Bond {
             bondAttributes: this.attributes,
         };
 
+        // !!! should only draw the valence actually
+        this.startAtom?.draw();
+        this.endAtom?.draw();
+
         // addHistoryItem(historyItem);
     }
 
@@ -314,6 +318,9 @@ export class Bond {
         }
         if (redraw) {
             this.drawStereoAndOrder();
+            // !!! should only draw the valence actually
+            this.startAtom?.draw();
+            this.endAtom?.draw();
         }
 
         const historyItem: ActionItem = {

@@ -1,13 +1,30 @@
-text{
+@mixin text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    // make unselectable
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
+    -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    line-height: 1px !important;
     user-select: none;
     paint-order: stroke;
+    // line-height: 1px !important;
+
+}
+
+.atom_label_text{
+    @include text;
     // stroke: #00000094;
     // stroke-width: 0.05em;
     // stroke-linecap: round;
     // stroke-linejoin: round;
-    font-weight: 500;
  }
+
+ 
+ .atom_label_hydrogen_text{
+    @include text;
+    font-size: smaller;
+    alignment-baseline: central;
+}
