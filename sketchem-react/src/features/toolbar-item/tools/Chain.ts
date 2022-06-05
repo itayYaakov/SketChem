@@ -10,10 +10,10 @@ import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@typ
 import { AngleUtils } from "@utils/AngleUtils";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
-import { BondToolBarItem, BondToolbarItemButton } from "./BondToolBarItems";
+import { BondTool, BondToolButton } from "./BondTool";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
-class ChainToolBar extends BondToolBarItem {
+class ChainToolBar extends BondTool {
     chainAddedBonds: Bond[] = [];
 
     chainAddedAtoms: Atom[] = [];
@@ -96,8 +96,8 @@ class ChainToolBar extends BondToolBarItem {
                 this.chainAddedAtoms.push(chainAtom);
                 console.log(index, "Added bond", index, "sectors=", chainLength, this.chainAddedAtoms);
 
-                this.context.startAtom.draw();
-                chainAtom.draw();
+                this.context.startAtom.getOuterDrawCommand();
+                chainAtom.getOuterDrawCommand();
 
                 const bondArgs = {
                     props: {
@@ -157,7 +157,7 @@ const chain = new ChainToolBar();
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Chain, chain);
 
-const Chain: BondToolbarItemButton = {
+const Chain: BondToolButton = {
     name: "Chain",
     toolName: ToolsConstants.ToolsNames.Chain,
     attributes: {

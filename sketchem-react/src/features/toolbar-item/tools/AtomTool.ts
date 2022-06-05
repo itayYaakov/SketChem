@@ -3,6 +3,7 @@ import { ElementsData, PtElement } from "@constants/elements.constants";
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
 import { EntitiesMapsStorage } from "@features/shared/storage";
+import Vector2 from "@src/utils/mathsTs/Vector2";
 import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
@@ -22,9 +23,14 @@ export class AtomToolBarItem extends EntityBaseTool {
 
     bondStereo: BondStereoKekule = BondStereoKekule.NONE;
 
+    dragged: boolean = false;
+
+    symbol!: string;
+
     init() {
         this.mode = MouseMode.Default;
         this.context = {};
+        this.dragged = false;
     }
 
     onActivate(attributes: IAtomAttributes) {
@@ -32,6 +38,7 @@ export class AtomToolBarItem extends EntityBaseTool {
         const atomElement = ElementsData.elementsBySymbolMap.get(attributes.label);
         if (!atomElement) throw new Error(`Atom element with symbol ${attributes.label} wasn't not found`);
         this.atomElement = atomElement;
+        this.symbol = atomElement.symbol;
         this.changeSelectionAtoms();
     }
 
@@ -54,49 +61,10 @@ export class AtomToolBarItem extends EntityBaseTool {
         this.init();
         const { mouseDownLocation } = eventHolder;
 
-        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
-
-        const atomWasPressed = atomAtPoint(mouseDownLocation);
-        if (atomWasPressed) {
-            this.mode = MouseMode.AtomPressed;
-            const atom = getAtomById(atomWasPressed.id);
-            this.context.startAtom = atom;
-            return;
-        }
+        if (this.atomWasPressed(mouseDownLocation)) return;
 
         this.mode = MouseMode.EmptyPress;
-        const startAtomCenter = mouseDownLocation;
-        const { symbol } = this.atomElement;
-        this.context.startAtom = this.createAtom(startAtomCenter, symbol);
-        this.context.startAtom.draw();
-    }
-
-    onMouseMove(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
-
-        if (!this.context.startAtom) return;
-        if (this.mode !== MouseMode.AtomPressed && this.mode !== MouseMode.EmptyPress) return;
-
-        const distance = mouseCurrentLocation.distance(mouseDownLocation);
-
-        if (distance < ToolsConstants.ValidMouseMoveDistance) {
-            this.context.endAtom?.destroy();
-            return;
-        }
-
-        const rotation = -mouseCurrentLocation.angle(mouseDownLocation);
-
-        const endAtomCenter = this.calculatePosition(this.context.startAtom, rotation);
-
-        if (this.context.endAtom === undefined) {
-            this.context.endAtom = this.createAtom(endAtomCenter, this.atomElement.symbol);
-            this.context.endAtom.draw();
-        } else {
-            this.context.endAtom.updateAttributes({ center: endAtomCenter });
-        }
-
-        this.context.bond = this.context.bond ?? this.createBond();
-        this.context.bond.movedByAtomId(this.context.endAtom.getId());
+        this.context.startAtom = this.createAtom(mouseDownLocation);
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
@@ -110,12 +78,17 @@ export class AtomToolBarItem extends EntityBaseTool {
             return;
         }
 
-        if (this.mode === MouseMode.AtomPressed && this.context.startAtom && this.context.endAtom === undefined) {
-            this.context.startAtom.updateAttributes({ symbol: this.atomElement.symbol });
-            return;
-        }
+        this.context.startAtom?.getOuterDrawCommand();
 
-        this.init();
+        // update pressed atom symbol only if it was pressed and there was no drag
+        if (
+            this.mode === MouseMode.AtomPressed &&
+            !this.dragged &&
+            this.context.startAtom &&
+            this.context.endAtom === undefined
+        ) {
+            this.context.startAtom.updateAttributes({ symbol: this.atomElement.symbol });
+        }
     }
 }
 

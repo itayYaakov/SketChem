@@ -2,6 +2,9 @@
 
 import { ElementsData } from "@constants/elements.constants";
 
+import { MDLValence } from "./mdlValance";
+import openBabelValence from "./openBabelValance";
+
 const defaultValenceByElement = new Map<string, number[]>();
 
 // convert atomic number to symbol
@@ -29,7 +32,8 @@ defaultValenceByElement.set("Xe", [0]);
 defaultValenceByElement.set("At", [1, 3, 5, 7]);
 defaultValenceByElement.set("Rn", [0]);
 
-export function calculateImplicitValence(atomicNumber: number, charge: number, nonHydrogenBondsSum: number) {
+// there was a change in the valence table in 2014, so it's possible to use both tables
+export function calculateImplicitValencePost2014(atomicNumber: number, charge: number, nonHydrogenBondsSum: number) {
     let referenceAtom = atomicNumber;
     if (charge !== 0) {
         if (atomicNumber === 13 && charge === -1) {
@@ -71,11 +75,76 @@ export function calculateImplicitValence(atomicNumber: number, charge: number, n
     return valence;
 }
 
+// export function calculateImplicitValence(atomicNumber: number, charge: number, totalBondOrderSum: number) {
+//     // !!! let the user decide in settings?
+// ??? probably should only be used when the atom has an implicit hydrogen from the mol file
+//     return openBabelValence(atomicNumber, totalBondOrderSum, charge);
+// }
+
+export function calculateImplicitValence(atomicNumber: number, charge: number, totalBondOrderSum: number) {
+    // calculateImplicitValencePre2014
+    return MDLValence(atomicNumber, charge, totalBondOrderSum);
+}
+
 export function calculateImplicitHydrogenCount(
     atomicNumber: number,
     charge: number,
-    nonHydrogenBondsSum: number,
-    totalBondsSum: number
+    hydrogenBondsSum: number,
+    nonHydrogenBondsSum: number
+) {
+    const valence = calculateImplicitValence(atomicNumber, charge, hydrogenBondsSum + nonHydrogenBondsSum);
+    if (valence === -1) {
+        let charge2 = charge;
+        if (charge < 0) {
+            charge2 += 1;
+        } else if (charge > 0) {
+            charge2 -= 1;
+        } else {
+            return -1;
+        }
+
+        const valence2 = calculateImplicitValence(atomicNumber, charge2, hydrogenBondsSum + nonHydrogenBondsSum);
+
+        // temporary hack - check if atom with small absolute charge valance is 1
+        // if so, then return 0
+        if (valence2 === 1) return 0 - (hydrogenBondsSum + nonHydrogenBondsSum);
+
+        return -1;
+    }
+
+    // if (this.implicitH < 0) {
+    //     this.valence = conn
+    //     this.implicitH = 0
+    //     this.badConn = true
+    //     return false
+    //   }
+
+    // return the difference between the valence and the total bonds sum, or 0 if the valence is greater than the total bonds sum
+    // return valence - hydrogenBondsSum;
+
+    // for future radical
+    const rad = 0;
+    return valence - rad - (hydrogenBondsSum + nonHydrogenBondsSum);
+    // !!! need to subtract charge?
+    // return valence - rad - (hydrogenBondsSum + nonHydrogenBondsSum) - Math.abs(charge);
+}
+
+/*
+
+// Previous attemps
+
+export function calculateImplicitValence(atomicNumber: number, charge: number, nonHydrogenBondsSum: number) {
+    const explicitValence = nonHydrogenBondsSum;
+    return calculateImplicitValencePre2014(atomicNumber, charge, explicitValence);
+
+    // return calculateImplicitValencePost2014(atomicNumber, charge, nonHydrogenBondsSum);
+}
+
+export function calculateImplicitHydrogenCount(
+    atomicNumber: number,
+    charge: number,
+    hydrogenBondsSum: number,
+    nonHydrogenBondsSum: number
 ) {
     const valence = calculateImplicitValence(atomicNumber, charge, nonHydrogenBondsSum);
     if (!valence) {
@@ -90,5 +159,10 @@ export function calculateImplicitHydrogenCount(
     //   }
 
     // return the difference between the valence and the total bonds sum, or 0 if the valence is greater than the total bonds sum
-    return Math.max(valence - (totalBondsSum - nonHydrogenBondsSum) - totalBondsSum, 0);
+    // return valence - hydrogenBondsSum;
+    
+    // for future radical
+    const rad = 0;
+    return valence - rad - nonHydrogenBondsSum - Math.abs(charge)
 }
+*/

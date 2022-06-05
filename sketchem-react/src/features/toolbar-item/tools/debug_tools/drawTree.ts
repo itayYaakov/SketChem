@@ -20,45 +20,39 @@ const { atomsTree, atomsMap, bondsTree, bondsMap } = EntitiesMapsStorage;
 class DrawTree implements ActiveToolbarItem {
     tree: PointRBush;
 
-    name: string;
+    radius: number;
 
     drawnCircles: Circle[];
 
-    constructor(tree: PointRBush, isAtomTree: boolean) {
-        if (isAtomTree) {
-            this.name = "Atoms (debug)";
-        } else {
-            this.name = "Bonds (debug)";
-        }
+    color: string;
+
+    map: Map<number, Atom | Bond>;
+
+    constructor(tree: PointRBush, color: string, radius: number, map: Map<number, Atom | Bond>) {
         this.tree = tree;
         this.drawnCircles = [];
+        this.map = map;
+        this.radius = radius;
+        this.color = color;
     }
 
     onActivate() {
         if (this.drawnCircles.length > 0) {
-            console.log("Debug tool remove", this.name);
             this.drawnCircles.forEach((circle) => circle.remove());
             this.drawnCircles = [];
             return;
         }
 
-        let color = "#29cf03";
-        let radius = 9;
-        let map: Map<number, Atom | Bond> = bondsMap;
-        if (this.name.endsWith("atoms (debug)")) {
-            color = "#00a9f3";
-            radius = 12;
-            map = atomsMap;
-        }
-
         let treesDup = 0;
+        let treesSize = 0;
         const treeDuplicateSet = new Set<string>();
 
         this.tree.all().forEach((node) => {
+            treesSize += 1;
             const { x, y } = node.point;
             const entry = `x${(Math.round(x * 100) / 100).toFixed(3)}-y${(Math.round(y * 100) / 100).toFixed(3)}`;
 
-            const circle = LayersUtils.getLayer(LayersNames.General).circle(radius).fill(color).cx(x).cy(y);
+            const circle = LayersUtils.getLayer(LayersNames.General).circle(this.radius).fill(this.color).cx(x).cy(y);
 
             if (treeDuplicateSet.has(entry)) {
                 circle.stroke({ color: "red", width: 2 });
@@ -71,11 +65,11 @@ class DrawTree implements ActiveToolbarItem {
         let mapDup = 0;
         const mapDuplicateSet = new Set<string>();
 
-        map.forEach((node) => {
+        this.map.forEach((node) => {
             const { x, y } = node.getCenter();
             const entry = `x${(Math.round(x * 100) / 100).toFixed(3)}-y${(Math.round(y * 100) / 100).toFixed(3)}`;
             const circle = LayersUtils.getLayer(LayersNames.General)
-                .circle(radius * 0.2)
+                .circle(this.radius * 0.2)
                 .fill("#ffffff")
                 // .opacity(0.3)
                 .cx(x)
@@ -88,12 +82,14 @@ class DrawTree implements ActiveToolbarItem {
 
             this.drawnCircles.push(circle);
         });
-        console.log(`Find ${treesDup} duplicates in tree and ${mapDup} duplicates in map`);
+        console.log(
+            `Found ${treesDup}/${treesSize} duplicates in tree and ${mapDup}/${this.map.size} duplicates in map`
+        );
     }
 }
 
-const atomsDrawTree = new DrawTree(atomsTree, true);
-const bondsDrawTree = new DrawTree(bondsTree, false);
+const atomsDrawTree = new DrawTree(atomsTree, "#29cf03", 9, atomsMap);
+const bondsDrawTree = new DrawTree(bondsTree, "#00a9f3", 12, bondsMap);
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawAtomTree, atomsDrawTree);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawBondTree, bondsDrawTree);

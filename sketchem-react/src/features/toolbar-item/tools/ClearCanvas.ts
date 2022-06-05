@@ -11,17 +11,15 @@ class ClearCanvas implements ActiveToolbarItem {
     onActivate(): void {
         const { atomsMap, bondsMap } = EntitiesMapsStorage;
 
-        bondsMap.forEach((bond) => {
-            bond.destroy([], false);
-        });
-
         atomsMap.forEach((atom) => {
             atom.destroy([], false);
         });
 
-        store.dispatch(actions.clearCanvas());
+        bondsMap.forEach((bond) => {
+            bond.destroy([], false);
+        });
 
-        // !!! need to reset the tool to "" or selection
+        store.dispatch(actions.clearCanvas());
     }
 }
 

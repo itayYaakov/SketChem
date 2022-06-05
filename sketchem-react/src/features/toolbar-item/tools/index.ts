@@ -1,5 +1,5 @@
 export { default as DefaultAtomButtons } from "./AtomTool";
-export * as bondToolBarItems from "./BondToolBarItems";
+export * as BondTool from "./BondTool";
 export { default as Chain } from "./Chain";
 export * as Charge from "./Charge";
 export { default as ClearCanvas } from "./ClearCanvas";

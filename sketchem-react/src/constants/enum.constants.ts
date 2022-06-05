@@ -41,7 +41,6 @@ export enum LayersNames {
     AtomLabelBackground = "atom_label_background",
     AtomLabelHover = "atom_label_hover",
     AtomLabelLabel = "atom_label_label",
-    AtomLabelCharge = "atom_label_charge",
     General = "general",
     Selection = "selection",
 }

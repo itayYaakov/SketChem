@@ -1,3 +1,5 @@
+@use "material_colors"as c;
+
 @mixin text {
     font-family: 'Roboto', sans-serif;
     font-size: 1em;
@@ -14,17 +16,31 @@
 
 }
 
-.atom_label_text{
+.atom_label_text {
     @include text;
     // stroke: #00000094;
     // stroke-width: 0.05em;
     // stroke-linecap: round;
     // stroke-linejoin: round;
- }
+}
 
- 
- .atom_label_hydrogen_text{
+.atom_label_hydrogen_text {
     @include text;
     font-size: smaller;
-    alignment-baseline: central;
+    // alignment-baseline: central;
+    baseline-shift: sub;
+}
+
+.atom_label_charge_text {
+    @include text;
+    font-size: smaller;
+    baseline-shift: super;
+    // alignment-baseline: central;
+}
+
+.atom_label_valence_error_line{
+    stroke: c.$pink-500;
+    stroke-width: 3px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }

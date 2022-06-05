@@ -19,6 +19,6 @@ enum ToolsNames {
 }
 
 export const ToolsConstants = {
-    ValidMouseMoveDistance: 10,
+    ValidMouseMoveDistance: 30,
     ToolsNames,
 };

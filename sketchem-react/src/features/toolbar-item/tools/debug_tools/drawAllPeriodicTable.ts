@@ -35,7 +35,7 @@ class DrawAllPeriodicTable implements ActiveToolbarItem {
             atomCenter.addValuesSelf(padding, 0);
 
             const atom = new Atom({ props: { symbol: elem.symbol, center: atomCenter } } as IAtom);
-            atom.draw();
+            atom.getOuterDrawCommand();
         }
     }
 }

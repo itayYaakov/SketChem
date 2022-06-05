@@ -84,8 +84,8 @@ export class Bond {
         };
 
         // !!! should only draw the valence actually
-        this.startAtom?.draw();
-        this.endAtom?.draw();
+        this.startAtom?.getOuterDrawCommand();
+        this.endAtom?.getOuterDrawCommand();
 
         // addHistoryItem(historyItem);
     }
@@ -263,8 +263,16 @@ export class Bond {
     }
 
     removeConnectedAtoms(ignoreAtomRemove: number[] = []) {
+        if (this.startAtom?.getId() && ignoreAtomRemove.indexOf(this.startAtom.getId()) !== -1) {
+            this.startAtom = undefined;
+        }
+        if (this.endAtom?.getId() && ignoreAtomRemove.indexOf(this.endAtom.getId()) !== -1) {
+            this.endAtom = undefined;
+        }
+
         [this.startAtom, this.endAtom].forEach((atom) => {
-            if (atom?.getId() && ignoreAtomRemove.indexOf(atom.getId()) !== -1) return;
+            if (!atom) return;
+
             const atomNeighbors = atom?.getConnectedBondsIds();
             atomNeighbors?.delete(this.attributes.id);
 
@@ -273,8 +281,6 @@ export class Bond {
                 atom?.destroy([this.attributes.id]);
             }
         });
-        this.startAtom = undefined;
-        this.endAtom = undefined;
     }
 
     movedByAtomId(movedAtomId?: number) {
@@ -319,8 +325,8 @@ export class Bond {
         if (redraw) {
             this.drawStereoAndOrder();
             // !!! should only draw the valence actually
-            this.startAtom?.draw();
-            this.endAtom?.draw();
+            this.startAtom?.getOuterDrawCommand();
+            this.endAtom?.getOuterDrawCommand();
         }
 
         const historyItem: ActionItem = {
@@ -337,6 +343,7 @@ export class Bond {
         if (this.lifeStage === EntityLifeStage.DestroyInit || this.lifeStage === EntityLifeStage.Destroyed) {
             return;
         }
+
         this.lifeStage = EntityLifeStage.DestroyInit;
         if (this.connectorObj) {
             this.undraw();
@@ -356,6 +363,12 @@ export class Bond {
             atomAttributes: undefined,
             bondAttributes: this.attributes,
         };
+
+        // bonds need to redraw after connecting bond was removed
+        this.startAtom?.getOuterDrawCommand();
+        this.endAtom?.getOuterDrawCommand();
+        this.startAtom = undefined;
+        this.endAtom = undefined;
 
         // addHistoryItem(historyItem);
     }
