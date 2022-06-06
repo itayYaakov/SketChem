@@ -41,6 +41,8 @@ export class Atom {
 
     private valenceErrorLine: Line | undefined;
 
+    private valenceErrorRectangle: Rect | undefined;
+
     private nodeObj: any;
 
     private lastTreeNode: NamedPoint | undefined;
@@ -238,11 +240,14 @@ export class Atom {
             const bondStartAtomId = bond.getAttributes().atomStartId;
             const bondEndAtomId = bond.getAttributes().atomEndId;
 
-            const isThisBondBetweenCurrentAndReplacedAtoms =
+            const isBondBetweenCurrentAndReplacedAtoms =
                 (bondStartAtomId === currentAtomId && bondEndAtomId === replacedAtomId) ||
                 (bondStartAtomId === replacedAtomId && bondEndAtomId === currentAtomId);
 
-            if (isThisBondBetweenCurrentAndReplacedAtoms || neighborsIntersection.has(bondStartAtomId)) {
+            const isBondOtherAtomIsANeighborAtom =
+                neighborsIntersection.has(bondStartAtomId) || neighborsIntersection.has(bondEndAtomId);
+
+            if (isBondBetweenCurrentAndReplacedAtoms || isBondOtherAtomIsANeighborAtom) {
                 bond.destroy([replacedAtomId], false);
                 return;
             }
@@ -266,12 +271,14 @@ export class Atom {
         this.hoverCircle?.remove();
         this.symbolLabel?.remove();
         this.valenceErrorLine?.remove();
+        this.valenceErrorRectangle?.remove();
         this.backgroundRect = undefined;
         this.backgroundCircle = undefined;
         this.chargeBackgroundCircle = undefined;
         this.hoverCircle = undefined;
         this.symbolLabel = undefined;
         this.valenceErrorLine = undefined;
+        this.valenceErrorRectangle = undefined;
     }
 
     // ! should be private
@@ -297,7 +304,6 @@ export class Atom {
                     size: EditorConstants.atomFontSize,
                     anchor: "middle",
                 })
-                .attr({ "text-anchor": "middle" })
                 .id(IdUtils.getAtomElemId(this.attributes.id));
 
         const { symbol, center, color } = this.attributes;
@@ -319,6 +325,8 @@ export class Atom {
         // reset position for each child of label
         this.symbolLabel.children().each((item) => item.attr({ x: null, y: null, dx: null, dy: null }));
 
+        this.drawValenceError(this.symbolLabel);
+
         this.backgroundCircle =
             this.backgroundCircle ??
             LayersUtils.getLayer(LayersNames.AtomLabelBackground)
@@ -336,7 +344,7 @@ export class Atom {
         //     .fill("#ff00a8");
 
         this.backgroundCircle
-            .radius((Math.max(textBbox.width, textBbox.height * 0.8) / 2) * 1)
+            .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
             // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
             .center(textBbox.cx, textBbox.cy);
     }
@@ -368,28 +376,18 @@ export class Atom {
         if (!this.element) {
             this.valenceErrorLine?.remove();
             this.valenceErrorLine = undefined;
+            this.valenceErrorRectangle?.remove();
+            this.valenceErrorRectangle = undefined;
             return;
         }
 
-        const hydrogenConnectorsObject = KekuleUtils.getAtomConnectorsObjectWithHydrogenData(this.nodeObj);
-        const { hydrogensBonds, nonHydrogensBonds } = hydrogenConnectorsObject;
-        const hydrogenBondsSum = KekuleUtils.getBondOrderSum(hydrogensBonds);
-        const nonHydrogenBondsSum = KekuleUtils.getBondOrderSum(nonHydrogensBonds);
-        const totalBondsSum = hydrogenBondsSum + nonHydrogenBondsSum;
-
-        // !!! *** for debug ***
-        const allBondsForDebug = KekuleUtils.getAtomConnectorsList(this.nodeObj);
-        const allBondsSum = KekuleUtils.getBondOrderSum(allBondsForDebug);
-        if (totalBondsSum !== allBondsSum) {
-            console.error("Bonds sum mismatch", totalBondsSum, allBondsSum);
-        }
-        // !!! *** for debug ***
+        const connectorObjects = KekuleUtils.getAtomConnectorsObject(this.nodeObj);
+        const totalBondsSum = KekuleUtils.getBondOrderSum(connectorObjects);
 
         const hydrogenCount = ValenceUtils.calculateImplicitHydrogenCount(
             this.element.number,
             this.attributes.charge,
-            hydrogenBondsSum,
-            nonHydrogenBondsSum
+            totalBondsSum
         );
 
         this.implicitHydrogenCount = hydrogenCount;
@@ -400,6 +398,39 @@ export class Atom {
         }
     }
 
+    private drawValenceError(label: Text) {
+        if (!this.showValenceError) {
+            this.valenceErrorLine?.remove();
+            this.valenceErrorLine = undefined;
+            this.valenceErrorRectangle?.remove();
+            this.valenceErrorRectangle = undefined;
+            return;
+        }
+
+        this.valenceErrorRectangle =
+            this.valenceErrorRectangle ??
+            LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+                .rect(0, 0)
+                .fill("none")
+                .addClass(styles.atom_label_valence_error_rect)
+                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_valence_error`);
+
+        // this.valenceErrorLine =
+        //     this.valenceErrorLine ??
+        //     LayersUtils.getLayer(LayersNames.AtomLabelLabel)
+        //         .line(0, 0, 0, 0)
+        //         .fill("#ff0000")
+        //         .addClass(styles.atom_label_valence_error_line)
+        //         .id(`${IdUtils.getAtomElemId(this.attributes.id)}_valence_error`);
+
+        const textBbox = label.bbox();
+        const sizeFactor = 1.2;
+        this.valenceErrorRectangle
+            .width(textBbox.width * sizeFactor)
+            .height(textBbox.height * sizeFactor)
+            .center(textBbox.cx, textBbox.cy);
+    }
+
     private drawLabelHydrogen(label: Text) {
         // let hydrogenCount: {
         //     hydrogensBonds: never[];
@@ -407,57 +438,28 @@ export class Atom {
         // }
         // let hydrogenCount = KekuleUtils.getImplicitHydrogensCount(this.nodeObj);
 
-        if (this.implicitHydrogenCount === 0) {
-            this.valenceErrorLine?.remove();
-            this.valenceErrorLine = undefined;
-            return;
-        }
+        if (this.implicitHydrogenCount === 0) return;
 
         let hydrogenCount = this.implicitHydrogenCount;
-        if (hydrogenCount > 0) {
-            let isHydrogenOnLeft = false;
-            // if this.attributes.symbol is on list of atoms with hydrogen on left
-            const atomsWithHydrogenOnLeft = ["O", "F", "S", "Cl", "Se", "Br", "I"];
+        let isHydrogenOnLeft = false;
+        // if this.attributes.symbol is on list of atoms with hydrogen on left
+        const atomsWithHydrogenOnLeft = ["O", "F", "S", "Cl", "Se", "Br", "I"];
 
-            if (atomsWithHydrogenOnLeft.includes(this.attributes.symbol)) {
-                isHydrogenOnLeft = true;
-            }
-            if (this.attributes.symbol !== "H") {
-                label.tspan("H").addClass(styles.atom_label_text);
-            } else {
-                hydrogenCount += 1;
-            }
-
-            if (hydrogenCount > 1) {
-                label.tspan(`${hydrogenCount}`).addClass(styles.atom_label_hydrogen_text);
-            }
-
-            if (isHydrogenOnLeft) {
-                label.children()[0].front();
-            }
-
-            this.valenceErrorLine?.remove();
-            this.valenceErrorLine = undefined;
+        if (atomsWithHydrogenOnLeft.includes(this.attributes.symbol)) {
+            isHydrogenOnLeft = true;
+        }
+        if (this.attributes.symbol !== "H") {
+            label.tspan("H").addClass(styles.atom_label_text);
         } else {
-            this.showValenceError = true;
-            // show valence error on atom
+            hydrogenCount += 1;
         }
 
-        if (this.showValenceError) {
-            this.valenceErrorLine =
-                this.valenceErrorLine ??
-                LayersUtils.getLayer(LayersNames.AtomLabelLabel)
-                    .line(0, 0, 0, 0)
-                    .fill("#ff0000")
-                    .addClass(styles.atom_label_valence_error_line)
-                    .id(`${IdUtils.getAtomElemId(this.attributes.id)}_valence_error`);
+        if (hydrogenCount > 1) {
+            label.tspan(`${hydrogenCount}`).addClass(styles.atom_label_hydrogen_text);
+        }
 
-            const textBbox = label.bbox();
-            this.valenceErrorLine.plot(textBbox.x, textBbox.y + textBbox.height, textBbox.x2, textBbox.y2);
-            // .stroke({ color: "#f06", width: 3, linecap: "round" });
-            // .cx(textBbox.cx)
-            // .cy(textBbox.cy)
-            // .dmove(0, +textBbox.height * 0.6);
+        if (isHydrogenOnLeft) {
+            label.children()[0].front();
         }
     }
 

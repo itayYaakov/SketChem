@@ -86,13 +86,8 @@ export function calculateImplicitValence(atomicNumber: number, charge: number, t
     return MDLValence(atomicNumber, charge, totalBondOrderSum);
 }
 
-export function calculateImplicitHydrogenCount(
-    atomicNumber: number,
-    charge: number,
-    hydrogenBondsSum: number,
-    nonHydrogenBondsSum: number
-) {
-    const valence = calculateImplicitValence(atomicNumber, charge, hydrogenBondsSum + nonHydrogenBondsSum);
+export function calculateImplicitHydrogenCount(atomicNumber: number, charge: number, totalBondSum: number) {
+    const valence = calculateImplicitValence(atomicNumber, charge, totalBondSum);
     if (valence === -1) {
         let charge2 = charge;
         if (charge < 0) {
@@ -103,11 +98,11 @@ export function calculateImplicitHydrogenCount(
             return -1;
         }
 
-        const valence2 = calculateImplicitValence(atomicNumber, charge2, hydrogenBondsSum + nonHydrogenBondsSum);
+        const valence2 = calculateImplicitValence(atomicNumber, charge2, totalBondSum);
 
         // temporary hack - check if atom with small absolute charge valance is 1
         // if so, then return 0
-        if (valence2 === 1) return 0 - (hydrogenBondsSum + nonHydrogenBondsSum);
+        if (valence2 === 1) return 0 - totalBondSum;
 
         return -1;
     }
@@ -124,7 +119,7 @@ export function calculateImplicitHydrogenCount(
 
     // for future radical
     const rad = 0;
-    return valence - rad - (hydrogenBondsSum + nonHydrogenBondsSum);
+    return valence - rad - totalBondSum;
     // !!! need to subtract charge?
     // return valence - rad - (hydrogenBondsSum + nonHydrogenBondsSum) - Math.abs(charge);
 }

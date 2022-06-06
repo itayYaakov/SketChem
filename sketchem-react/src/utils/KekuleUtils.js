@@ -324,6 +324,19 @@ export function getAtomConnectorsObjectWithHydrogenData(atom) {
     });
 }
 
+export function getAtomConnectorsObject(atom) {
+    return tryCatchWrapper(() => {
+        const result = [];
+        getAtomConnectorsList(atom).forEach((connector) => {
+            if (connector instanceof Kekule.ChemStructureConnector) {
+                result.push(connector);
+            }
+        });
+
+        return result;
+    });
+}
+
 // calculate sum of bond orders based on bond order enum
 export function getBondOrderSum(bonds) {
     return bonds.reduce((acc, bond) => {

@@ -2,7 +2,6 @@
 
 @mixin text {
     font-family: 'Roboto', sans-serif;
-    font-size: 1em;
     font-weight: 500;
     // make unselectable
     -webkit-touch-callout: none;
@@ -39,6 +38,13 @@
 }
 
 .atom_label_valence_error_line{
+    stroke: c.$pink-500;
+    stroke-width: 3px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.atom_label_valence_error_rect{
     stroke: c.$pink-500;
     stroke-width: 3px;
     stroke-linecap: round;
