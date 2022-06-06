@@ -18,6 +18,8 @@ class ChainToolBar extends BondTool {
 
     chainAddedAtoms: Atom[] = [];
 
+    symbol: string = "C";
+
     override onMouseDown(eventHolder: MouseEventCallBackProperties) {
         this.chainAddedAtoms = [];
         this.chainAddedBonds = [];
@@ -90,7 +92,7 @@ class ChainToolBar extends BondTool {
             endAtomCenter = lastAtom.getCenter().addNew(BondVector);
 
             if (chainAtom === undefined) {
-                chainAtom = new Atom({ props: { symbol: "C", center: endAtomCenter } } as IAtom);
+                chainAtom = new Atom({ props: { symbol: this.symbol, center: endAtomCenter } } as IAtom);
 
                 console.log("Added atom", index, "sectors=", chainLength, this.chainAddedAtoms);
                 this.chainAddedAtoms.push(chainAtom);

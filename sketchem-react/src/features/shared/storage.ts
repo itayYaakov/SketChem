@@ -87,11 +87,12 @@ function elementAtPoint(
     point: Vector2,
     tree: PointRBush,
     maxDistance: number,
-    entityType: EntityType
+    entityType: EntityType,
+    predicate?: (c: any) => boolean
 ): NamedPoint | undefined {
     const NeighborsToFind = 1;
 
-    const closetSomethings = knn(tree, point.x, point.y, NeighborsToFind, maxDistance);
+    const closetSomethings = knn(tree, point.x, point.y, NeighborsToFind, maxDistance, predicate);
     const [closest] = closetSomethings;
 
     if (!closest) return undefined;
@@ -99,17 +100,31 @@ function elementAtPoint(
     const closestNode = closest.node as NamedPoint;
 
     if (closestNode.entityType !== entityType) return undefined;
-
+    // console.debug(`draggedToAtom Distancfe: ${closest.dist}/${maxDistance * maxDistance}`);
     return closestNode;
 }
 
-function atomAtPoint(point: Vector2): NamedPoint | undefined {
+function atomAtPoint(point: Vector2, ignoreAtoms?: number[]): NamedPoint | undefined {
     const atomMaxDistance = AtomConstants.SelectDistance;
+
+    // don't include atoms that are in the ignore list in the search
+    if (ignoreAtoms && ignoreAtoms.length > 0) {
+        const predicate = (c: any) => !ignoreAtoms.includes(c.id);
+        return elementAtPoint(point, atomsTree, atomMaxDistance, EntityType.Atom, predicate);
+    }
+
     return elementAtPoint(point, atomsTree, atomMaxDistance, EntityType.Atom);
 }
 
-function bondAtPoint(point: Vector2): NamedPoint | undefined {
+function bondAtPoint(point: Vector2, ignoreBonds?: number[]): NamedPoint | undefined {
     const bondMaxDistance = BondConstants.SelectDistance;
+
+    // don't include bonds that are in the ignore list in the search
+    if (ignoreBonds && ignoreBonds.length > 0) {
+        const predicate = (c: any) => !ignoreBonds.includes(c.id);
+        return elementAtPoint(point, bondsTree, bondMaxDistance, EntityType.Bond, predicate);
+    }
+
     return elementAtPoint(point, bondsTree, bondMaxDistance, EntityType.Bond);
 }
 

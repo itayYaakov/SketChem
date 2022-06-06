@@ -97,6 +97,10 @@ const drawMol = (mol) => {
         const bond = new Bond({ connectorObj: connector });
         bond.draw(canvas);
     }
+
+    // merge fragments
+    const realMol = KekuleUtils.getMolObject();
+    KekuleUtils.MergeStructFragment(mol, realMol);
 };
 
 export const drawMolFromFile = (fileContext) => {

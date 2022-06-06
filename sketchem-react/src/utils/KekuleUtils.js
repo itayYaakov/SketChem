@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-undef */
 import { BondOrder } from "@constants/enum.constants";
 import { EntitiesMapsStorage } from "@features/shared/storage";
@@ -11,6 +12,10 @@ chemDocument.appendChild(mol);
 
 export function getChemDocument() {
     return chemDocument;
+}
+
+export function getMolObject() {
+    return mol;
 }
 
 export function getFileFormatsOptions(rawKekuleFormats) {
@@ -103,6 +108,43 @@ export function getLinkedBonds(node) {
     return node.getLinkedBonds();
 }
 
+/**
+ * Returns list of neighbors ids of a node
+ * @param {Kekule.ChemStructureNode} node
+ * @return {Set<Number>}
+ */
+export function getAtomNeighborsIds(node) {
+    if (!node || !(node instanceof Kekule.ChemStructureNode))
+        throw new Error(`getAtomNeighbors: atom:${node} is not a Kekule.ChemStructureNode`);
+    const result = new Set();
+    node.getLinkedChemNodes().forEach((neighbor) => {
+        if (neighbor instanceof Kekule.ChemStructureNode) {
+            result.add(neighbor.id);
+        }
+    });
+
+    return result;
+}
+
+/**
+ * Returns list of neighbors of a node
+ * @param {Kekule.ChemStructureNode} atom
+ * @return {Set<Atom>}
+ */
+export function getAtomNeighbors(atom) {
+    neighborsIds = getAtomNeighborsIds(atom);
+
+    const result = new Set();
+    neighborsIds.forEach((neighborId) => {
+        if (neighbor instanceof Kekule.ChemStructureNode) {
+            const neighborObj = EntitiesMapsStorage.getAtomById(neighborId);
+            result.add(neighborObj);
+        }
+    });
+
+    return result;
+}
+
 export function isAtom(bond) {
     return node.getLinkedBonds();
 }
@@ -125,6 +167,48 @@ export function getNumericId(id) {
         default:
             throw new Error(`Id type unknown ${id}`);
     }
+}
+
+/**
+ * Operation of merging two structure fragment as one.
+ * @class
+ * @augments Kekule.ChemObjOperation.Base
+ *
+ * @param {Kekule.StructureFragment} target Source fragment.
+ * @param {Kekule.StructureFragment} dest Destination fragment.
+ *
+ * @property {Kekule.StructureFragment} target Source fragment, all connectors and nodes will be moved to dest fragment.
+ * @property {Kekule.StructureFragment} dest Destination fragment.
+ * @property {Array} mergedNodes Nodes moved from target to dest during merging.
+ * @property {Array} mergedConnectors Connectors moved from target to dest during merging.
+ */
+export function MergeStructFragment(target, dest) {
+    const b1 = chemDocument.getChildren();
+    console.log("Children", b1);
+    // not available without widget
+    // const operation = new Kekule.ChemStructOperation.MergeStructFragment(target, dest);
+
+    let mergedNodes;
+    let mergedConnectors;
+    if (target && dest) {
+        const nodes = Kekule.ArrayUtils.clone(target.getNodes());
+        mergedNodes = nodes;
+        const connectors = Kekule.ArrayUtils.clone(target.getConnectors());
+        mergedConnectors = connectors;
+
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        Kekule_StructureFragment_moveChildBetweenStructFragment(target, dest, nodes, connectors);
+        const parent = target.getParent();
+        if (parent) {
+            // remove target from parent
+            // doesn't work as well
+            // let removeOperation = new Kekule.ChemObjOperation.Remove(target, parent, null, this.getEditor());
+            parent.removeChild(target);
+        }
+    }
+
+    const b = chemDocument.getChildren();
+    console.log("Children", b);
 }
 
 export function registerAtomFromAttributes(attributes) {
@@ -154,7 +238,6 @@ export function registerBondFromAttributes(attributes) {
     // atomEndId: number;
     const { id, order, stereo, atomStartId, atomEndId } = attributes;
 
-    const { atomsMap } = EntitiesMapsStorage;
     const startAtom = EntitiesMapsStorage.getAtomById(atomStartId).getKekuleNode();
     const endAtom = EntitiesMapsStorage.getAtomById(atomEndId).getKekuleNode();
 
@@ -199,7 +282,7 @@ export function getAtomConnectorsList(atom) {
     return tryCatchWrapper(() => {
         const result = [];
         atom.getLinkedConnectors().forEach((connector) => {
-            if (connector instanceof Kekule.Bond) {
+            if (connector instanceof Kekule.ChemStructureConnector) {
                 result.push(connector);
             }
         });
@@ -210,10 +293,10 @@ export function getAtomConnectorsList(atom) {
 
 export function isHydrogenBond(bond) {
     return tryCatchWrapper(() => {
-        if (!(bond instanceof Kekule.Bond)) return false;
+        if (!bond || !(bond instanceof Kekule.ChemStructureConnector)) return false;
         let isHydrogenBondFlag = false;
         bond.getConnectedObjs().forEach((node) => {
-            if (node instanceof Kekule.Atom) {
+            if (node instanceof Kekule.ChemStructureNode) {
                 if (node.isHydrogenAtom()) isHydrogenBondFlag = true;
             }
         });
@@ -228,7 +311,7 @@ export function getAtomConnectorsObjectWithHydrogenData(atom) {
             nonHydrogensBonds: [],
         };
         getAtomConnectorsList(atom).forEach((connector) => {
-            if (connector instanceof Kekule.Bond) {
+            if (connector instanceof Kekule.ChemStructureConnector) {
                 if (isHydrogenBond(connector)) {
                     result.hydrogensBonds.push(connector);
                     return;
@@ -244,7 +327,7 @@ export function getAtomConnectorsObjectWithHydrogenData(atom) {
 // calculate sum of bond orders based on bond order enum
 export function getBondOrderSum(bonds) {
     return bonds.reduce((acc, bond) => {
-        if (!(bond instanceof Kekule.Bond)) return acc;
+        if (!(bond instanceof Kekule.ChemStructureConnector)) return acc;
 
         switch (bond.getBondOrder()) {
             case Kekule.BondOrder.COVALENT:
@@ -310,6 +393,74 @@ export function getDefAngleOfBonds(bondOrder1, bondOrder2) {
 
     const value = map[b1];
     return value || map[0];
+}
+
+/**
+ * Move nodes and connectors from target to dest structure fragment.
+ * @param {Kekule.StructureFragment} target
+ * @param {Kekule.StructureFragment} dest
+ * @param {Array} moveNodes
+ * @param {Array} moveConnectors
+ * @param {Bool} ignoreAnchorNodes
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function Kekule_StructureFragment_moveChildBetweenStructFragment(
+    target,
+    dest,
+    moveNodes,
+    moveConnectors,
+    ignoreAnchorNodes
+) {
+    const CU = Kekule.CoordUtils;
+
+    target.beginUpdate();
+    dest.beginUpdate();
+    const anchorNodes = target.getAnchorNodes();
+    // TODO: here we need change coord if essential
+    const targetCoord2D = target.getAbsCoord2D();
+    const targetCoord3D = target.getAbsCoord3D();
+    const destCoord2D = dest.getAbsCoord2D();
+    const destCoord3D = dest.getAbsCoord3D();
+
+    const coordDelta2D = CU.substract(targetCoord2D, destCoord2D);
+    const coordDelta3D = CU.substract(targetCoord3D, destCoord3D);
+
+    // console.log('coordDelta', coordDelta2D, coordDelta3D);
+
+    const nodes = Kekule.ArrayUtils.clone(moveNodes);
+    const connectors = Kekule.ArrayUtils.clone(moveConnectors);
+    for (let i = 0, l = nodes.length; i < l; ++i) {
+        const node = nodes[i];
+        const index = target.indexOfNode(node);
+        if (index >= 0) {
+            target.removeNodeAt(index, true); // preserve linked connectors
+
+            const oldCoord2D = node.getCoord2D();
+            if (oldCoord2D) {
+                const newCoord2D = CU.add(oldCoord2D, coordDelta2D);
+                node.setCoord2D(newCoord2D);
+            }
+            const oldCoord3D = node.getCoord3D();
+            if (oldCoord3D) {
+                const newCoord3D = CU.add(oldCoord3D, coordDelta3D);
+                node.setCoord2D(newCoord3D);
+            }
+
+            dest.appendNode(node);
+            if (anchorNodes.indexOf(node) >= 0) {
+                target.removeAnchorNode(node);
+                if (!ignoreAnchorNodes) dest.appendAnchorNode(node);
+            }
+        }
+    }
+    for (let i = 0, l = connectors.length; i < l; ++i) {
+        const connector = connectors[i];
+        const index = target.indexOfConnector(connector);
+        if (index >= 0) {
+            target.removeConnectorAt(index, true); // preserve linked objects
+            dest.appendConnector(connector);
+        }
+    }
 }
 
 /**

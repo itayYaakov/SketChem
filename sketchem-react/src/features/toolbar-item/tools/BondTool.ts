@@ -1,14 +1,8 @@
-import { EditorConstants } from "@constants/editor.constant";
-import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
-import { Atom, Bond } from "@entities";
-import { EntitiesMapsStorage } from "@features/shared/storage";
-import * as KekuleUtils from "@src/utils/KekuleUtils";
-import { LayersUtils } from "@src/utils/LayersUtils";
-import Vector2 from "@src/utils/mathsTs/Vector2";
-import { BondAttributes, IAtom, IBond, IBondAttributes, MouseEventCallBackProperties } from "@types";
+import { IBondAttributes, MouseEventCallBackProperties } from "@types";
 
-import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { ToolbarItemButton } from "../ToolbarItem";
 import { EntityBaseTool } from "./EntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -16,27 +10,11 @@ export interface BondToolButton extends ToolbarItemButton {
     attributes: IBondAttributes;
 }
 export class BondTool extends EntityBaseTool {
-    bondOrder!: BondOrder;
-
-    bondStereo!: BondStereoKekule;
-
-    mode!: MouseMode;
-
-    symbol!: string;
-
-    context!: {
-        startAtom?: Atom;
-        endAtom?: Atom;
-        bond?: Bond;
-        rotation?: number;
-    };
-
-    dragged: boolean = false;
-
     init() {
         this.mode = MouseMode.Default;
+        console.debug(`Bond ${this.context?.bond?.getId()} was destroyed`);
         this.context = {};
-        this.dragged = false;
+        this.context.dragged = false;
         this.symbol = "C";
     }
 
@@ -56,6 +34,7 @@ export class BondTool extends EntityBaseTool {
 
         this.mode = MouseMode.EmptyPress;
         this.context.startAtom = this.createAtom(mouseDownLocation);
+        this.context.startAtomIsPredefined = false;
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
@@ -80,19 +59,18 @@ export class BondTool extends EntityBaseTool {
 
         this.context.startAtom?.getOuterDrawCommand();
 
-        // this.mode === MouseMode.AtomPressed && !this.dragged
-
-        if (this.context.endAtom === undefined && !this.dragged) {
+        if (this.context.endAtom === undefined && !this.context.dragged) {
             if (!this.context.startAtom) throw new Error("startAtom is undefined");
 
             const endAtomCenter = this.calculatePosition(this.context.startAtom);
             this.context.endAtom = this.createAtom(endAtomCenter);
+            this.context.endAtomIsPredefined = false;
 
             this.context.startAtom.getOuterDrawCommand();
             this.context.endAtom.getOuterDrawCommand();
         }
 
-        this.moveBondAndCreateIfNeeded();
+        this.createMoveAndHandleBond();
         this.init();
     }
 }

@@ -31,6 +31,10 @@ interface IMovesItem {
     shouldMoveAtoms: Set<Atom>;
     shouldMoveBonds: Set<Bond>;
 }
+interface IAtomMergeAction {
+    replacingAtom: Atom;
+    replacedAtom: Atom;
+}
 
 abstract class SelectTemplate implements ActiveToolbarItem {
     private static selectedAtoms: Map<number, Atom>;
@@ -47,11 +51,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     movesItem?: IMovesItem;
 
+    mergeAtomsAction: IAtomMergeAction[];
+
     constructor() {
         SelectTemplate.selectedAtoms = new Map<number, Atom>();
         SelectTemplate.selectedBonds = new Map<number, Bond>();
         this.selectionMode = SelectionMode.Empty;
         this.resetAnchor();
+        this.mergeAtomsAction = [];
         this.movesItem = undefined;
     }
 
@@ -81,6 +88,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             pivot: undefined,
         };
         this.movesItem = undefined;
+        this.mergeAtomsAction = [];
     }
 
     calculateDeltaFromAnchor(mouse: Vector2) {
@@ -126,6 +134,32 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const bond = EntitiesMapsStorage.getBondById(id);
         bond.select(true);
         SelectTemplate.selectedBonds.set(id, bond);
+    }
+
+    resetMergedAtoms() {
+        this.mergeAtomsAction.forEach((action) => {
+            const { replacingAtom, replacedAtom } = action;
+            replacedAtom.hover(false);
+        });
+        this.mergeAtomsAction = [];
+    }
+
+    movedAtomOverAnotherAtomByAtom(atom?: Atom, point?: Vector2) {
+        if (!atom) return false;
+        const center = point ?? atom.getAttributes().center;
+        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
+
+        const ignoreAtomList = [atom.getId()];
+        const atomWasPressed = atomAtPoint(center, ignoreAtomList);
+        if (atomWasPressed) {
+            const replacedAtom = getAtomById(atomWasPressed.id);
+            replacedAtom.hover(true);
+            console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
+            this.mergeAtomsAction.push({ replacedAtom, replacingAtom: atom });
+            console.log("B this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
+            return true;
+        }
+        return false;
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
@@ -262,11 +296,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
             const delta = this.calculateDeltaFromAnchor(mouseCurrentLocation);
 
+            this.resetMergedAtoms();
             this.movesItem = this.movesItem ?? this.calculateMultipleAtomsAndBondsToMove();
             const { shouldMoveAtoms, shouldMoveBonds, movedBondsId } = this.movesItem;
 
             shouldMoveAtoms.forEach((atom) => {
                 atom.moveByDelta(delta, movedBondsId);
+                this.movedAtomOverAnotherAtomByAtom(atom);
             });
 
             shouldMoveBonds.forEach((bond) => {
@@ -322,6 +358,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     cancel(eventHolder: MouseEventCallBackProperties) {
+        // !!! is there special treatment for delete selection tool
+        this.mergeNodes();
         this.doAction();
         switch (this.selectionMode) {
             case SelectionMode.Empty:
@@ -332,6 +370,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
                 this.removeShape();
                 break;
         }
+    }
+
+    mergeNodes() {
+        this.mergeAtomsAction.forEach((action) => {
+            const { replacingAtom, replacedAtom } = action;
+            replacingAtom.mergeWith(replacedAtom);
+        });
+        this.mergeAtomsAction = [];
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {

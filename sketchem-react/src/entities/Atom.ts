@@ -51,6 +51,8 @@ export class Atom {
 
     private showValenceError: boolean;
 
+    private implicitHydrogenCount: number;
+
     constructor(args: IAtom) {
         this.lifeStage = EntityLifeStage.New;
         let id;
@@ -80,6 +82,9 @@ export class Atom {
         this.element = elementsMap.get(this.attributes.symbol);
         this.attributes.color = this.getColor(this.element, color);
         this.attributes.center = this.attributes.center.clone();
+        this.showValenceError = false;
+        this.implicitHydrogenCount = 0;
+        this.calculateImplicitHydrogen();
 
         this.addInstanceToMap();
         this.lifeStage = EntityLifeStage.Initialized;
@@ -156,6 +161,14 @@ export class Atom {
         this.updateAttributes({ center: newPosition }, ignoreNotifyBondsIds);
     }
 
+    getNeighbors() {
+        return KekuleUtils.getAtomNeighbors(this.nodeObj);
+    }
+
+    getNeighborsIds() {
+        return KekuleUtils.getAtomNeighborsIds(this.nodeObj);
+    }
+
     getConnectedBonds() {
         const connectedBonds = new Set<Bond>();
         const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
@@ -187,7 +200,7 @@ export class Atom {
             if (ignoreNotify.includes(bond.getId())) {
                 return;
             }
-            bond.movedByAtomId(this.attributes.id);
+            bond.move();
         });
     }
 
@@ -201,6 +214,49 @@ export class Atom {
             }
             bond?.destroy(ignoreAtomRemove);
         });
+    }
+
+    // merge with replaced atom, change location to replaced atom center and remove replaced atom
+    mergeWith(replacedAtom: Atom) {
+        const newPosition = replacedAtom.attributes.center;
+
+        const currentAtomId = this.getId();
+        const currentAtomNeighborsIds = this.getNeighborsIds();
+        const replacedAtomNeighborsIds = replacedAtom.getNeighborsIds();
+        const replacedAtomBonds = replacedAtom.getConnectedBonds();
+        const replacedAtomId = replacedAtom.getId();
+
+        // find neighbors of both current atom and replaced atom
+        const neighborsIntersection = new Set(
+            [...currentAtomNeighborsIds].filter((x) => replacedAtomNeighborsIds.has(x))
+        );
+
+        // iterate over bonds of replaced atom and:
+        //      change their start or end atoms to current atom
+        //      remove bond if it's other atom is in neighbors intersection
+        replacedAtomBonds.forEach((bond: Bond) => {
+            const bondStartAtomId = bond.getAttributes().atomStartId;
+            const bondEndAtomId = bond.getAttributes().atomEndId;
+
+            const isThisBondBetweenCurrentAndReplacedAtoms =
+                (bondStartAtomId === currentAtomId && bondEndAtomId === replacedAtomId) ||
+                (bondStartAtomId === replacedAtomId && bondEndAtomId === currentAtomId);
+
+            if (isThisBondBetweenCurrentAndReplacedAtoms || neighborsIntersection.has(bondStartAtomId)) {
+                bond.destroy([replacedAtomId], false);
+                return;
+            }
+
+            if (bondStartAtomId === replacedAtomId) {
+                bond.updateAttributes({ atomStartId: currentAtomId });
+            } else if (bondEndAtomId === replacedAtomId) {
+                bond.updateAttributes({ atomEndId: currentAtomId });
+            }
+        });
+
+        replacedAtom.destroy([], false);
+        this.updateAttributes({ center: newPosition });
+        this.draw();
     }
 
     private undraw() {
@@ -234,7 +290,6 @@ export class Atom {
             this.symbolLabel ??
             LayersUtils.getLayer(LayersNames.AtomLabelLabel)
                 .text("")
-                .hide()
                 .addClass(styles.atom_label_text)
                 .font({
                     family: EditorConstants.atomFontSize,
@@ -283,8 +338,6 @@ export class Atom {
             .radius((Math.max(textBbox.width, textBbox.height * 0.8) / 2) * 1)
             // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
             .center(textBbox.cx, textBbox.cy);
-
-        this.symbolLabel.show();
     }
 
     private moveDrawings() {
@@ -308,7 +361,9 @@ export class Atom {
         this.drawHover();
     }
 
-    private drawLabelHydrogen(label: Text) {
+    private calculateImplicitHydrogen() {
+        this.showValenceError = false;
+
         if (!this.element) {
             this.valenceErrorLine?.remove();
             this.valenceErrorLine = undefined;
@@ -329,26 +384,35 @@ export class Atom {
         }
         // !!! *** for debug ***
 
-        let hydrogenCount = ValenceUtils.calculateImplicitHydrogenCount(
+        const hydrogenCount = ValenceUtils.calculateImplicitHydrogenCount(
             this.element.number,
             this.attributes.charge,
             hydrogenBondsSum,
             nonHydrogenBondsSum
         );
 
+        this.implicitHydrogenCount = hydrogenCount;
+        if (hydrogenCount < 0) {
+            this.showValenceError = true;
+        } else {
+            this.showValenceError = false;
+        }
+    }
+
+    private drawLabelHydrogen(label: Text) {
         // let hydrogenCount: {
         //     hydrogensBonds: never[];
         //     bonds: never[];
         // }
         // let hydrogenCount = KekuleUtils.getImplicitHydrogensCount(this.nodeObj);
-        this.showValenceError = false;
 
-        if (hydrogenCount === 0) {
+        if (this.implicitHydrogenCount === 0) {
             this.valenceErrorLine?.remove();
             this.valenceErrorLine = undefined;
             return;
         }
 
+        let hydrogenCount = this.implicitHydrogenCount;
         if (hydrogenCount > 0) {
             let isHydrogenOnLeft = false;
             // if this.attributes.symbol is on list of atoms with hydrogen on left
@@ -443,6 +507,19 @@ export class Atom {
         }
     }
 
+    hover(isHovered: boolean) {
+        if (!this.hoverCircle) return;
+        if (isHovered) {
+            this.hoverCircle.stroke({ color: "#00fa06", opacity: 0.8, width: 5 });
+            this.hoverCircle.show();
+            // this.hoverCircle.attr({ filter: "drop-shadow(0px 0px 5px #23c081)" });
+        } else {
+            this.hoverCircle.stroke({ color: "#f06", opacity: 0.6, width: 5 });
+            this.hoverCircle.hide();
+            // circle.attr({ filter: "" });
+        }
+    }
+
     getKekuleNode() {
         return this.nodeObj;
     }
@@ -463,9 +540,6 @@ export class Atom {
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
         this.attributes = { ...this.attributes, ...newAttributes };
 
-        // temporary reset
-        this.showValenceError = false;
-
         const moved = newAttributes.center !== undefined;
         const redrawCharge = newAttributes.charge !== undefined || moved;
         const redrawLabel = newAttributes.charge !== undefined || newAttributes.symbol !== undefined || moved;
@@ -475,21 +549,21 @@ export class Atom {
             // !!! remove kekule update in here
             this.nodeObj.setCoord2D({ x: newAttributes.center!.x, y: newAttributes.center!.y });
             // this.draw();
-            this.moveDrawings();
+            // this.moveDrawings();
+            this.draw();
             this.modifyTree(true);
             this.notifyConnectedBonds(ignoreNotifyBondsIds);
         } else {
             if (redrawCharge) {
                 this.nodeObj.setCharge(this.attributes.charge);
-                // !!! see if this can be removed
-                this.drawLabel();
             }
             if (redrawLabel) {
                 this.nodeObj.setSymbol(this.attributes.symbol);
                 this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
                 this.attributes.color = this.getColor(this.element);
-                this.drawLabel();
             }
+            this.calculateImplicitHydrogen();
+            this.draw();
         }
 
         const historyItem: ActionItem = {

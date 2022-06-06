@@ -2,8 +2,6 @@ import { AtomConstants } from "@constants/atom.constants";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
-import { EntitiesMapsStorage } from "@features/shared/storage";
-import Vector2 from "@src/utils/mathsTs/Vector2";
 import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
@@ -23,14 +21,11 @@ export class AtomToolBarItem extends EntityBaseTool {
 
     bondStereo: BondStereoKekule = BondStereoKekule.NONE;
 
-    dragged: boolean = false;
-
-    symbol!: string;
-
     init() {
         this.mode = MouseMode.Default;
-        this.context = {};
-        this.dragged = false;
+        this.context = {
+            dragged: false,
+        };
     }
 
     onActivate(attributes: IAtomAttributes) {
@@ -65,6 +60,7 @@ export class AtomToolBarItem extends EntityBaseTool {
 
         this.mode = MouseMode.EmptyPress;
         this.context.startAtom = this.createAtom(mouseDownLocation);
+        this.context.startAtomIsPredefined = false;
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
@@ -83,7 +79,7 @@ export class AtomToolBarItem extends EntityBaseTool {
         // update pressed atom symbol only if it was pressed and there was no drag
         if (
             this.mode === MouseMode.AtomPressed &&
-            !this.dragged &&
+            !this.context.dragged &&
             this.context.startAtom &&
             this.context.endAtom === undefined
         ) {

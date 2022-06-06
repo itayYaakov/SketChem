@@ -19,13 +19,14 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
 
     symbol!: string;
 
-    dragged = false;
-
     context!: {
         startAtom?: Atom;
+        startAtomIsPredefined?: boolean;
         endAtom?: Atom;
+        endAtomIsPredefined?: boolean;
         bond?: Bond;
         rotation?: number;
+        dragged?: boolean;
     };
 
     onActivate?(params: any): void;
@@ -48,8 +49,70 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             this.mode = MouseMode.AtomPressed;
             const atom = getAtomById(atomWasPressed.id);
             this.context.startAtom = atom;
+            this.context.startAtomIsPredefined = true;
             return true;
         }
+        return false;
+    }
+
+    createIgnoreAtomList(whichOne: "start" | "end" | "both" = "both") {
+        const ignoreAtomRemove = [];
+        if (this.context.startAtom && whichOne !== "end") {
+            ignoreAtomRemove.push(this.context.startAtom.getId());
+        }
+        if (this.context.endAtom && whichOne !== "start") {
+            ignoreAtomRemove.push(this.context.endAtom.getId());
+        }
+        if (ignoreAtomRemove.length === 0) return undefined;
+        return ignoreAtomRemove;
+    }
+
+    private destroyAtomsCreatedByMe(whichOne: "start" | "end" | "both" = "both") {
+        const ignoreAtomRemove = [];
+
+        if (this.context.startAtom && whichOne !== "end") {
+            ignoreAtomRemove.push(this.context.startAtom.getId());
+            if (this.context.startAtomIsPredefined === false) {
+                this.context.startAtom.destroy([], false);
+                this.context.startAtom = undefined;
+            }
+        }
+
+        if (this.context.endAtom && whichOne !== "start") {
+            ignoreAtomRemove.push(this.context.endAtom.getId());
+            if (this.context.endAtomIsPredefined === false) {
+                this.context.endAtom.destroy([], false);
+                this.context.endAtom = undefined;
+            }
+        }
+        return ignoreAtomRemove;
+    }
+
+    mouseMovedToAnExistingAtom(point: Vector2) {
+        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
+
+        let ignoreAtomList;
+        if (this.context.endAtomIsPredefined === true) {
+            console.log("ignoreAtomList = this.createIgnoreAtomList(start);");
+            ignoreAtomList = this.createIgnoreAtomList("start");
+        } else {
+            console.log("ignoreAtomList = this.createIgnoreAtomList(both);");
+            ignoreAtomList = this.createIgnoreAtomList("both");
+        }
+
+        const draggedToAtom = atomAtPoint(point, ignoreAtomList);
+        if (draggedToAtom) {
+            // destroy previous atom if it exists
+            this.destroyAtomsCreatedByMe("end");
+
+            this.mode = MouseMode.AtomPressed;
+            const atom = getAtomById(draggedToAtom.id);
+            this.context.endAtom = atom;
+            this.context.endAtomIsPredefined = true;
+            console.log("found atom");
+            return true;
+        }
+        console.log("Couldn't find atom");
         return false;
     }
 
@@ -111,18 +174,9 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
 
         if (distance < ToolsConstants.ValidMouseMoveDistance) {
-            const ignoreAtomRemove = [this.context.endAtom?.getId() ?? -1];
-            this.context.endAtom?.destroy([], false);
-            this.context.endAtom = undefined;
+            const ignoreAtomRemove = this.destroyAtomsCreatedByMe("both");
 
-            if (this.mode === MouseMode.EmptyPress) {
-                ignoreAtomRemove.push(this.context.startAtom?.getId() ?? -1);
-                this.context.startAtom?.destroy([], false);
-                this.context.startAtom = undefined;
-            } else if (this.mode === MouseMode.AtomPressed) {
-                ignoreAtomRemove.push(this.context.startAtom?.getId() ?? -1);
-            }
-
+            console.debug(`Bond ${this.context.bond?.getId()} was destroyed`);
             this.context.bond?.destroy(ignoreAtomRemove);
             this.context.bond = undefined;
             this.context.startAtom?.getOuterDrawCommand();
@@ -131,6 +185,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
 
         if (!this.context.startAtom) {
             this.context.startAtom = this.createAtom(mouseDownLocation);
+            this.context.startAtomIsPredefined = false;
             if (!this.context.startAtom) {
                 return;
             }
@@ -138,19 +193,34 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         this.context.startAtom.getOuterDrawCommand();
 
         // specify that at some point the atom was dragged
-        this.dragged = true;
+        this.context.dragged = true;
 
         const rotation = -mouseCurrentLocation.angle(mouseDownLocation);
         const endAtomCenter = this.calculatePosition(this.context.startAtom, rotation);
 
-        if (this.context.endAtom === undefined) {
-            this.context.endAtom = this.createAtom(endAtomCenter);
+        // if mouse is not moved to an existing atom and end atom is not created yet
+        if (!this.mouseMovedToAnExistingAtom(mouseCurrentLocation)) {
+            if (this.context.endAtom && this.context.endAtomIsPredefined !== true) {
+                this.context.endAtom.updateAttributes({ center: endAtomCenter });
+            } else {
+                this.context.endAtom = this.createAtom(endAtomCenter);
+                this.context.endAtomIsPredefined = false;
+            }
             this.context.endAtom.getOuterDrawCommand();
-        } else {
-            this.context.endAtom.updateAttributes({ center: endAtomCenter });
         }
+        // // if mouse is not moved to an existing atom and end atom is not created yet
+        // if (!this.mouseMovedToAnExistingAtom(mouseCurrentLocation) && this.context.endAtom === undefined) {
+        //     this.context.endAtom = this.createAtom(endAtomCenter);
+        //     this.context.endAtomIsPredefined = false;
+        //     this.context.endAtom.getOuterDrawCommand();
+        // } else if (this.context.endAtom && this.context.endAtomIsPredefined === false) {
+        //     this.context.endAtom.updateAttributes({ center: endAtomCenter });
+        // } else if (this.context.endAtom === undefined) {
+        //     console.error("end atom is undefined - shuoldn't be possible");
+        // }
 
-        this.moveBondAndCreateIfNeeded();
+        console.log(`B I'm moved and bond equals ${this.context?.bond?.getId()}`);
+        this.createMoveAndHandleBond();
     }
 
     calculateOptimalAngle(atom: Atom) {
@@ -204,9 +274,38 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         return bond;
     }
 
-    moveBondAndCreateIfNeeded() {
-        if (!this.context.endAtom) return;
-        this.context.bond = this.context.bond ?? this.createBond();
-        this.context.bond.movedByAtomId(this.context.endAtom.getId());
+    createMoveAndHandleBond() {
+        if (!this.context.endAtom || !this.context.startAtom) return;
+        if (!this.context.bond) {
+            this.context.bond = this.createBond();
+            return;
+        }
+
+        const bondAttributes: Partial<BondAttributes> = this.context.bond.getAttributes();
+        const { atomStartId: currentBondStartAtomId, atomEndId: currentBondEndAtomId } = bondAttributes;
+
+        delete bondAttributes.id;
+        delete bondAttributes.order;
+        delete bondAttributes.stereo;
+
+        if (currentBondStartAtomId !== this.context.startAtom.getId()) {
+            bondAttributes.atomStartId = this.context.startAtom.getId();
+        } else {
+            delete bondAttributes.atomStartId;
+        }
+
+        if (currentBondStartAtomId !== this.context.endAtom.getId()) {
+            bondAttributes.atomEndId = this.context.endAtom.getId();
+        } else {
+            delete bondAttributes.atomEndId;
+            // only move the bond if end atom id hasn't changed and it's not predefined
+            if (this.context.endAtomIsPredefined === false) {
+                this.context.bond.move();
+            }
+        }
+
+        if (Object.keys(bondAttributes).length > 0) {
+            this.context.bond.updateAttributes(bondAttributes);
+        }
     }
 }

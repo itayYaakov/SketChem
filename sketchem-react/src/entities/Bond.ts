@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { BondConstants } from "@constants/bond.constants";
 import { BondOrder, BondStereoKekule, EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
 import { actions } from "@features/chemistry/chemistrySlice";
@@ -27,21 +28,37 @@ export class Bond {
 
     private elem: Rect | undefined;
 
-    startAtom: Atom | undefined;
+    private _startAtom: Atom | undefined;
 
-    endAtom: Atom | undefined;
+    public get startAtom(): Atom | undefined {
+        return this._startAtom;
+    }
+
+    private set startAtom(value: Atom | undefined) {
+        this._startAtom = value;
+    }
+
+    private _endAtom: Atom | undefined;
+
+    public get endAtom(): Atom | undefined {
+        return this._endAtom;
+    }
+
+    private set endAtom(value: Atom | undefined) {
+        this._endAtom = value;
+    }
 
     private center!: Vector2;
 
     private lifeStage: EntityLifeStage;
 
-    centralMarks: Circle[] = [
+    private centralMarks: Circle[] = [
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
         LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
     ];
 
-    connectorObj: any;
+    private connectorObj: any;
 
     private lastTreeNode: NamedPoint | undefined;
 
@@ -152,6 +169,8 @@ export class Bond {
     move() {
         if (!this.startAtom || !this.endAtom) return;
 
+        this.modifyTree(false);
+
         const startPosition = this.startAtom.getCenter();
         const endPosition = this.endAtom.getCenter();
 
@@ -199,6 +218,8 @@ export class Bond {
         this.centralMarks[0].cx(startPosition.x).cy(startPosition.y);
 
         this.centralMarks[2].cx(endPosition.x).cy(endPosition.y);
+
+        this.modifyTree(true);
     }
 
     private undraw() {
@@ -263,10 +284,10 @@ export class Bond {
     }
 
     removeConnectedAtoms(ignoreAtomRemove: number[] = []) {
-        if (this.startAtom?.getId() && ignoreAtomRemove.indexOf(this.startAtom.getId()) !== -1) {
+        if (this.startAtom && ignoreAtomRemove.includes(this.startAtom.getId())) {
             this.startAtom = undefined;
         }
-        if (this.endAtom?.getId() && ignoreAtomRemove.indexOf(this.endAtom.getId()) !== -1) {
+        if (this.endAtom && ignoreAtomRemove.includes(this.endAtom.getId())) {
             this.endAtom = undefined;
         }
 
@@ -283,12 +304,6 @@ export class Bond {
         });
     }
 
-    movedByAtomId(movedAtomId?: number) {
-        this.modifyTree(false);
-        this.move();
-        this.modifyTree(true);
-    }
-
     moveTo(newPosition: Vector2, shouldNotify: boolean = true) {
         const delta = newPosition.subNew(this.center);
         this.moveByDelta(delta, shouldNotify);
@@ -300,7 +315,7 @@ export class Bond {
             this.endAtom?.moveByDelta(delta, [this.attributes.id]);
         }
 
-        this.movedByAtomId();
+        this.move();
     }
 
     getCenter() {
@@ -318,9 +333,14 @@ export class Bond {
         const moved = newAttributes.atomEndId !== undefined || newAttributes.atomStartId !== undefined;
         const redraw = newAttributes.order !== undefined || newAttributes.stereo !== undefined;
 
+        // !!! not really moved - just changed atom end id or start id
         if (moved) {
             this.updateAtomsReference(newAttributes);
-            this.move();
+            // console.debug(`Kekule destroy bond ${this.attributes.id}`);
+            KekuleUtils.destroy(this.connectorObj);
+            this.connectorObj = null;
+            this.connectorObj = KekuleUtils.registerBondFromAttributes(this.attributes);
+            this.draw();
         }
         if (redraw) {
             this.drawStereoAndOrder();
