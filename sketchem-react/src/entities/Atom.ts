@@ -282,6 +282,7 @@ export class Atom {
 
     getOuterDrawCommand() {
         if (this.lifeStage !== EntityLifeStage.Initialized) return;
+        this.calculateImplicitHydrogen();
         this.draw();
     }
 
