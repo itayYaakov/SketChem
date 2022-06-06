@@ -31,7 +31,8 @@ interface IMovesItem {
     shouldMoveAtoms: Set<Atom>;
     shouldMoveBonds: Set<Bond>;
 }
-interface IAtomMergeAction {
+
+export interface IAtomMergeAction {
     replacingAtom: Atom;
     replacedAtom: Atom;
 }

@@ -3,34 +3,70 @@ import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/
 import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
+import styles from "@styles/index.module.scss";
+import { Path, PathArray, Text } from "@svgdotjs/svg.js";
+import { IAtom, IBond, MouseEventCallBackProperties } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
 import { BondTool, BondToolButton } from "./BondTool";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
+const toolColor = "#e65100";
+
+export interface IAtomMergeAction {
+    replacingAtomIndex: number;
+    replacedAtom: Atom;
+}
+
 class ChainToolBar extends BondTool {
     chainAddedBonds: Bond[] = [];
 
     chainAddedAtoms: Atom[] = [];
 
+    temporaryPathArray?: PathArray;
+
+    finalAtomsCenters: Vector2[] = [];
+
+    temporaryPath?: Path;
+
+    sectorsIndicator?: Text;
+
     symbol: string = "C";
+
+    mergeAtomsByIndex!: (Atom | undefined)[];
+
+    resetMergedAtoms() {
+        this.mergeAtomsByIndex?.forEach((atom) => {
+            atom?.hover(false);
+        });
+        this.mergeAtomsByIndex = [];
+    }
 
     override onMouseDown(eventHolder: MouseEventCallBackProperties) {
         this.chainAddedAtoms = [];
         this.chainAddedBonds = [];
+        this.resetMergedAtoms();
         this.initialAngle = 0;
+        this.temporaryPath?.remove();
+        this.temporaryPath = undefined;
+        this.sectorsIndicator?.remove();
+        this.sectorsIndicator = undefined;
+        this.finalAtomsCenters = [];
         super.onMouseDown(eventHolder);
+        if (this.context.startAtom !== undefined && this.context.startAtomIsPredefined === false) {
+            this.context.startAtom.getOuterDrawCommand();
+        }
     }
 
     initialAngle!: number;
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
         const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
+        this.sectorsIndicator?.remove();
+        this.sectorsIndicator = undefined;
 
         if (this.mode === MouseMode.Default) {
             // !!! add hover
@@ -38,20 +74,16 @@ class ChainToolBar extends BondTool {
         }
 
         if (this.mode === MouseMode.BondPressed) {
-            // !!! change bond type
             return;
         }
 
         if (this.context.startAtom === undefined) {
-            // !!! error
             return;
         }
 
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
 
         if (distance < ToolsConstants.ValidMouseMoveDistance) {
-            // !!! need to delete unused bonds
-            // this.cancel();
             return;
         }
 
@@ -59,98 +91,128 @@ class ChainToolBar extends BondTool {
 
         const chainLength = Math.floor(distance / BondVectorLength);
 
-        let lastAtom = this.context.startAtom;
-        let endAtomCenter;
+        let lastAtomCenter = this.context.startAtom.getCenter();
+        this.temporaryPathArray = new PathArray([["M", lastAtomCenter.x, lastAtomCenter.y]]);
+        this.finalAtomsCenters = [lastAtomCenter];
 
+        this.temporaryPath =
+            this.temporaryPath ??
+            LayersUtils.getLayer(LayersNames.Bond).path(this.temporaryPathArray).fill("none").stroke({
+                color: toolColor,
+                width: 3,
+                opacity: 0.7,
+                dasharray: "0.4em",
+                linecap: "round",
+                linejoin: "round",
+            });
+
+        this.resetMergedAtoms();
         let angle = mouseCurrentLocation.angle(mouseDownLocation);
         angle = AngleUtils.limitInSteps(angle, (1 / 12) * Math.PI);
         angle = AngleUtils.clampPosAngleRad(angle);
-        // angle = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        //     // this.initialAngle = angle;
         this.initialAngle = angle + (1 / 6) * Math.PI;
 
-        console.log(
-            "angle=",
-            (AngleUtils.clampPosAngleRad(mouseCurrentLocation.angle(mouseDownLocation)) / Math.PI) * 180,
-            "angle clamped =",
-            (angle / Math.PI) * 180,
-            "initialAngle=",
-            (this.initialAngle / Math.PI) * 180
-        );
-
-        for (let index = 0; index < chainLength; index += 1) {
-            let chainAtom = this.chainAddedAtoms[index];
-
+        for (let index = 1; index < chainLength + 1; index += 1) {
             let rotation;
+
             if (index % 2 === 1) {
-                rotation = this.initialAngle - (1 / 3) * Math.PI;
-            } else {
                 rotation = this.initialAngle;
+            } else {
+                rotation = this.initialAngle - (1 / 3) * Math.PI;
             }
+
             rotation = AngleUtils.clampPosAngleRad(rotation);
             const BondVector = new Vector2(1, 0).scaleSelf(EditorConstants.Scale).rotateRadSelf(rotation);
-            endAtomCenter = lastAtom.getCenter().addNew(BondVector);
+            const endAtomCenter = lastAtomCenter.addNew(BondVector);
 
-            if (chainAtom === undefined) {
-                chainAtom = new Atom({ props: { symbol: this.symbol, center: endAtomCenter } } as IAtom);
+            this.checkForPossibleNodeMerge(endAtomCenter, index, [this.context.startAtom.getId()]);
 
-                console.log("Added atom", index, "sectors=", chainLength, this.chainAddedAtoms);
-                this.chainAddedAtoms.push(chainAtom);
-                console.log(index, "Added bond", index, "sectors=", chainLength, this.chainAddedAtoms);
-
-                this.context.startAtom.getOuterDrawCommand();
-                chainAtom.getOuterDrawCommand();
-
-                const bondArgs = {
-                    props: {
-                        order: this.bondOrder,
-                        stereo: this.bondStereo,
-                        atomStartId: lastAtom.getId(),
-                        atomEndId: chainAtom.getId(),
-                    },
-                } as IBond;
-
-                const bond = new Bond(bondArgs);
-                console.log(`${index}: Added bond ${bond.getId()} Added atom ${chainAtom.getId()}`);
-                bond.draw();
-
-                // console.log(
-                //     "Index=",
-                //     index,
-                //     "Atom id",
-                //     chainAtom.getId(),
-                //     "Bond id",
-                //     bond.getId(),
-                //     "rotation:",
-                //     (rotation / Math.PI) * 180
-                // );
-
-                this.chainAddedBonds.push(bond);
-            } else {
-                chainAtom.updateAttributes({ center: endAtomCenter });
-            }
-            lastAtom = chainAtom;
+            this.finalAtomsCenters.push(endAtomCenter);
+            this.temporaryPathArray.push(["L", endAtomCenter.x, endAtomCenter.y]);
+            lastAtomCenter = endAtomCenter;
         }
 
-        for (let index = chainLength; index < this.chainAddedBonds.length; index += 1) {
-            const chainRemovedBond = this.chainAddedBonds[index];
-            if (chainRemovedBond !== undefined) {
-                console.log(`${index}: Remove bond ${chainRemovedBond.getId()}`);
-                if (index === 0) {
-                    chainRemovedBond.destroy([this.context.startAtom.getId()]);
-                } else {
-                    chainRemovedBond.destroy();
-                }
-            }
+        this.temporaryPath.plot(this.temporaryPathArray);
+
+        if (this.finalAtomsCenters.length > 1) {
+            this.sectorsIndicator =
+                this.sectorsIndicator ?? LayersUtils.getLayer(LayersNames.General).text("").fill(toolColor);
+
+            const lastPointCenter = this.finalAtomsCenters[this.finalAtomsCenters.length - 1];
+            const PreviousPointCenter = this.finalAtomsCenters[this.finalAtomsCenters.length - 2];
+            const direction = lastPointCenter.subNew(PreviousPointCenter).scaleSelf(0.3);
+            const sectorIndicatorPosition = lastPointCenter.addNew(direction);
+
+            this.sectorsIndicator
+                .text(chainLength.toString())
+                .center(sectorIndicatorPosition.x, sectorIndicatorPosition.y);
         }
-        console.log("Atoms length", this.chainAddedAtoms.length, "Bonds length", this.chainAddedBonds.length);
-        this.chainAddedAtoms = this.chainAddedAtoms.slice(0, chainLength);
-        this.chainAddedBonds = this.chainAddedBonds.slice(0, chainLength);
     }
 
-    onMouseUp(eventHolder: MouseEventCallBackProperties) {}
+    private checkForPossibleNodeMerge(point: Vector2, index: number, ignoreAtomList: number[]) {
+        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
+
+        const replacedAtomNode = atomAtPoint(point, ignoreAtomList);
+        if (replacedAtomNode) {
+            const replacedAtom = getAtomById(replacedAtomNode.id);
+            replacedAtom.hover(true);
+            this.mergeAtomsByIndex[index] = replacedAtom;
+            return true;
+        }
+        this.mergeAtomsByIndex[index] = undefined;
+        return false;
+    }
+
+    private createChain() {
+        let previousAtom = this.context.startAtom;
+        if (!previousAtom) {
+            throw new Error("startAtom should be undefined");
+        }
+
+        const ignoreAtomList = [previousAtom.getId()];
+
+        for (let index = 1; index < this.finalAtomsCenters.length; index += 1) {
+            const endAtomCenter = this.finalAtomsCenters[index];
+            const chainAtom = new Atom({ props: { symbol: this.symbol, center: endAtomCenter } } as IAtom);
+            ignoreAtomList.push(chainAtom.getId());
+
+            this.chainAddedAtoms.push(chainAtom);
+            chainAtom.getOuterDrawCommand();
+
+            const bondArgs = {
+                props: {
+                    order: this.bondOrder,
+                    stereo: this.bondStereo,
+                    atomStartId: previousAtom.getId(),
+                    atomEndId: chainAtom.getId(),
+                },
+            } as IBond;
+
+            const bond = new Bond(bondArgs);
+            bond.draw();
+
+            const possibleMergedAtom = this.mergeAtomsByIndex[index];
+            if (possibleMergedAtom !== undefined) {
+                chainAtom.mergeWith(possibleMergedAtom);
+            }
+
+            this.chainAddedBonds.push(bond);
+            previousAtom = chainAtom;
+        }
+    }
+
+    onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        this.createChain();
+        this.cancel();
+    }
 
     cancel() {
+        this.temporaryPath?.remove();
+        this.temporaryPath = undefined;
+        this.sectorsIndicator?.remove();
+        this.sectorsIndicator = undefined;
+        this.finalAtomsCenters = [];
+        this.resetMergedAtoms();
         this.context = {};
     }
 }

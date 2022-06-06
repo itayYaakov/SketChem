@@ -31,9 +31,8 @@ export class Atom {
 
     private backgroundRect: Rect | undefined;
 
-    private backgroundCircle: Circle | undefined;
-
-    private chargeBackgroundCircle: Circle | undefined;
+    // private backgroundCircle: Circle | undefined;
+    private backgroundCircle: Ellipse | undefined;
 
     private hoverCircle: Circle | undefined;
 
@@ -267,14 +266,12 @@ export class Atom {
     private undraw() {
         this.backgroundRect?.remove();
         this.backgroundCircle?.remove();
-        this.chargeBackgroundCircle?.remove();
         this.hoverCircle?.remove();
         this.symbolLabel?.remove();
         this.valenceErrorLine?.remove();
         this.valenceErrorRectangle?.remove();
         this.backgroundRect = undefined;
         this.backgroundCircle = undefined;
-        this.chargeBackgroundCircle = undefined;
         this.hoverCircle = undefined;
         this.symbolLabel = undefined;
         this.valenceErrorLine = undefined;
@@ -330,7 +327,8 @@ export class Atom {
         this.backgroundCircle =
             this.backgroundCircle ??
             LayersUtils.getLayer(LayersNames.AtomLabelBackground)
-                .circle()
+                .ellipse(0, 0)
+                // .circle()
                 .fill("#ffffff")
                 .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
@@ -338,15 +336,20 @@ export class Atom {
 
         // !!! Why 0.8 decrease height?
         // LayersUtils.getLayer(LayersNames.AtomLabelHover)
-        //     .rect(textBbox.width, textBbox.height * 0.8)
+        //     .rect(textBbox.width, textBbox.height)
         //     .cx(textBbox.cx)
         //     .cy(textBbox.cy)
-        //     .fill("#ff00a8");
+        //     // .fill("#ff00a8");
+        //     .fill("#ffffff");
 
         this.backgroundCircle
-            .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
-            // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
+            .radius((textBbox.width / 2) * 1.2, (textBbox.height / 2) * 1.2)
             .center(textBbox.cx, textBbox.cy);
+
+        // this.backgroundCircle
+        //     .radius(Math.max(textBbox.width, textBbox.height) / 2)
+        //     // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
+        //     .center(textBbox.cx, textBbox.cy);
     }
 
     private moveDrawings() {

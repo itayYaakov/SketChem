@@ -1,4 +1,5 @@
 import type { BondOrder, BondStereoKekule } from "@constants/enum.constants";
+import type { Atom } from "@entities";
 import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
 

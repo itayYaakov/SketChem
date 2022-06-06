@@ -1666,7 +1666,8 @@ elementsArray.forEach((element) => {
     elementsByXYMap.set(`${element.x}|${element.y}`, element);
 });
 
-elementsBySymbolMap.get("H")!.customColor = "#000000";
+elementsBySymbolMap.get("H")!.customColor = "#4a4a4a";
+elementsBySymbolMap.get("C")!.customColor = "#000000";
 elementsBySymbolMap.get("He")!.customColor = "#009e9e";
 elementsBySymbolMap.get("N")!.customColor = "#2136aa";
 elementsBySymbolMap.get("O")!.customColor = "#659154";
