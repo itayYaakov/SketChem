@@ -1,18 +1,18 @@
 import { BondOrder, BondStereoKekule } from "@constants/enum.constants";
-import { MouseEventCallBackProperties, MouseEventCallBackResponse, ToolbarItemButtonAttributes } from "@types";
+import { MouseEventCallBackProperties, ToolbarItemButtonAttributes } from "@types";
 
 export interface ActiveToolbarItem {
-    readonly onActivate?: (params?: any) => void;
+    readonly onActivate?: (...params: any) => void;
 
-    readonly onMouseDown?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+    readonly onMouseDown?: (e: MouseEventCallBackProperties) => void;
 
-    readonly onMouseMove?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+    readonly onMouseMove?: (e: MouseEventCallBackProperties) => void;
 
-    readonly onMouseUp?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+    readonly onMouseUp?: (e: MouseEventCallBackProperties) => void;
 
-    readonly onMouseClick?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+    readonly onMouseClick?: (e: MouseEventCallBackProperties) => void;
 
-    readonly onMouseLeave?: (e: MouseEventCallBackProperties) => MouseEventCallBackResponse | void;
+    readonly onMouseLeave?: (e: MouseEventCallBackProperties) => void;
 
     readonly onDeactivate?: () => void;
 }

@@ -1,5 +1,6 @@
-import type { BondOrder, BondStereoKekule } from "@constants/enum.constants";
+import type { BondOrder, BondStereoKekule, EntityType } from "@constants/enum.constants";
 import type { Atom } from "@entities";
+import type { EditorHandler } from "@features/editor/EditorHandler";
 import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
 
@@ -8,9 +9,22 @@ import Vector2 from "@utils/mathsTs/Vector2";
 //= =============================================================================
 export interface ActionItem {
     command: "ADD" | "CHANGE" | "REMOVE";
-    type: "ATOM" | "BOND";
+    type: EntityType;
     atomAttributes?: AtomAttributes;
     bondAttributes?: BondAttributes;
+}
+
+export interface EntityEventContext {
+    id: number;
+    type: EntityType;
+}
+export interface EntityEventsFunctions {
+    onMouseEnter?: (e: Event, data: EntityEventContext) => void;
+    onMouseDown?: (e: Event, data: EntityEventContext) => void;
+    onMouseMove?: (e: Event, data: EntityEventContext) => void;
+    onMouseUp?: (e: Event, data: EntityEventContext) => void;
+    onMouseClick?: (e: Event, data: EntityEventContext) => void;
+    onMouseLeave?: (e: Event, data: EntityEventContext) => void;
 }
 
 // interface ActionItems {
@@ -58,6 +72,10 @@ export interface IBond {
         optionalId?: number;
     };
 }
+
+export type EntityAttributes = AtomAttributes | BondAttributes;
+
+export type IEntity = IAtom | IBond;
 
 //= =============================================================================
 // Actions Attributes
@@ -142,14 +160,10 @@ export interface RootState {
 //= =============================================================================
 export interface MouseEventCallBackProperties {
     e: MouseEvent;
-    canvas: Svg;
+    editor: EditorHandler;
     previousMouseLocation: Vector2;
     mouseDownLocation: Vector2;
     mouseCurrentLocation: Vector2;
-    mouseUpLocation?: Vector2;
-}
-export interface MouseEventCallBackResponse {
-    shapes: any;
 }
 //= =============================================================================
 // Default Types

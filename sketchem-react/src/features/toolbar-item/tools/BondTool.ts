@@ -1,15 +1,16 @@
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import { IBondAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
-import { EntityBaseTool } from "./EntityBaseTool.helper";
+import { BondEntityBaseTool } from "./BondEntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 export interface BondToolButton extends ToolbarItemButton {
     attributes: IBondAttributes;
 }
-export class BondTool extends EntityBaseTool {
+export class BondTool extends BondEntityBaseTool {
     init() {
         this.mode = MouseMode.Default;
         console.debug(`Bond ${this.context?.bond?.getId()} was destroyed`);
@@ -18,19 +19,22 @@ export class BondTool extends EntityBaseTool {
         this.symbol = "C";
     }
 
-    onActivate(attributes: IBondAttributes) {
+    onActivate(attributes: IBondAttributes, editor: EditorHandler) {
         this.init();
         this.bondOrder = attributes.bondOrder;
         this.bondStereo = attributes.bondStereo;
+
+        this.changeSelectionBonds(editor);
+        editor.setHoverMode(true, true, true);
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
         this.init();
-        const { mouseDownLocation } = eventHolder;
+        const { mouseDownLocation, editor } = eventHolder;
 
-        if (this.atomWasPressed(mouseDownLocation)) return;
+        if (this.atomWasPressed(mouseDownLocation, eventHolder)) return;
 
-        if (this.bondWasPressed(mouseDownLocation)) return;
+        if (this.bondWasPressed(mouseDownLocation, eventHolder)) return;
 
         this.mode = MouseMode.EmptyPress;
         this.context.startAtom = this.createAtom(mouseDownLocation);
@@ -38,6 +42,8 @@ export class BondTool extends EntityBaseTool {
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        const { editor } = eventHolder;
+
         if (this.mode === MouseMode.Default) {
             // !!! ??? what to doc
             return;
@@ -72,6 +78,7 @@ export class BondTool extends EntityBaseTool {
 
         this.createMoveAndHandleBond();
         this.init();
+        editor.setHoverMode(true, true, true);
     }
 }
 

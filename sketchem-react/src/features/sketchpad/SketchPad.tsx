@@ -4,6 +4,8 @@ import "./svgpanzoom";
 import { useWindowSize } from "@app/resizeHook";
 import { getToolbarItemContext } from "@app/selectors";
 import { Direction, LayersNames, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
+import type Editor from "@features/editor/Editor";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import {
     ActiveToolbarItem,
     isDialogToolbarItem,
@@ -14,7 +16,7 @@ import { GetToolbarByName } from "@features/toolbar-item/tools/ToolsMapper.helpe
 import { LayersUtils } from "@src/utils/LayersUtils";
 import styles from "@styles/index.module.scss";
 import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
-import { MouseEventCallBackProperties, MouseEventCallBackResponse, ToolbarAction } from "@types";
+import { MouseEventCallBackProperties, ToolbarAction } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 // import panzoom, { PanZoom } from "panzoom";
@@ -24,14 +26,7 @@ import { shallowEqual, useSelector } from "react-redux";
 import SetDefs from "./SetDefs";
 
 interface Props {
-    // width: number;
-    // height: number;
-}
-
-function getBackgroundColor(stringInput: string): string {
-    // eslint-disable-next-line no-bitwise
-    const stringUniqueHash = [...stringInput].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-    return `hsl(${stringUniqueHash % 360}, 95%, 35%)`;
+    editor: EditorHandler;
 }
 
 function resizeEvent(svgObj: Svg, initialZoomRatio?: number) {
@@ -57,6 +52,7 @@ function SketchPad(props: Props) {
     const divDomElement = useRef<HTMLDivElement>(null!);
     const initialZoomRatio = useRef<number>(0);
 
+    const { editor } = props;
     const toolbarButtonRef = useRef<ToolbarItem>(null!);
     const activeToolbarButton = useRef<ActiveToolbarItem | undefined>(undefined);
     const previousToolbarContext = useRef<ToolbarAction | undefined>(undefined);
@@ -70,7 +66,7 @@ function SketchPad(props: Props) {
                     activeToolbarButton.current = undefined;
                 } else {
                     activeToolbarButton.current = toolbarButtonRef.current;
-                    activeToolbarButton.current.onActivate?.(currentToolbarContext.attributes);
+                    activeToolbarButton.current.onActivate?.(currentToolbarContext.attributes, editor);
                 }
             } else {
                 activeToolbarButton.current = undefined;
@@ -84,7 +80,6 @@ function SketchPad(props: Props) {
     const setMouseEventsListeners = (function mouseEventsHandler() {
         let previousMouseLocation: Vector2 | undefined;
         let mouseDownLocation: Vector2 | undefined;
-        let mouseUpLocation: Vector2 | undefined;
 
         function calculateLocation(e: MouseEvent): Vector2 {
             if (!svgRef.current) return Vector2.zero();
@@ -92,21 +87,23 @@ function SketchPad(props: Props) {
             return new Vector2(x, y);
         }
 
-        function handleMouseClick(e: MouseEvent) {
+        function createNewEvent(e: MouseEvent): MouseEventCallBackProperties {
             e.preventDefault();
-
             const mouseCurrentLocation = calculateLocation(e);
             const args = {
                 e,
-                canvas: svgRef.current,
+                editor,
                 previousMouseLocation,
-                mouseDownLocation: mouseCurrentLocation,
+                mouseDownLocation,
                 mouseCurrentLocation,
-                mouseUpLocation: mouseCurrentLocation,
             } as MouseEventCallBackProperties;
-
-            const response = activeToolbarButton.current?.onMouseClick?.(args);
             previousMouseLocation = mouseCurrentLocation;
+            return args;
+        }
+
+        function handleMouseClick(e: MouseEvent) {
+            const args = createNewEvent(e);
+            activeToolbarButton.current?.onMouseClick?.(args);
         }
 
         function handleMouseDown(e: MouseEvent) {
@@ -114,15 +111,7 @@ function SketchPad(props: Props) {
 
             if (e.buttons !== MouseButtons.Left) return;
             mouseDownLocation = calculateLocation(e);
-
-            const args = {
-                e,
-                canvas: svgRef.current,
-                previousMouseLocation,
-                mouseDownLocation: mouseDownLocation.clone(),
-                mouseCurrentLocation: mouseDownLocation.clone(),
-                mouseUpLocation: undefined,
-            } as MouseEventCallBackProperties;
+            const args = createNewEvent(e);
             activeToolbarButton.current?.onMouseDown?.(args);
             previousMouseLocation = mouseDownLocation;
         }
@@ -133,18 +122,8 @@ function SketchPad(props: Props) {
             if (e.buttons !== MouseButtons.Left) return;
             if (!mouseDownLocation) return;
 
-            const mouseCurrentLocation = calculateLocation(e);
-            const args = {
-                e,
-                canvas: svgRef.current,
-                previousMouseLocation,
-                mouseDownLocation: mouseDownLocation.clone(),
-                mouseCurrentLocation,
-                mouseUpLocation: undefined,
-            } as MouseEventCallBackProperties;
-            // !!! remove response?
-            const response = activeToolbarButton.current?.onMouseMove?.(args);
-            previousMouseLocation = mouseCurrentLocation;
+            const args = createNewEvent(e);
+            activeToolbarButton.current?.onMouseMove?.(args);
         }
 
         function handleMouseUp(e: MouseEvent) {
@@ -152,37 +131,19 @@ function SketchPad(props: Props) {
 
             if (!mouseDownLocation) return;
 
-            mouseUpLocation = calculateLocation(e);
-            const args = {
-                e,
-                canvas: svgRef.current,
-                previousMouseLocation,
-                mouseDownLocation: mouseDownLocation.clone(),
-                mouseCurrentLocation: mouseUpLocation,
-                mouseUpLocation,
-            } as MouseEventCallBackProperties;
+            const args = createNewEvent(e);
             activeToolbarButton.current?.onMouseUp?.(args);
 
             mouseDownLocation = undefined;
-            previousMouseLocation = mouseUpLocation;
         }
 
         function handleMouseLeave(e: MouseEvent) {
             e.preventDefault();
 
-            const mouseCurrentLocation = calculateLocation(e);
-            const args = {
-                e,
-                canvas: svgRef.current,
-                previousMouseLocation,
-                mouseDownLocation,
-                mouseCurrentLocation,
-                mouseUpLocation,
-            } as MouseEventCallBackProperties;
+            const args = createNewEvent(e);
             activeToolbarButton.current?.onMouseLeave?.(args);
 
             mouseDownLocation = undefined;
-            previousMouseLocation = mouseCurrentLocation;
         }
 
         function setListeners(object: any, enable: boolean) {
@@ -275,9 +236,5 @@ function SketchPad(props: Props) {
 
     return <div ref={divDomElement} className="w-100 h-100" />;
 }
-SketchPad.defaultProps = {
-    // width: 1000,divDomElement
-    // height: 1500,
-};
 
 export default SketchPad;

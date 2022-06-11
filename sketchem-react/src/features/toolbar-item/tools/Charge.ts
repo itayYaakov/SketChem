@@ -2,6 +2,8 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { EntityType } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
+import { Atom } from "@entities";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { IChargeAttributes, MouseEventCallBackProperties } from "@src/types";
@@ -16,38 +18,37 @@ export interface ChargeToolbarItemButton extends ToolbarItemButton {
 class Charge implements ActiveToolbarItem {
     private charge: number = 0;
 
-    onActivate(attributes: IChargeAttributes) {
-        this.charge = attributes.charge;
+    protected changeSelectionCharge(editor: EditorHandler) {
+        // This function is called when the user clicks on the charge button,
+        // and it changes the charge of the selected atoms.
+        const setAtomCharge = (atom: Atom) => {
+            this.updateAtomCharge(atom);
+        };
+
+        editor.applyFunctionToAtoms(setAtomCharge, true);
+        editor.resetSelectedAtoms();
+        editor.resetSelectedBonds();
     }
 
-    onMouseClick(eventHolder: MouseEventCallBackProperties) {
-        const { mouseCurrentLocation } = eventHolder;
+    onActivate(attributes: IChargeAttributes, editor: EditorHandler) {
+        this.charge = attributes.charge;
+        this.changeSelectionCharge(editor);
+        editor.setHoverMode(true, true, false);
+    }
 
-        const atomMaxDistance = AtomConstants.SelectDistance;
-        const NeighborsToFind = 1;
-        const { atomsTree, knn } = EntitiesMapsStorage;
-
-        const closetSomethings = knn(
-            atomsTree,
-            mouseCurrentLocation.x,
-            mouseCurrentLocation.y,
-            NeighborsToFind,
-            atomMaxDistance
-        );
-        const [closest] = closetSomethings;
-
-        if (!closest) return;
-
-        const closestNode = closest.node as NamedPoint;
-
-        if (closestNode.entityType !== EntityType.Atom) return;
-
-        const { id } = closestNode;
-        const atom = EntitiesMapsStorage.getAtomById(id);
-
+    updateAtomCharge(atom: Atom) {
         const attrs = atom.getAttributes();
         attrs.charge += this.charge;
         atom.updateAttributes({ charge: attrs.charge });
+    }
+
+    onMouseClick(eventHolder: MouseEventCallBackProperties) {
+        const { editor } = eventHolder;
+
+        const atom = editor.getHoveredAtom();
+        if (!atom) return;
+
+        this.updateAtomCharge(atom);
     }
 }
 

@@ -136,7 +136,8 @@ class ChainToolBar extends BondTool {
 
         if (this.finalAtomsCenters.length > 1) {
             this.sectorsIndicator =
-                this.sectorsIndicator ?? LayersUtils.getLayer(LayersNames.General).text("").fill(toolColor);
+                this.sectorsIndicator ??
+                LayersUtils.getLayer(LayersNames.General).text("").attr({ "pointer-events": "none" }).fill(toolColor);
 
             const lastPointCenter = this.finalAtomsCenters[this.finalAtomsCenters.length - 1];
             const PreviousPointCenter = this.finalAtomsCenters[this.finalAtomsCenters.length - 2];

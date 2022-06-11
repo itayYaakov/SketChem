@@ -37,12 +37,20 @@ export enum MouseEventsNames {
 
 export enum LayersNames {
     Root = "root",
+    BondHover = "bond_hover",
     Bond = "bond",
     AtomLabelBackground = "atom_label_background",
-    AtomLabelHover = "atom_label_hover",
+    AtomHover = "atom_hover",
+    AtomValenceError = "atom_valence_error",
     AtomLabelLabel = "atom_label_label",
     General = "general",
     Selection = "selection",
+}
+
+export enum EntityVisualState {
+    None = 1,
+    Hover,
+    Select,
 }
 
 export enum MouseMode {
@@ -72,9 +80,9 @@ export enum EntityType {
 
 export enum EntityLifeStage {
     New = 1,
-    Initialized,
-    DestroyInit,
-    Destroyed,
+    Initialized = 2,
+    DestroyInit = 3,
+    Destroyed = 4,
 }
 
 export enum BondStereoMol {

@@ -14,8 +14,9 @@ import { AngleUtils } from "@utils/AngleUtils";
 
 // !!! MOVE TO REDUX??
 import { Atom } from "./Atom";
+import { Entity } from "./Entity";
 
-export class Bond {
+export class Bond extends Entity {
     static instancesCounter = 1;
 
     // just a demo for now
@@ -24,7 +25,9 @@ export class Bond {
         stereo: BondStereoKekule.NONE,
     };
 
-    private attributes: BondAttributes;
+    hoverOrSelectShape: Rect | undefined;
+
+    attributes: BondAttributes;
 
     private elem: Rect | undefined;
 
@@ -50,20 +53,14 @@ export class Bond {
 
     private center!: Vector2;
 
-    private lifeStage: EntityLifeStage;
-
-    private centralMarks: Circle[] = [
-        LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
-        LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
-        LayersUtils.getLayer(LayersNames.General).circle(0).hide(),
-    ];
-
     private connectorObj: any;
 
     private lastTreeNode: NamedPoint | undefined;
 
+    myType: EntityType = EntityType.Bond;
+
     constructor(args: IBond) {
-        this.lifeStage = EntityLifeStage.New;
+        super(args);
         let type: BondOrder;
         let stereo: BondStereoKekule;
         let atomStartId: number;
@@ -91,11 +88,12 @@ export class Bond {
         this.updateAtomsReference(this.attributes);
         this.setBondCenter();
         this.addInstanceToMap();
+        this.setHoverOrSelectShape();
         this.lifeStage = EntityLifeStage.Initialized;
 
         const historyItem: ActionItem = {
             command: "ADD",
-            type: "BOND",
+            type: this.myType,
             atomAttributes: undefined,
             bondAttributes: this.attributes,
         };
@@ -133,12 +131,12 @@ export class Bond {
     //     this.center = new Vector2((bbox.x + bbox.x2) / 2, (bbox.y + bbox.y2) / 2);
     // }
 
-    private modifyTree(add: boolean = true) {
+    protected modifyTree(add: boolean = true) {
         if (add) {
             this.lastTreeNode = {
                 id: this.attributes.id,
                 point: this.center,
-                entityType: EntityType.Bond,
+                entityType: this.myType,
             };
             EntitiesMapsStorage.bondsTree.insert(this.lastTreeNode);
         } else {
@@ -147,7 +145,7 @@ export class Bond {
         }
     }
 
-    addInstanceToMap() {
+    protected addInstanceToMap() {
         const map = EntitiesMapsStorage.bondsMap;
         if (map.has(this.attributes.id)) {
             throw new Error(`Bond object already exists! ${this.attributes.id}`);
@@ -156,14 +154,10 @@ export class Bond {
         this.modifyTree(true);
     }
 
-    private removeInstanceFromMapAndTree() {
+    protected removeInstanceFromMapAndTree() {
         const map = EntitiesMapsStorage.bondsMap;
         if (map.has(this.attributes.id)) map.delete(this.attributes.id);
         this.modifyTree(false);
-    }
-
-    getId() {
-        return this.attributes.id;
     }
 
     move() {
@@ -179,7 +173,10 @@ export class Bond {
 
         this.elem =
             this.elem ??
-            LayersUtils.getLayer(LayersNames.Bond).rect(0, 0).id(IdUtils.getBondElemId(this.attributes.id));
+            LayersUtils.getLayer(LayersNames.Bond)
+                .rect(0, 0)
+                .attr({ "pointer-events": "none" })
+                .id(IdUtils.getBondElemId(this.attributes.id));
 
         this.elem.width(BondConstants.padding).height(distance);
 
@@ -191,45 +188,35 @@ export class Bond {
             rotate: angle - 90,
         });
 
+        this.hoverOrSelectShape
+            ?.width(BondConstants.padding)
+            .height(distance * 0.7)
+            .center(this.elem.cx(), this.elem.cy())
+            .transform(this.elem.transform());
+
         this.setBondCenter();
-
-        // only draw circles
-
-        if (this.centralMarks[1].cx() === 0) {
-            this.centralMarks[1].show().radius(BondConstants.SelectDistance).fill("#ff0000").opacity(0.1);
-        }
-        if (this.centralMarks[0].cx() === 0) {
-            this.centralMarks[0]
-                // .show()
-                .radius(4)
-                .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
-                .fill("#00ff00");
-        }
-        if (this.centralMarks[2].cx() === 0) {
-            this.centralMarks[2]
-                // .show()
-                .radius(4)
-                .move(this.startAtom.getCenter().x, this.startAtom.getCenter().y)
-                .fill("#00ff00");
-        }
-
-        this.centralMarks[1].cx(this.center.x).cy(this.center.y);
-
-        this.centralMarks[0].cx(startPosition.x).cy(startPosition.y);
-
-        this.centralMarks[2].cx(endPosition.x).cy(endPosition.y);
 
         this.modifyTree(true);
     }
 
-    private undraw() {
-        this.elem?.remove();
-        this.centralMarks?.forEach((mark) => mark.remove());
+    protected setHoverOrSelectShape() {
+        this.hoverOrSelectShape =
+            this.hoverOrSelectShape ??
+            LayersUtils.getLayer(LayersNames.BondHover)
+                .rect()
+                .fill({ opacity: 0 })
+                .attr({ "pointer-events": "bounding-box" })
+                .radius(10)
+                .id(`bond_${IdUtils.getAtomElemId(this.getId())}_hover`);
+
+        // this..show().fill("#0fa0fa");
     }
 
-    draw() {
-        this.move();
-        this.drawStereoAndOrder();
+    protected undraw() {
+        this.elem?.remove();
+        this.hoverOrSelectShape?.remove();
+        this.elem = undefined;
+        this.hoverOrSelectShape = undefined;
     }
 
     drawStereoAndOrder() {
@@ -250,6 +237,16 @@ export class Bond {
             default:
                 this.elem.attr("clip-path", "");
         }
+    }
+
+    draw() {
+        this.move();
+        this.drawStereoAndOrder();
+    }
+
+    getOuterDrawCommand() {
+        if (this.lifeStage !== EntityLifeStage.Initialized) return;
+        this.draw();
     }
 
     select(isSelected: boolean) {
@@ -322,11 +319,6 @@ export class Bond {
         return this.center;
     }
 
-    getAttributes() {
-        // return a copy of attributes
-        return { ...this.attributes };
-    }
-
     updateAttributes(newAttributes: Partial<BondAttributes>) {
         this.attributes = { ...this.attributes, ...newAttributes };
 
@@ -351,7 +343,7 @@ export class Bond {
 
         const historyItem: ActionItem = {
             command: "CHANGE",
-            type: "BOND",
+            type: this.myType,
             atomAttributes: undefined,
             bondAttributes: this.attributes,
         };
@@ -379,7 +371,7 @@ export class Bond {
 
         const historyItem: ActionItem = {
             command: "REMOVE",
-            type: "BOND",
+            type: this.myType,
             atomAttributes: undefined,
             bondAttributes: this.attributes,
         };
@@ -391,6 +383,10 @@ export class Bond {
         this.endAtom = undefined;
 
         // addHistoryItem(historyItem);
+    }
+
+    getAttributes() {
+        return { ...this.attributes };
     }
 
     static generateNewId() {

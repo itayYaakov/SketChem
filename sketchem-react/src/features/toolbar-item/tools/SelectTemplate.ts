@@ -5,12 +5,13 @@ import { BondConstants } from "@constants/bond.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Path, PathArray, Rect } from "@svgdotjs/svg.js";
-import { BoundingBox, MouseEventCallBackProperties } from "@types";
+import { BoundingBox, EntityEventContext, EntityEventsFunctions, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
@@ -38,10 +39,6 @@ export interface IAtomMergeAction {
 }
 
 abstract class SelectTemplate implements ActiveToolbarItem {
-    private static selectedAtoms: Map<number, Atom>;
-
-    private static selectedBonds: Map<number, Bond>;
-
     minBoundingBoxPoint!: Vector2;
 
     maxBoundingBoxPoint!: Vector2;
@@ -54,32 +51,28 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     mergeAtomsAction: IAtomMergeAction[];
 
+    pressedAtomAnchor: Atom | undefined;
+
+    pressedBondAnchor: Bond | undefined;
+
+    selectColor?: string = undefined;
+
+    shapeFillColor: string = "#000000";
+
     constructor() {
-        SelectTemplate.selectedAtoms = new Map<number, Atom>();
-        SelectTemplate.selectedBonds = new Map<number, Bond>();
         this.selectionMode = SelectionMode.Empty;
         this.resetAnchor();
         this.mergeAtomsAction = [];
         this.movesItem = undefined;
     }
 
-    getSelectedBonds() {
-        return SelectTemplate.selectedBonds;
+    onActivate(_: any, editor: EditorHandler) {
+        editor.setHoverMode(true, true, true, this.selectColor);
     }
 
-    getSelectedAtoms() {
-        return SelectTemplate.selectedAtoms;
-    }
-
-    unselectAll() {
-        SelectTemplate.selectedAtoms.forEach((atom) => {
-            // console.log("Unselect Atom id=", atom.getId());
-            atom.select(false);
-        });
-
-        SelectTemplate.selectedBonds.forEach((bond) => {
-            bond.select(false);
-        });
+    unselectAll(editor: EditorHandler) {
+        editor.resetSelectedAtoms();
+        editor.resetSelectedBonds();
     }
 
     resetAnchor() {
@@ -92,7 +85,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.mergeAtomsAction = [];
     }
 
-    calculateDeltaFromAnchor(mouse: Vector2) {
+    calculateDeltaFromAnchor(mouse: Vector2, editor: EditorHandler): Vector2 {
         let delta: Vector2;
         const atomAnchorId = this.anchor.atomId;
         const bondAnchorId = this.anchor.bondId;
@@ -100,9 +93,9 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         let anchorObject: Atom | Bond | undefined;
 
         if (atomAnchorId) {
-            anchorObject = SelectTemplate.selectedAtoms.get(atomAnchorId);
+            anchorObject = editor.selectedAtoms.get(atomAnchorId);
         } else if (bondAnchorId) {
-            anchorObject = SelectTemplate.selectedBonds.get(bondAnchorId);
+            anchorObject = editor.selectedBonds.get(bondAnchorId);
         }
 
         if (!anchorObject) {
@@ -116,25 +109,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         return delta;
     }
 
-    resetSelection() {
-        // console.log("K1 this.selectedAtoms =", SelectTemplate.selectedAtoms);
-        this.unselectAll();
-        SelectTemplate.selectedAtoms.clear();
-        SelectTemplate.selectedBonds.clear();
-        // console.log("K2 this.selectedAtoms =", SelectTemplate.selectedAtoms);
-    }
-
-    selectAtom(id: number) {
+    selectAtom(id: number, editor: EditorHandler) {
         const atom = EntitiesMapsStorage.getAtomById(id);
-        atom.select(true);
-        // console.log("Selected Atom id=", id);
-        SelectTemplate.selectedAtoms.set(id, atom);
+        editor.addAtomToSelected(atom, this.selectColor);
     }
 
-    selectBond(id: number) {
+    selectBond(id: number, editor: EditorHandler) {
         const bond = EntitiesMapsStorage.getBondById(id);
-        bond.select(true);
-        SelectTemplate.selectedBonds.set(id, bond);
+        editor.addBondToSelected(bond, this.selectColor);
     }
 
     resetMergedAtoms() {
@@ -164,55 +146,37 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation } = eventHolder;
+        const { editor } = eventHolder;
 
-        const atomMaxDistance = AtomConstants.SelectDistance;
-        const bondMaxDistance = BondConstants.SelectDistance;
-        const NeighborsToFind = 1;
-        const { atomsTree, bondsTree, knnFromMultipleMaps } = EntitiesMapsStorage;
+        let atom = eventHolder.editor.getHoveredAtom();
+        if (!(atom && atom.isAlive) && this.pressedAtomAnchor?.isAlive()) atom = this.pressedAtomAnchor;
+        let bond = eventHolder.editor.getHoveredBond();
+        if (!(bond && bond.isAlive()) && this.pressedBondAnchor?.isAlive()) bond = this.pressedBondAnchor;
 
-        // !! can be removed later
-        const startTime = performance.now();
+        if (atom && atom.isAlive()) {
+            const atomId = atom.getId();
+            this.selectionMode = SelectionMode.Single;
+            this.resetAnchor();
+            this.anchor.atomId = atomId;
 
-        const closetSomethings = knnFromMultipleMaps([atomsTree, bondsTree], mouseDownLocation, NeighborsToFind, [
-            atomMaxDistance,
-            bondMaxDistance,
-        ]);
-        const [closest] = closetSomethings;
-        if (closest) {
-            const closestNode = closest.node as NamedPoint;
-            console.log("closest.dist", closest.dist, "type=", EntityType[closestNode.entityType]);
+            if (!editor.selectedAtoms.has(atomId)) {
+                this.unselectAll(editor);
+                this.selectAtom(atomId, editor);
+            }
+        } else if (bond && bond.isAlive()) {
+            const bondId = bond.getId();
+            this.selectionMode = SelectionMode.Single;
+            this.resetAnchor();
+            this.anchor.bondId = bondId;
 
-            if (closestNode.entityType === EntityType.Atom) {
-                const atomId = closestNode.id;
-                this.selectionMode = SelectionMode.Single;
-                this.resetAnchor();
-                this.anchor.atomId = atomId;
-
-                if (!SelectTemplate.selectedAtoms.has(atomId)) {
-                    this.resetSelection();
-                    this.selectAtom(atomId);
-                }
-            } else if (closestNode.entityType === EntityType.Bond) {
-                const bondId = closestNode.id;
-                this.selectionMode = SelectionMode.Single;
-                this.resetAnchor();
-                this.anchor.bondId = bondId;
-
-                if (!SelectTemplate.selectedBonds.has(bondId)) {
-                    this.resetSelection();
-                    this.selectBond(bondId);
-                }
+            if (!editor.selectedBonds.has(bondId)) {
+                this.unselectAll(editor);
+                this.selectBond(bondId, editor);
             }
         } else {
             this.selectionMode = SelectionMode.Empty;
-            this.resetSelection();
+            this.unselectAll(editor);
         }
-
-        // !! can be removed later
-        const endTime = performance.now();
-        console.log("took=", endTime - startTime, "ms");
-        console.log("this.selectionMode=", SelectionMode[this.selectionMode]);
 
         // for testing:
         // const { mouseDownLocation, canvas } = eventHolder;
@@ -227,19 +191,19 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         // }
     }
 
-    calculateMultipleAtomsAndBondsToMove(): IMovesItem {
-        let shouldMoveAtomsIds = new Set<number>(Array.from(SelectTemplate.selectedAtoms.keys()));
-        let shouldMoveBondsIds = new Set<number>(Array.from(SelectTemplate.selectedBonds.keys()));
+    calculateMultipleAtomsAndBondsToMove(editor: EditorHandler): IMovesItem {
+        let shouldMoveAtomsIds = new Set<number>(Array.from(editor.selectedAtoms.keys()));
+        let shouldMoveBondsIds = new Set<number>(Array.from(editor.selectedBonds.keys()));
 
-        SelectTemplate.selectedBonds.forEach((bond) => {
-            const connectedAtoms = bond.getConnectedAtomsIds();
-            shouldMoveAtomsIds = new Set([...shouldMoveAtomsIds, ...connectedAtoms]);
-        });
-
-        SelectTemplate.selectedAtoms.forEach((atom) => {
+        editor.applyFunctionToAtoms((atom) => {
             const connectedBonds = atom.getConnectedBondsIds();
             shouldMoveBondsIds = new Set([...shouldMoveBondsIds, ...connectedBonds]);
-        });
+        }, true);
+
+        editor.applyFunctionToBonds((bond) => {
+            const connectedAtoms = bond.getConnectedAtomsIds();
+            shouldMoveAtomsIds = new Set([...shouldMoveAtomsIds, ...connectedAtoms]);
+        }, true);
 
         const movedBondsId: number[] = [];
 
@@ -251,16 +215,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const shouldMoveBonds = new Set<Bond>();
 
         shouldMoveAtomsIds.forEach((atomId) => {
-            const { atomsMap } = EntitiesMapsStorage;
             const atom = EntitiesMapsStorage.getAtomById(atomId);
             shouldMoveAtoms.add(atom);
-            // atom.moveByDelta(delta, movedBondsId);
         });
 
         shouldMoveBondsIds.forEach((bondId) => {
             const bond = EntitiesMapsStorage.getBondById(bondId);
             shouldMoveBonds.add(bond);
-            // bond.moveByDelta(delta, false);
         });
 
         return {
@@ -271,34 +232,62 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
-        const { mouseCurrentLocation, previousMouseLocation, mouseDownLocation } = eventHolder;
+        const { mouseCurrentLocation, editor, mouseDownLocation } = eventHolder;
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
         // console.log("distance=", distance);
+
+        if (this.selectionMode !== SelectionMode.Empty) {
+            // disable hover effect for both atoms and bonds
+            const hoverHandler: EntityEventsFunctions = {
+                onMouseEnter: (e: Event, data: EntityEventContext) => {
+                    const { id, type } = data;
+                    if (type === EntityType.Atom) {
+                        this.pressedAtomAnchor = EntitiesMapsStorage.getAtomById(id);
+                    } else if (type === EntityType.Bond) {
+                        this.pressedBondAnchor = EntitiesMapsStorage.getBondById(id);
+                    }
+                },
+                onMouseLeave: (e: Event, data: EntityEventContext) => {
+                    const { id, type } = data;
+                    if (type === EntityType.Atom) {
+                        if (this.pressedAtomAnchor === EntitiesMapsStorage.getAtomById(id)) {
+                            this.pressedAtomAnchor = undefined;
+                        }
+                    } else if (type === EntityType.Bond) {
+                        if (this.pressedBondAnchor === EntitiesMapsStorage.getBondById(id)) {
+                            this.pressedBondAnchor = undefined;
+                        }
+                    }
+                },
+            };
+            editor.setEventListenersForAtoms(hoverHandler);
+            editor.setEventListenersForBonds(hoverHandler);
+        }
 
         if (distance < ToolsConstants.ValidMouseMoveDistance) {
             return;
         }
 
         if (this.selectionMode === SelectionMode.Single) {
-            const selectedAtomsSize = SelectTemplate.selectedAtoms.size;
-            const selectedBondsSize = SelectTemplate.selectedBonds.size;
+            const selectedAtomsSize = editor.selectedAtoms.size;
+            const selectedBondsSize = editor.selectedBonds.size;
             const onlyOneAtom = selectedAtomsSize === 1 && selectedBondsSize === 0;
             const onlyOneBond = selectedAtomsSize === 0 && selectedBondsSize === 1;
 
             if (onlyOneAtom) {
-                SelectTemplate.selectedAtoms.forEach((atom) => {
+                editor.applyFunctionToAtoms((atom) => {
                     atom.updateAttributes({ center: mouseCurrentLocation });
-                });
+                }, true);
             } else if (onlyOneBond) {
-                SelectTemplate.selectedBonds.forEach((bond) => {
+                editor.applyFunctionToBonds((bond) => {
                     bond.moveTo(mouseCurrentLocation);
-                });
+                }, true);
             }
 
-            const delta = this.calculateDeltaFromAnchor(mouseCurrentLocation);
+            const delta = this.calculateDeltaFromAnchor(mouseCurrentLocation, editor);
 
             this.resetMergedAtoms();
-            this.movesItem = this.movesItem ?? this.calculateMultipleAtomsAndBondsToMove();
+            this.movesItem = this.movesItem ?? this.calculateMultipleAtomsAndBondsToMove(editor);
             const { shouldMoveAtoms, shouldMoveBonds, movedBondsId } = this.movesItem;
 
             shouldMoveAtoms.forEach((atom) => {
@@ -325,7 +314,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.setEdgePoints(eventHolder);
 
         this.updateShape(eventHolder);
-        this.resetSelection();
+        this.unselectAll(editor);
 
         const boundingBox = {
             minX: this.minBoundingBoxPoint.x,
@@ -340,13 +329,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         atomPointsInBoundingBox.forEach((element) => {
             if (!this.pointIsInShape(element.point.x, element.point.y, boundingBox)) return;
             // console.log("Selected from B");
-            this.selectAtom(element.id);
+            this.selectAtom(element.id, editor);
             // console.log("B this.selectedAtoms =", SelectTemplate.selectedAtoms);
         });
 
         bondsPointsInBoundingBox.forEach((element) => {
             if (!this.pointIsInShape(element.point.x, element.point.y, boundingBox)) return;
-            this.selectBond(element.id);
+            this.selectBond(element.id, editor);
         });
 
         // for testing
@@ -358,13 +347,16 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         // });
     }
 
-    cancel(eventHolder: MouseEventCallBackProperties) {
+    perform(eventHolder: MouseEventCallBackProperties) {
+        const { editor } = eventHolder;
         // !!! is there special treatment for delete selection tool
         this.mergeNodes();
-        this.doAction();
+        this.doAction(editor);
+        this.pressedAtomAnchor = undefined;
+        this.pressedBondAnchor = undefined;
         switch (this.selectionMode) {
             case SelectionMode.Empty:
-                this.resetSelection();
+                this.unselectAll(editor);
                 break;
 
             default:
@@ -382,11 +374,11 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
-        this.cancel(eventHolder);
+        this.perform(eventHolder);
     }
 
     onMouseLeave(eventHolder: MouseEventCallBackProperties) {
-        this.cancel(eventHolder);
+        this.perform(eventHolder);
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;
@@ -399,11 +391,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     abstract removeShape(): void;
 
-    doAction(): void {}
+    doAction(...params: any): void {}
 }
 
 export class BoxSelect extends SelectTemplate {
     rect: Rect | undefined;
+
+    shapeFillColor: string = "#5cdfdd";
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {
         const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
@@ -421,7 +415,7 @@ export class BoxSelect extends SelectTemplate {
         this.rect = LayersUtils.getLayer(LayersNames.Selection)
             .rect(0, 0)
             .move(mouseDownLocation.x, mouseDownLocation.y)
-            .fill({ color: "#5cdfdd", opacity: 0.3 })
+            .fill({ color: this.shapeFillColor, opacity: 0.3 })
             .stroke({ color: "#000000", opacity: 0.9, width: 3, dasharray: "4" });
     }
 
@@ -453,6 +447,8 @@ class LassoSelect extends SelectTemplate {
     polygon: number[][] = [[]];
 
     pathArray: PathArray | undefined;
+
+    shapeFillColor: string = "#5cdfdd";
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {
         const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
@@ -495,7 +491,7 @@ class LassoSelect extends SelectTemplate {
         this.path = LayersUtils.getLayer(LayersNames.Selection)
             .path(this.pathArray)
             .attr({ "fill-rule": "evenodd" })
-            .fill({ color: "#5cdfdd", opacity: 0.3 })
+            .fill({ color: this.shapeFillColor, opacity: 0.3 })
             .stroke({ color: "#000000", opacity: 0.9, width: 3, dasharray: "4" });
     }
 

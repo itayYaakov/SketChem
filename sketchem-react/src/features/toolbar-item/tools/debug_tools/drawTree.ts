@@ -52,7 +52,12 @@ class DrawTree implements ActiveToolbarItem {
             const { x, y } = node.point;
             const entry = `x${(Math.round(x * 100) / 100).toFixed(3)}-y${(Math.round(y * 100) / 100).toFixed(3)}`;
 
-            const circle = LayersUtils.getLayer(LayersNames.General).circle(this.radius).fill(this.color).cx(x).cy(y);
+            const circle = LayersUtils.getLayer(LayersNames.General)
+                .circle(this.radius)
+                .attr({ "pointer-events": "none" })
+                .fill(this.color)
+                .cx(x)
+                .cy(y);
 
             if (treeDuplicateSet.has(entry)) {
                 circle.stroke({ color: "red", width: 2 });
@@ -70,6 +75,7 @@ class DrawTree implements ActiveToolbarItem {
             const entry = `x${(Math.round(x * 100) / 100).toFixed(3)}-y${(Math.round(y * 100) / 100).toFixed(3)}`;
             const circle = LayersUtils.getLayer(LayersNames.General)
                 .circle(this.radius * 0.2)
+                .attr({ "pointer-events": "none" })
                 .fill("#ffffff")
                 // .opacity(0.3)
                 .cx(x)

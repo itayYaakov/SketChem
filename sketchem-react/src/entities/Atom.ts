@@ -2,7 +2,7 @@ import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
-import { editorObj } from "@features/editor/Editor";
+// import { editorObj } from "@features/editor/Editor";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
@@ -15,8 +15,9 @@ import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 
 import type { Bond } from "./Bond";
+import { Entity } from "./Entity";
 
-export class Atom {
+export class Atom extends Entity {
     static instancesCounter = 1;
 
     static DefaultAttributes: AtomAttributes = {
@@ -27,7 +28,9 @@ export class Atom {
         center: Vector2.zero(),
     };
 
-    private attributes: AtomAttributes;
+    protected hoverOrSelectShape: Circle | undefined;
+
+    attributes!: AtomAttributes;
 
     private backgroundRect: Rect | undefined;
 
@@ -46,15 +49,16 @@ export class Atom {
 
     private lastTreeNode: NamedPoint | undefined;
 
-    private lifeStage: EntityLifeStage;
-
     private element: PtElement | undefined;
 
     private showValenceError: boolean;
 
     private implicitHydrogenCount: number;
 
+    myType: EntityType = EntityType.Atom;
+
     constructor(args: IAtom) {
+        super(args);
         this.lifeStage = EntityLifeStage.New;
         let id;
         let color;
@@ -88,16 +92,17 @@ export class Atom {
         this.calculateImplicitHydrogen();
 
         this.addInstanceToMap();
+        this.setHoverOrSelectShape();
         this.lifeStage = EntityLifeStage.Initialized;
 
         const historyItem: ActionItem = {
             command: "ADD",
-            type: "ATOM",
+            type: this.myType,
             atomAttributes: this.attributes,
             bondAttributes: undefined,
         };
-        editorObj?.addHistoryItem(historyItem);
-        editorObj?.sealHistory();
+        // editorObj?.addHistoryItem(historyItem);
+        // editorObj?.sealHistory();
     }
 
     getColor(element: PtElement | undefined, color?: string) {
@@ -105,12 +110,12 @@ export class Atom {
         // return color ?? element?.customColor ?? element?.jmolColor ?? element?.cpkColor ?? "#000000";
     }
 
-    private modifyTree(add: boolean = true) {
+    protected modifyTree(add: boolean = true) {
         if (add) {
             this.lastTreeNode = {
                 id: this.attributes.id,
                 point: this.attributes.center,
-                entityType: EntityType.Atom,
+                entityType: this.myType,
             };
             EntitiesMapsStorage.atomsTree.insert(this.lastTreeNode);
         } else {
@@ -137,7 +142,7 @@ export class Atom {
         }
     }
 
-    private addInstanceToMap() {
+    protected addInstanceToMap() {
         const map = EntitiesMapsStorage.atomsMap;
         if (map.has(this.attributes.id)) {
             console.error("Object already exists!");
@@ -147,7 +152,7 @@ export class Atom {
         this.modifyTree(true);
     }
 
-    private removeInstanceFromMapAndTree() {
+    protected removeInstanceFromMapAndTree() {
         const map = EntitiesMapsStorage.atomsMap;
         if (map.has(this.attributes.id)) map.delete(this.attributes.id);
         this.modifyTree(false);
@@ -263,19 +268,21 @@ export class Atom {
         this.draw();
     }
 
-    private undraw() {
+    protected undraw() {
         this.backgroundRect?.remove();
         this.backgroundCircle?.remove();
         this.hoverCircle?.remove();
         this.symbolLabel?.remove();
         this.valenceErrorLine?.remove();
         this.valenceErrorRectangle?.remove();
+        this.hoverOrSelectShape?.remove();
         this.backgroundRect = undefined;
         this.backgroundCircle = undefined;
         this.hoverCircle = undefined;
         this.symbolLabel = undefined;
         this.valenceErrorLine = undefined;
         this.valenceErrorRectangle = undefined;
+        this.hoverOrSelectShape = undefined;
     }
 
     // ! should be private
@@ -301,6 +308,7 @@ export class Atom {
                     size: EditorConstants.atomFontSize,
                     anchor: "middle",
                 })
+                .attr({ "pointer-events": "none" })
                 .id(IdUtils.getAtomElemId(this.attributes.id));
 
         const { symbol, center, color } = this.attributes;
@@ -332,15 +340,10 @@ export class Atom {
                 .fill("#ffffff")
                 .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
-        const textBbox = this.symbolLabel.bbox();
+        this.bbox = this.symbolLabel.bbox();
+        const textBbox = this.bbox;
 
         // !!! Why 0.8 decrease height?
-        // LayersUtils.getLayer(LayersNames.AtomLabelHover)
-        //     .rect(textBbox.width, textBbox.height)
-        //     .cx(textBbox.cx)
-        //     .cy(textBbox.cy)
-        //     // .fill("#ff00a8");
-        //     .fill("#ffffff");
 
         this.backgroundCircle
             .radius((textBbox.width / 2) * 1.2, (textBbox.height / 2) * 1.2)
@@ -412,7 +415,7 @@ export class Atom {
 
         this.valenceErrorRectangle =
             this.valenceErrorRectangle ??
-            LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+            LayersUtils.getLayer(LayersNames.AtomValenceError)
                 .rect(0, 0)
                 .fill("none")
                 .addClass(styles.atom_label_valence_error_rect)
@@ -492,7 +495,7 @@ export class Atom {
 
         this.hoverCircle =
             this.hoverCircle ??
-            LayersUtils.getLayer(LayersNames.AtomLabelHover)
+            LayersUtils.getLayer(LayersNames.AtomHover)
                 .circle()
                 .fill("none")
                 .stroke({ color: "#f06", opacity: 0.6, width: 5 })
@@ -500,6 +503,17 @@ export class Atom {
                 .hide();
 
         this.hoverCircle.radius(AtomConstants.HoverRadius).center(center.x, center.y);
+
+        this.hoverOrSelectShape?.radius(AtomConstants.HoverRadius).center(center.x, center.y);
+    }
+
+    protected setHoverOrSelectShape() {
+        this.hoverOrSelectShape =
+            this.hoverOrSelectShape ??
+            LayersUtils.getLayer(LayersNames.AtomHover)
+                .circle()
+                .fill({ opacity: 0 })
+                .id(`atom_${IdUtils.getAtomElemId(this.getId())}_hover`);
     }
 
     select(isSelected: boolean) {
@@ -524,23 +538,6 @@ export class Atom {
             this.hoverCircle.hide();
             // circle.attr({ filter: "" });
         }
-    }
-
-    getKekuleNode() {
-        return this.nodeObj;
-    }
-
-    getCenter() {
-        return this.attributes.center.clone();
-    }
-
-    getSymbol() {
-        return this.attributes.symbol;
-    }
-
-    getAttributes() {
-        // return a copy of attributes
-        return { ...this.attributes };
     }
 
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
@@ -574,7 +571,7 @@ export class Atom {
 
         const historyItem: ActionItem = {
             command: "CHANGE",
-            type: "ATOM",
+            type: this.myType,
             atomAttributes: this.attributes,
             bondAttributes: undefined,
         };
@@ -600,7 +597,7 @@ export class Atom {
         }
         const historyItem: ActionItem = {
             command: "REMOVE",
-            type: "ATOM",
+            type: this.myType,
             atomAttributes: this.attributes,
             bondAttributes: undefined,
         };
@@ -608,6 +605,22 @@ export class Atom {
         // addHistoryItem(historyItem);
 
         this.lifeStage = EntityLifeStage.Destroyed;
+    }
+
+    getKekuleNode() {
+        return this.nodeObj;
+    }
+
+    getCenter() {
+        return this.attributes.center.clone();
+    }
+
+    getSymbol() {
+        return this.attributes.symbol;
+    }
+
+    getAttributes() {
+        return { ...this.attributes };
     }
 
     static generateNewId() {

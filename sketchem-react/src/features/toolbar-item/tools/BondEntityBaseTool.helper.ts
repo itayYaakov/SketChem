@@ -1,16 +1,18 @@
 import { EditorConstants } from "@constants/editor.constant";
-import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityType, LayersNames, MouseMode } from "@constants/enum.constants";
 import { ToolsConstants } from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties, MouseEventCallBackResponse } from "@types";
+import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
+import { EventHandler } from "react";
 
 import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 
-export abstract class EntityBaseTool implements ActiveToolbarItem {
+export abstract class BondEntityBaseTool implements ActiveToolbarItem {
     bondOrder!: BondOrder;
 
     bondStereo!: BondStereoKekule;
@@ -29,25 +31,39 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         dragged?: boolean;
     };
 
-    onActivate?(params: any): void;
+    onActivate?(...params: any): void;
 
-    onMouseDown?(e: MouseEventCallBackProperties): MouseEventCallBackResponse | void;
+    onMouseDown?(e: MouseEventCallBackProperties): void;
 
-    onMouseUp?(e: MouseEventCallBackProperties): MouseEventCallBackResponse | void;
+    onMouseUp?(e: MouseEventCallBackProperties): void;
 
-    onMouseClick?(e: MouseEventCallBackProperties): MouseEventCallBackResponse | void;
+    onMouseClick?(e: MouseEventCallBackProperties): void;
 
-    onMouseLeave?(e: MouseEventCallBackProperties): MouseEventCallBackResponse | void;
+    onMouseLeave?(e: MouseEventCallBackProperties): void;
 
     onDeactivate?(): void;
 
-    atomWasPressed(point: Vector2) {
+    protected changeSelectionBonds(editor: EditorHandler) {
+        // create a function that accept a bond and update it's attributes with current tool attributes
+        const updateBondAttributes = (bond: Bond) => {
+            bond.updateAttributes({
+                order: this.bondOrder,
+                stereo: this.bondStereo,
+            });
+        };
+
+        editor.applyFunctionToBonds(updateBondAttributes, true);
+        editor.resetSelectedAtoms();
+        editor.resetSelectedBonds();
+    }
+
+    atomWasPressed(point: Vector2, eventHolder: MouseEventCallBackProperties) {
         const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
 
-        const atomWasPressed = atomAtPoint(point);
-        if (atomWasPressed) {
+        // const atomWasPressed = atomAtPoint(point);
+        const atom = eventHolder.editor.getHoveredAtom();
+        if (atom) {
             this.mode = MouseMode.AtomPressed;
-            const atom = getAtomById(atomWasPressed.id);
             this.context.startAtom = atom;
             this.context.startAtomIsPredefined = true;
             return true;
@@ -116,13 +132,13 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         return false;
     }
 
-    bondWasPressed(point: Vector2) {
+    bondWasPressed(point: Vector2, eventHolder: MouseEventCallBackProperties) {
         const { getBondById, bondAtPoint } = EntitiesMapsStorage;
 
-        const bondWasPressed = bondAtPoint(point);
-        if (bondWasPressed) {
+        // const bondWasPressed = bondAtPoint(point);
+        const bond = eventHolder.editor.getHoveredBond();
+        if (bond) {
             this.mode = MouseMode.BondPressed;
-            const bond = getBondById(bondWasPressed.id);
             const pressedBondAttributes = bond.getAttributes();
             const pressedBondNoneStereo = pressedBondAttributes.stereo === BondStereoKekule.NONE;
             const thisBondOrderSingle = this.bondOrder === BondOrder.Single;
@@ -253,7 +269,6 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         } as IAtom;
 
         const atom = new Atom(atomArgs);
-        // atom.getOuterDrawCommand();
 
         return atom;
     }
