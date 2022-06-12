@@ -1,5 +1,5 @@
 import { AtomConstants } from "@constants/atom.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { drawMolFromFile } from "@features/chemistry/kekuleHandler";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -30,7 +30,7 @@ const initialFrequentAtoms = {
 } as FrequentAtoms;
 
 const initialToolbarAction = {
-    button: "",
+    toolName: "",
 } as ToolbarAction;
 
 const initialState = {
@@ -73,12 +73,13 @@ const slice = createSlice({
             // localStorage.setItem('user', JSON.stringify(action.payload))
         },
         reset_tool: (state: ToolbarItemState) => {
-            state.toolbarContext.button = "";
+            state.toolbarContext.toolName = "";
             state.toolbarContext.attributes = undefined;
             state.dialogWindow = "";
         },
         dialog: (state: ToolbarItemState, action: PayloadAction<string>) => {
             state.dialogWindow = action.payload;
+            state.toolbarContext.toolName = action.payload;
         },
         // add_frequent_atom: (state: ToolbarItemState, action: PayloadAction<string>) => {
         //     const newFrequentAtoms = createFrequentAtoms(state.frequentAtoms, action.payload);
@@ -134,8 +135,13 @@ const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", as
 // eslint-disable-next-line no-unused-vars
 const clearCanvas = createAsyncThunk<void>("clear_canvas", async (_, thunkApi) => {
     thunkApi.dispatch(
+        // slice.actions.tool_change({
+        //     toolName: ToolsConstants.ToolsNames.SelectBox,
+        // })
         slice.actions.tool_change({
-            button: ToolsConstants.ToolsNames.SelectBox,
+            toolName: ToolsConstants.ToolsNames.Charge,
+            subToolName: ToolsConstants.SubToolsNames.ChargeMinus,
+            attributes: { charge: -1 },
         })
     );
 });

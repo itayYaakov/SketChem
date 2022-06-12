@@ -1,4 +1,4 @@
-import type { ToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { ToolbarItem } from "../ToolbarItem";
 
 const toolbarItemsDict = new Map<string, ToolbarItem>();
 

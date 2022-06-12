@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AtomConstants } from "@constants/atom.constants";
-import { EntityType } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
-import type { NamedPoint } from "@features/shared/storage";
-import { EntitiesMapsStorage } from "@features/shared/storage";
 import { IChargeAttributes, MouseEventCallBackProperties } from "@src/types";
 
 import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 export interface ChargeToolbarItemButton extends ToolbarItemButton {
@@ -58,6 +55,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.Charge, charge);
 
 const ChargeMinus: ChargeToolbarItemButton = {
     name: "Charge Minus",
+    subToolName: ToolsConstants.SubToolsNames.ChargeMinus,
     toolName: ToolsConstants.ToolsNames.Charge,
     attributes: { charge: -1 },
     keyboardKeys: ["A"],
@@ -65,9 +63,13 @@ const ChargeMinus: ChargeToolbarItemButton = {
 
 const ChargePlus: ChargeToolbarItemButton = {
     name: "Charge Plus",
+    subToolName: ToolsConstants.SubToolsNames.ChargePlus,
     toolName: ToolsConstants.ToolsNames.Charge,
     attributes: { charge: 1 },
     keyboardKeys: ["A"],
 };
+
+RegisterToolbarButtonWithName(ChargeMinus);
+RegisterToolbarButtonWithName(ChargePlus);
 
 export { ChargeMinus, ChargePlus };

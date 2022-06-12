@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@app/hooks";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -9,6 +9,7 @@ import SelectSearch from "react-select-search";
 
 import { DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 let isLibsEnabled = false;
@@ -168,5 +169,7 @@ const Import: ToolbarItemButton = {
     toolName: ToolsConstants.ToolsNames.Import,
     keyboardKeys: ["D"],
 };
+
+RegisterToolbarButtonWithName(Import);
 
 export default Import;

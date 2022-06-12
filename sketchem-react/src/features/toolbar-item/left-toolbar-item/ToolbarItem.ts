@@ -2,12 +2,12 @@ import { Direction } from "@constants/enum.constants";
 
 import { ToolbarItemButton } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
-import { BondTool, Chain, Delete } from "../tools";
+import { BondTool, Chain, Erase } from "../tools";
 // !!! delete
 import DebugTools from "../tools/debug_tools";
 
 const toolbarItemsList: ToolbarItemButton[] = [
-    Delete.deleteBox,
+    Erase.eraseBox,
     BondTool.singleBond,
     BondTool.doubleBond,
     BondTool.tripleBond,

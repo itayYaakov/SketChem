@@ -1,4 +1,4 @@
-// @import "../toolbar";
+@use "material_colors" as c;
 
 @mixin toolbar() {
     display: flex;
@@ -6,6 +6,7 @@
     flex-wrap: nowrap;
     justify-content: center;
     overflow: hidden;
+    background-color: c.$gray-200
 }
 
 @mixin horizontal-toolbar() {

@@ -1,8 +1,9 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { store } from "@app/store";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { actions } from "@features/toolbar-item/toolbarItemsSlice";
+import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 import { SaveFileAction } from "@src/types";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
@@ -26,5 +27,7 @@ const ExportMolToConsoleTool = new SimpleToolbarItemButtonBuilder(
     ToolsConstants.ToolsNames.DebugExportMolToConsole,
     ["A"]
 );
+
+RegisterToolbarButtonWithName(ExportMolToConsoleTool);
 
 export { ExportMolToConsoleTool };

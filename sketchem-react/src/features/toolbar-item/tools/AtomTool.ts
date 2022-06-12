@@ -1,13 +1,14 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BondEntityBaseTool as EntityBaseTool } from "./BondEntityBaseTool.helper";
 import { boxSelectTool } from "./SelectTemplate";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
@@ -104,15 +105,19 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.Atom, atom);
 
 const defaultAtomButtons: AtomToolbarItemButton[] = [];
 AtomConstants.DefaultAtomsLabel.forEach((label) => {
-    defaultAtomButtons.push({
+    const element = ElementsData.elementsBySymbolMap.get(label);
+    const newButton: AtomToolbarItemButton = {
         name: `${label} Atom`,
+        subToolName: `${label} Atom`,
         toolName: ToolsConstants.ToolsNames.Atom,
         attributes: {
             label,
-            color: ElementsData.elementsBySymbolMap.get(label)?.cpkColor ?? "black",
+            color: element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000",
         },
         keyboardKeys: ["A"],
-    });
+    };
+    RegisterToolbarButtonWithName(newButton);
+    defaultAtomButtons.push(newButton);
 });
 
 export default defaultAtomButtons;

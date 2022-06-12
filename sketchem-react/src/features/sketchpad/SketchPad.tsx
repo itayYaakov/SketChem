@@ -57,9 +57,9 @@ function SketchPad(props: Props) {
     const activeToolbarButton = useRef<ActiveToolbarItem | undefined>(undefined);
     const previousToolbarContext = useRef<ToolbarAction | undefined>(undefined);
     const currentToolbarContext = useSelector(getToolbarItemContext);
-    if (currentToolbarContext.button) {
+    if (currentToolbarContext.toolName) {
         if (currentToolbarContext !== previousToolbarContext.current) {
-            const currentToolbar = GetToolbarByName(currentToolbarContext.button);
+            const currentToolbar = GetToolbarByName(currentToolbarContext.toolName);
             if (currentToolbar) {
                 toolbarButtonRef.current = currentToolbar;
                 if (isDialogToolbarItem(toolbarButtonRef.current)) {

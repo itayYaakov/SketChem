@@ -1,6 +1,6 @@
 import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { LayersUtils } from "@src/utils/LayersUtils";
@@ -11,6 +11,7 @@ import { IAtom, IBond, MouseEventCallBackProperties } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
 import { ActiveToolbarItem } from "../ToolbarItem";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BondTool, BondToolButton } from "./BondTool";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -231,5 +232,7 @@ const Chain: BondToolButton = {
     },
     keyboardKeys: ["A"],
 };
+
+RegisterToolbarButtonWithName(Chain);
 
 export default Chain;

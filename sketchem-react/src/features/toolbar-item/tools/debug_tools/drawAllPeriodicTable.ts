@@ -3,10 +3,11 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { ElementsData } from "@constants/elements.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import type { NamedPoint, PointRBush } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
+import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 import { IAtom, MouseEventCallBackProperties } from "@src/types";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
@@ -49,5 +50,7 @@ const DrawAllPeriodic = new SimpleToolbarItemButtonBuilder(
     ToolsConstants.ToolsNames.DebugDrawAllPeriodic,
     ["A"]
 );
+
+RegisterToolbarButtonWithName(DrawAllPeriodic);
 
 export { DrawAllPeriodic };

@@ -17,3 +17,108 @@ $txtColor: #fefefe;
 .buttons_close {
     @include buttons_category_base(c.$red-A700, c.$red-A400);
 }
+
+@mixin buttons_category_base($baseColor, $hoverColor) {
+    @include button-variant($baseColor, $btnBorderColor, $txtColor, $hoverColor, $btnBorderColor, $txtColor);
+    // @include button-variant($baseColor, $btnBorderColor, $txtColor);
+    font-weight: 700;
+    // @include border-radius($border-radius, 0)
+}
+
+// .toolbar_icon_button {
+//     @include button-variant(c.$white, c.$white);
+// }
+$hover-active-border-width: 5px;
+
+@mixin toolbar_icon_button_shadow_direction_variant($shadow-sizes1,
+    $shadow-sizes2,
+    $hover-border-color,
+    $active-border-color: $hover-border-color) {
+
+    &:not(.toolbar_icon_button_active):hover {
+        box-shadow: inset $shadow-sizes1 $shadow-sizes2 $hover-border-color !important;
+    }
+
+    &.toolbar_icon_button_active {
+        box-shadow: inset $shadow-sizes1 $shadow-sizes2 $active-border-color !important;
+    }
+}
+
+// no focus state
+
+@mixin toolbar_icon_button_variant($color,
+    $background,
+    $hover-color,
+    $hover-background,
+    $hover-border-color,
+    $active-border-color: $hover-border-color,
+    $active-color: $hover-color,
+    $active-background: $hover-background,
+    $disabled-background: shade-color($background, 30),
+    $disabled-color: color-contrast($disabled-background)) {
+
+    color: $color;
+    // background-color: $background;
+    background-color: none;
+    border: none;
+
+    &:not(.toolbar_icon_button_active):hover {
+        color: $hover-color;
+        background-color: $hover-background;
+
+        svg {
+            filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(205deg) brightness(104%) contrast(97%);
+        }        
+    }
+
+    &.toolbar_icon_button_active {
+        color: $active-color;
+        background-color: $active-background;
+
+        svg {
+            filter: invert(23%) sepia(51%) saturate(2878%) hue-rotate(233deg) brightness(74%) contrast(97%)
+        }               
+    }
+
+    &:disabled,
+    &.disabled {
+        color: $disabled-color;
+        background-color: $disabled-background;
+    }
+}
+
+@mixin toolbar_icon_button() {
+    @include toolbar_icon_button_variant(c.$black,
+        c.$white,
+        c.$white,
+        c.$gray-200,
+        c.$blue-600,
+        c.$purple-600);
+}
+
+@mixin toolbar_icon_button_shadow($shadow-sizes1, $shadow-sizes2) {
+    @include toolbar_icon_button_shadow_direction_variant($shadow-sizes1, $shadow-sizes2, c.$blue-600,
+        c.$purple-600);
+}
+
+.toolbar_icon_button {
+    @include toolbar_icon_button();
+}
+
+.toolbar_icon_button_active {}
+
+.toolbar_icon_button_bottom {
+    @include toolbar_icon_button_shadow(0px, $hover-active-border-width);
+}
+
+.toolbar_icon_button_left {
+    @include toolbar_icon_button_shadow(-$hover-active-border-width, 0);
+}
+
+.toolbar_icon_button_right {
+    @include toolbar_icon_button_shadow($hover-active-border-width, 0);
+}
+
+.toolbar_icon_button_top {
+    @include toolbar_icon_button_shadow(0, -$hover-active-border-width);
+}

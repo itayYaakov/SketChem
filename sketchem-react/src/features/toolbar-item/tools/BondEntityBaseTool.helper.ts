@@ -1,6 +1,6 @@
 import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder, BondStereoKekule, EntityType, LayersNames, MouseMode } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { EntitiesMapsStorage } from "@features/shared/storage";

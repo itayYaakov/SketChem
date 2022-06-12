@@ -1,9 +1,10 @@
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IBondAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BondEntityBaseTool } from "./BondEntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -87,6 +88,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.Bond, bond);
 
 const singleBond: BondToolButton = {
     name: "Bond Single",
+    subToolName: ToolsConstants.SubToolsNames.BondSingle,
     toolName: ToolsConstants.ToolsNames.Bond,
     attributes: {
         bondOrder: BondOrder.Single,
@@ -96,6 +98,7 @@ const singleBond: BondToolButton = {
 };
 const doubleBond: BondToolButton = {
     name: "Bond Double",
+    subToolName: ToolsConstants.SubToolsNames.BondDouble,
     toolName: ToolsConstants.ToolsNames.Bond,
     attributes: {
         bondOrder: BondOrder.Double,
@@ -105,6 +108,7 @@ const doubleBond: BondToolButton = {
 };
 const tripleBond: BondToolButton = {
     name: "Bond Triple",
+    subToolName: ToolsConstants.SubToolsNames.BondTriple,
     toolName: ToolsConstants.ToolsNames.Bond,
     attributes: {
         bondOrder: BondOrder.Triple,
@@ -114,6 +118,7 @@ const tripleBond: BondToolButton = {
 };
 const wedgeFrontBond: BondToolButton = {
     name: "Bond Wedge Front",
+    subToolName: ToolsConstants.SubToolsNames.BondWedgeFront,
     toolName: ToolsConstants.ToolsNames.Bond,
     attributes: {
         bondOrder: BondOrder.Single,
@@ -123,6 +128,7 @@ const wedgeFrontBond: BondToolButton = {
 };
 const wedgeBackBond: BondToolButton = {
     name: "Bond Wedge Back",
+    subToolName: ToolsConstants.SubToolsNames.BondWedgeBack,
     toolName: ToolsConstants.ToolsNames.Bond,
     attributes: {
         bondOrder: BondOrder.Single,
@@ -130,5 +136,11 @@ const wedgeBackBond: BondToolButton = {
     },
     keyboardKeys: ["D"],
 };
+
+RegisterToolbarButtonWithName(doubleBond);
+RegisterToolbarButtonWithName(singleBond);
+RegisterToolbarButtonWithName(tripleBond);
+RegisterToolbarButtonWithName(wedgeBackBond);
+RegisterToolbarButtonWithName(wedgeFrontBond);
 
 export { doubleBond, singleBond, tripleBond, wedgeBackBond, wedgeFrontBond };

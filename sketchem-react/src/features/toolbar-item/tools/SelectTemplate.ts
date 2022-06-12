@@ -3,7 +3,7 @@
 import { AtomConstants } from "@constants/atom.constants";
 import { BondConstants } from "@constants/bond.constants";
 import { EntityType, LayersNames } from "@constants/enum.constants";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import type { NamedPoint } from "@features/shared/storage";
@@ -14,6 +14,7 @@ import { Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BoundingBox, EntityEventContext, EntityEventsFunctions, MouseEventCallBackProperties } from "@types";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 enum SelectionMode {
@@ -520,5 +521,8 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectLasso, lassoSelectTool);
 
 const boxSelect = new SimpleToolbarItemButtonBuilder("Box Select", ToolsConstants.ToolsNames.SelectBox, ["A"]);
 const lassoSelect = new SimpleToolbarItemButtonBuilder("Lasso Select", ToolsConstants.ToolsNames.SelectLasso, ["A"]);
+
+RegisterToolbarButtonWithName(boxSelect);
+RegisterToolbarButtonWithName(lassoSelect);
 
 export { lassoSelect, boxSelect as simpleSelect };

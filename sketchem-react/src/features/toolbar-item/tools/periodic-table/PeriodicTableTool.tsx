@@ -1,6 +1,7 @@
 import { useAppDispatch } from "@app/hooks";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { actions } from "@features/toolbar-item/toolbarItemsSlice";
+import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 import { IAtomAttributes, ToolbarAction } from "@src/types";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -29,7 +30,8 @@ export function PeriodicTableWindow(props: any) {
             color: "red",
         };
         const payload: ToolbarAction = {
-            button: ToolsConstants.ToolsNames.Atom,
+            toolName: ToolsConstants.ToolsNames.Atom,
+            subToolName: ToolsConstants.createAtomSubToolName(atomLabel),
             attributes,
         };
         dispatch(actions.tool_change(payload));
@@ -87,5 +89,7 @@ const PeriodicTableTool: ToolbarItemButton = {
     toolName: ToolsConstants.ToolsNames.PeriodicTable,
     keyboardKeys: ["D"],
 };
+
+RegisterToolbarButtonWithName(PeriodicTableTool);
 
 export default PeriodicTableTool;

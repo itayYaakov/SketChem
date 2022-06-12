@@ -106,7 +106,11 @@ function PeriodicTable(props: PeriodicTableProps) {
     const table = buildTable(props);
     const { className } = props;
     const fullClassName = clsx(styles.periodic_table, className ?? "");
-    return <table className={fullClassName}>{table}</table>;
+    return (
+        <table className={fullClassName}>
+            <tbody>{table}</tbody>
+        </table>
+    );
 }
 
 PeriodicTable.defaultProps = {

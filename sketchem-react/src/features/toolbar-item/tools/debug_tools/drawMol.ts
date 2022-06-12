@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { store } from "@app/store";
-import { ToolsConstants } from "@constants/tools.constants";
+import * as ToolsConstants from "@constants/tools.constants";
 import { EntitiesMapsStorage } from "@features/shared/storage";
+import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
 import { actions } from "../../toolbarItemsSlice";
@@ -53,5 +54,7 @@ const DrawMol = new SimpleToolbarItemButtonBuilder(
     ToolsConstants.ToolsNames.DebugLoadExampleMol,
     ["A"]
 );
+
+RegisterToolbarButtonWithName(DrawMol);
 
 export default [DrawMol];

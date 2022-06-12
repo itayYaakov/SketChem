@@ -108,7 +108,8 @@ export const isIChargeAttributes = (o: ToolbarItemButtonAttributes): o is ICharg
     (o as IChargeAttributes).charge !== undefined;
 
 export interface ToolbarAction {
-    button: string;
+    toolName: string;
+    subToolName?: string;
     // if pressed button has it's own attributes (like charge, atom label or bond order)
     attributes?: ToolbarItemButtonAttributes;
 }
