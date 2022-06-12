@@ -22,6 +22,11 @@ export function GetToolbarButtonByName(name: string): ToolbarItemButton | undefi
     return item;
 }
 
+export function IsToolbarButtonExists(tool: ToolbarItemButton): boolean {
+    const name = tool.subToolName ?? tool.toolName;
+    return toolbarItemsButtonsDict.has(name);
+}
+
 export function SentDispatchEventWhenToolbarItemIsChanges(dispatch: any, name: string) {
     const toolButton = GetToolbarButtonByName(name);
     if (!toolButton) return;

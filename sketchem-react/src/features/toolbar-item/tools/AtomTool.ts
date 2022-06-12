@@ -1,4 +1,3 @@
-import { AtomConstants } from "@constants/atom.constants";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
@@ -7,10 +6,8 @@ import { EditorHandler } from "@features/editor/EditorHandler";
 import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
 import { ToolbarItemButton } from "../ToolbarItem";
-import { actions } from "../toolbarItemsSlice";
-import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
+import { IsToolbarButtonExists, RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BondEntityBaseTool as EntityBaseTool } from "./BondEntityBaseTool.helper";
-import { boxSelectTool } from "./SelectTemplate";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 export interface AtomToolbarItemButton extends ToolbarItemButton {
@@ -96,28 +93,31 @@ export class AtomToolBarItem extends EntityBaseTool {
             this.context.startAtom.updateAttributes({ symbol: this.atomElement.symbol });
         }
 
-        editor.setHoverMode(true, true, true);
+        editor.setHoverMode(true, true, false);
     }
 }
 
 const atom = new AtomToolBarItem();
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Atom, atom);
 
-const defaultAtomButtons: AtomToolbarItemButton[] = [];
-AtomConstants.DefaultAtomsLabel.forEach((label) => {
-    const element = ElementsData.elementsBySymbolMap.get(label);
-    const newButton: AtomToolbarItemButton = {
-        name: `${label} Atom`,
-        subToolName: `${label} Atom`,
-        toolName: ToolsConstants.ToolsNames.Atom,
-        attributes: {
-            label,
-            color: element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000",
-        },
-        keyboardKeys: ["A"],
-    };
-    RegisterToolbarButtonWithName(newButton);
-    defaultAtomButtons.push(newButton);
-});
-
-export default defaultAtomButtons;
+export function generateAtomsButtons(atoms: string[]) {
+    const defaultAtomButtons: AtomToolbarItemButton[] = [];
+    atoms.forEach((label) => {
+        const element = ElementsData.elementsBySymbolMap.get(label);
+        const newButton: AtomToolbarItemButton = {
+            name: `${label} Atom`,
+            subToolName: `${label} Atom`,
+            toolName: ToolsConstants.ToolsNames.Atom,
+            attributes: {
+                label,
+                color: element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000",
+            },
+            keyboardKeys: ["A"],
+        };
+        if (!IsToolbarButtonExists(newButton)) {
+            RegisterToolbarButtonWithName(newButton);
+        }
+        defaultAtomButtons.push(newButton);
+    });
+    return defaultAtomButtons;
+}

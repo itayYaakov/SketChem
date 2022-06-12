@@ -1,4 +1,4 @@
-export { default as DefaultAtomButtons } from "./AtomTool";
+export { generateAtomsButtons } from "./AtomTool";
 export * as BondTool from "./BondTool";
 export { default as Chain } from "./Chain";
 export * as Charge from "./Charge";

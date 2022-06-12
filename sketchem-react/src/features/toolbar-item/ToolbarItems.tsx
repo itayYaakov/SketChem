@@ -16,6 +16,7 @@ import {
     ToolbarItemButton,
 } from "./ToolbarItem";
 import { actions } from "./toolbarItemsSlice";
+import { generateAtomsButtons } from "./tools";
 import { GetToolbarByName } from "./tools/ToolsMapper.helper";
 import { SentDispatchEventWhenToolbarItemIsChanges } from "./ToolsButtonMapper.helper";
 
@@ -32,6 +33,8 @@ export function ToolbarItems(props: Props) {
     const dispatch = useAppDispatch();
     const { toolbarItemsList, direction } = props;
 
+    let modifiedToolbarItemsList = toolbarItemsList;
+
     let { className } = props;
     className = className ?? "";
     const directionLower = Direction[direction].toLowerCase();
@@ -39,6 +42,12 @@ export function ToolbarItems(props: Props) {
 
     const currentToolbarContext = useSelector(getToolbarItemContext);
     const frequentAtoms = useSelector(getToolbarFrequentAtoms);
+
+    // programmly add the frequent atoms to the toolbar
+    if (direction === Direction.Right) {
+        const frequentAtomsButtons = generateAtomsButtons(frequentAtoms.atoms);
+        modifiedToolbarItemsList = [...modifiedToolbarItemsList, ...frequentAtomsButtons];
+    }
 
     const currentToolbarName = currentToolbarContext.subToolName ?? currentToolbarContext?.toolName;
 
@@ -78,7 +87,7 @@ export function ToolbarItems(props: Props) {
 
     return (
         <div className={clsx(styles[thisClassName], thisClassName, styles[className])}>
-            {toolbarItemsList.map((item) => {
+            {modifiedToolbarItemsList.map((item) => {
                 const name = item.subToolName ?? item.toolName;
                 const isActive = currentToolbarName === name;
                 const activeClass = isActive ? styles.toolbar_icon_button_active : "";

@@ -183,9 +183,10 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
+        const { mouseDownLocation, mouseCurrentLocation, editor } = eventHolder;
 
         if (this.mode !== MouseMode.AtomPressed && this.mode !== MouseMode.EmptyPress) return;
+        editor.setHoverMode(true, true, false);
 
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
 

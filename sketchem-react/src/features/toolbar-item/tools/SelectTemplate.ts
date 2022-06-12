@@ -26,7 +26,6 @@ enum SelectionMode {
 interface IAnchor {
     atomId: number | undefined;
     bondId: number | undefined;
-    pivot: Vector2 | undefined;
 }
 interface IMovesItem {
     movedBondsId: number[];
@@ -60,6 +59,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     shapeFillColor: string = "#000000";
 
+    dragged: boolean = false;
+
     constructor() {
         this.selectionMode = SelectionMode.Empty;
         this.resetAnchor();
@@ -80,7 +81,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.anchor = {
             atomId: undefined,
             bondId: undefined,
-            pivot: undefined,
         };
         this.movesItem = undefined;
         this.mergeAtomsAction = [];
@@ -149,6 +149,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
 
+        this.dragged = false;
         let atom = eventHolder.editor.getHoveredAtom();
         if (!(atom && atom.isAlive) && this.pressedAtomAnchor?.isAlive()) atom = this.pressedAtomAnchor;
         let bond = eventHolder.editor.getHoveredBond();
@@ -355,9 +356,11 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.doAction(editor);
         this.pressedAtomAnchor = undefined;
         this.pressedBondAnchor = undefined;
+
         switch (this.selectionMode) {
             case SelectionMode.Empty:
                 this.unselectAll(editor);
+                this.resetAnchor();
                 break;
 
             default:
@@ -379,7 +382,16 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseLeave(eventHolder: MouseEventCallBackProperties) {
+        const { editor } = eventHolder;
         this.perform(eventHolder);
+        if (
+            this.movesItem !== undefined &&
+            (this.movesItem.movedBondsId?.length > 0 ||
+                this.movesItem.shouldMoveAtoms?.size > 0 ||
+                this.movesItem.shouldMoveBonds?.size > 0)
+        ) {
+            this.unselectAll(editor);
+        }
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;

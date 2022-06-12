@@ -100,7 +100,7 @@ function generateDebugIcon(tool: ToolbarItemButton): (props: any) => JSX.Element
                     fontWeight: "400",
                     fontSize: "0.65em",
                     lineHeight: "0.8em",
-                    height: "10em",
+                    height: "4em",
                     width: IconSize,
                 }}
             >

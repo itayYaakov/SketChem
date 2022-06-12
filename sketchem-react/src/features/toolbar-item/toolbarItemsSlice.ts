@@ -43,13 +43,13 @@ const initialState = {
 
 function createFrequentAtoms(frequentAtoms: FrequentAtoms, newAtom: string) {
     const frequentAtomsList = [...frequentAtoms.atoms];
-    if (frequentAtomsList.includes(newAtom)) {
-        return frequentAtoms;
-    }
-    if (frequentAtomsList.length >= AtomConstants.MaxAdditionalAtoms) {
+
+    if (frequentAtomsList.length >= AtomConstants.MaxAtomsListSize) {
         frequentAtomsList.pop();
     }
-    frequentAtomsList.unshift(newAtom);
+
+    if (!frequentAtomsList.includes(newAtom)) frequentAtomsList.unshift(newAtom);
+
     return {
         atoms: frequentAtomsList,
         currentAtom: newAtom,

@@ -2,14 +2,9 @@ import { Direction } from "@constants/enum.constants";
 
 import { ToolbarItemButton } from "../ToolbarItem";
 import type { IToolbarItemsProps } from "../ToolbarItems";
-import { Charge, DefaultAtomButtons, PeriodicTableTool } from "../tools";
+import { Charge, PeriodicTableTool } from "../tools";
 
-const toolbarItemsList: ToolbarItemButton[] = [
-    Charge.ChargePlus,
-    Charge.ChargeMinus,
-    PeriodicTableTool,
-    ...DefaultAtomButtons,
-];
+const toolbarItemsList: ToolbarItemButton[] = [Charge.ChargePlus, Charge.ChargeMinus, PeriodicTableTool];
 
 const props: IToolbarItemsProps = {
     toolbarItemsList,
