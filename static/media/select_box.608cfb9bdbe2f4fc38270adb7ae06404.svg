@@ -1,0 +1,12 @@
+<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-miterlimit="10" stroke-width="1.5px" transform="scale(0.8)">
+    <g fill="none">
+        <rect x="2" y="2" width="4" height="4" rx="1"/>
+        <rect x="18" y="2" width="4" height="4" rx="1"/>
+        <rect x="2" y="18" width="4" height="4" rx="1"/>
+        <line x1="4" y1="9" x2="4" y2="15" />
+        <line x1="20" y1="9" x2="20" y2="11"/>
+        <line x1="15" y1="4" x2="9" y2="4"/>
+        <line x1="11" y1="20" x2="9" y2="20"/>
+        <path d="M14.33,22h-.09a.35.35,0,0,1-.24-.32v-10a.34.34,0,0,1,.33-.34.32.32,0,0,1,.21.08l7.34,6a.33.33,0,0,1-.21.59H17.18l-2.57,3.85A.35.35,0,0,1,14.33,22Z"/>
+    </g>
+</svg>

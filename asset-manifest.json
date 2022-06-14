@@ -1,13 +1,30 @@
 {
   "files": {
-    "main.css": "./static/css/main.d58031eb.css",
-    "main.js": "./static/js/main.8217f4bc.js",
+    "main.css": "./static/css/main.c502aece.css",
+    "main.js": "./static/js/main.d327b52c.js",
     "index.html": "./index.html",
-    "main.d58031eb.css.map": "./static/css/main.d58031eb.css.map",
-    "main.8217f4bc.js.map": "./static/js/main.8217f4bc.js.map"
+    "static/media/select_box.svg": "./static/media/select_box.608cfb9bdbe2f4fc38270adb7ae06404.svg",
+    "static/media/bond_wedge_back.svg": "./static/media/bond_wedge_back.af72e68b5c3f59e445a44d70086f6860.svg",
+    "static/media/select_lasso.svg": "./static/media/select_lasso.4e8ec7cd5ffa0fba5e959596b6f40b26.svg",
+    "static/media/export.svg": "./static/media/export.6bd71e290f10bb280762ac603a908fa6.svg",
+    "static/media/import.svg": "./static/media/import.2d111a848177ca6fac4c2f4f503a3647.svg",
+    "static/media/clear_canvas.svg": "./static/media/clear_canvas.1963dbde7918fdfcb6d0510b44b0bd42.svg",
+    "static/media/periodic_table.svg": "./static/media/periodic_table.badc0dda69fc8f1b8f4aae44672f2059.svg",
+    "static/media/paste.svg": "./static/media/paste.ec67df56969f13bc2e14bc44dfe6d6a7.svg",
+    "static/media/bond_triple.svg": "./static/media/bond_triple.21226e758e92bac5be3df87ee145593e.svg",
+    "static/media/copy.svg": "./static/media/copy.fb49915b75a7ac7aea0c687c37acc450.svg",
+    "static/media/erase.svg": "./static/media/erase.8f72d3fd948e4ddadd07a60fcb9938b5.svg",
+    "static/media/charge_plus.svg": "./static/media/charge_plus.6c920f742a14e4b104adcd1ed51bf8fb.svg",
+    "static/media/bond_double.svg": "./static/media/bond_double.635d3740ba4ab18c0fce6299f21008d7.svg",
+    "static/media/charge_minus.svg": "./static/media/charge_minus.0632ab36d6e27bcb12c7feb9686606af.svg",
+    "static/media/chain.svg": "./static/media/chain.305046b7fa70f3c4a33f50c2ef4d5997.svg",
+    "static/media/bond_single.svg": "./static/media/bond_single.dda061e50dc7e697738aadaf09389896.svg",
+    "static/media/bond_wedge_front.svg": "./static/media/bond_wedge_front.ed67a630ca2fb54df1c73157360aca4d.svg",
+    "main.c502aece.css.map": "./static/css/main.c502aece.css.map",
+    "main.d327b52c.js.map": "./static/js/main.d327b52c.js.map"
   },
   "entrypoints": [
-    "static/css/main.d58031eb.css",
-    "static/js/main.8217f4bc.js"
+    "static/css/main.c502aece.css",
+    "static/js/main.d327b52c.js"
   ]
 }
