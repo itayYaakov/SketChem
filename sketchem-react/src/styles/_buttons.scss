@@ -67,7 +67,7 @@ $hover-active-border-width: 5px;
         background-color: $hover-background;
 
         svg {
-            filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(205deg) brightness(104%) contrast(97%);
+            filter: invert(27%) sepia(51%) saturate(2878%) hue-rotate(233deg) brightness(104%) contrast(97%);
         }        
     }
 
@@ -76,7 +76,7 @@ $hover-active-border-width: 5px;
         background-color: $active-background;
 
         svg {
-            filter: invert(23%) sepia(51%) saturate(2878%) hue-rotate(233deg) brightness(74%) contrast(97%)
+            filter: invert(23%) sepia(51%) saturate(2878%) hue-rotate(205deg) brightness(74%) contrast(97%)
         }               
     }
 
@@ -91,14 +91,16 @@ $hover-active-border-width: 5px;
     @include toolbar_icon_button_variant(c.$black,
         c.$white,
         c.$white,
-        c.$gray-200,
+        #e0e0e0,
+        c.$purple-600,
         c.$blue-600,
-        c.$purple-600);
+        );
 }
 
 @mixin toolbar_icon_button_shadow($shadow-sizes1, $shadow-sizes2) {
-    @include toolbar_icon_button_shadow_direction_variant($shadow-sizes1, $shadow-sizes2, c.$blue-600,
-        c.$purple-600);
+    @include toolbar_icon_button_shadow_direction_variant($shadow-sizes1, $shadow-sizes2, 
+        c.$purple-600,
+        c.$blue-600);
 }
 
 .toolbar_icon_button {

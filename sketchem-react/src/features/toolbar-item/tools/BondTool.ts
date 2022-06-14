@@ -1,4 +1,4 @@
-import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityVisualState, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IBondAttributes, MouseEventCallBackProperties } from "@types";
@@ -60,8 +60,7 @@ export class BondTool extends BondEntityBaseTool {
         }
 
         if (this.mode === MouseMode.AtomPressed) {
-            // !!! ??? nothing special to do?
-            // return;
+            this.context.startAtom?.setVisualState(EntityVisualState.AnimatedClick);
         }
 
         this.context.startAtom?.getOuterDrawCommand();

@@ -1,5 +1,5 @@
 import { ElementsData, PtElement } from "@constants/elements.constants";
-import { BondOrder, BondStereoKekule, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityVisualState, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
@@ -90,6 +90,7 @@ export class AtomToolBarItem extends EntityBaseTool {
             this.context.startAtom &&
             this.context.endAtom === undefined
         ) {
+            this.context.startAtom.setVisualState(EntityVisualState.AnimatedClick);
             this.context.startAtom.updateAttributes({ symbol: this.atomElement.symbol });
         }
 

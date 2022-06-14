@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { EntityVisualState } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
@@ -41,9 +42,9 @@ class Charge implements ActiveToolbarItem {
 
     onMouseClick(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
-
         const atom = editor.getHoveredAtom();
         if (!atom) return;
+        atom.setVisualState(EntityVisualState.AnimatedClick);
 
         this.updateAtomCharge(atom);
     }

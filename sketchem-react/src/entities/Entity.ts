@@ -21,9 +21,13 @@ import {
     IEntity,
 } from "@types";
 
-const hoverOrSelectColor = "#38e8e8";
+// const hoverOrSelectColor = "#38e8e8";
+const hoverOrSelectColor = "#9bf3f3";
+// const hoverColor = "#bb00b1";
+const hoverColor = "#cc68e8";
 const mergeColor = "#69f0ae";
-const hoverOpacity = 0.5;
+const hoverOpacity = 0.4;
+const animationDuration = 120;
 
 export abstract class Entity {
     abstract attributes: EntityAttributes;
@@ -79,25 +83,48 @@ export abstract class Entity {
 
     setVisualState(visualState: EntityVisualState, color: string = hoverOrSelectColor) {
         if (!this.hoverOrSelectShape) return;
-        this.visualState = visualState;
 
-        switch (this.visualState) {
+        let tempVisualState = visualState;
+        this.hoverOrSelectShape.timeline().finish();
+
+        switch (visualState) {
             case EntityVisualState.None:
                 this.hoverOrSelectShape.fill({ opacity: 0 });
                 break;
             case EntityVisualState.Hover:
                 // this.hoverOrSelectShape.fill({ color, opacity: hoverOpacity });
-                this.hoverOrSelectShape.fill({ color: "#bb00b1", opacity: hoverOpacity });
+                this.hoverOrSelectShape.fill({ color: hoverColor, opacity: hoverOpacity });
                 break;
             case EntityVisualState.Select:
                 this.hoverOrSelectShape.fill({ color, opacity: 1 });
                 break;
+            case EntityVisualState.AnimatedClick: {
+                // eslint-disable-next-line no-param-reassign
+                tempVisualState = this.visualState;
+                const currentColor = this.hoverOrSelectShape.fill();
+                const currentOpacity = this.hoverOrSelectShape.attr("fill-opacity") ?? 1;
+                this.hoverOrSelectShape
+                    .animate({
+                        duration: animationDuration,
+                        delay: 0,
+                        when: "now",
+                        swing: false,
+                        times: 1,
+                        wait: 0,
+                    })
+                    .attr({ fill: color, "fill-opacity": 1 })
+                    .animate(animationDuration, animationDuration, "now")
+                    .attr({ fill: currentColor, "fill-opacity": currentOpacity });
+                break;
+            }
             case EntityVisualState.Merge:
                 this.hoverOrSelectShape.fill({ color: mergeColor, opacity: 1 });
                 break;
             default:
                 break;
         }
+
+        this.visualState = tempVisualState;
     }
 
     setListeners(eventListeners?: EntityEventsFunctions) {

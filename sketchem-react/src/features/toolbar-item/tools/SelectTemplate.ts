@@ -28,7 +28,8 @@ interface IAnchor {
     bondId: number | undefined;
 }
 interface IMovesItem {
-    movedBondsId: number[];
+    shouldMoveAtomsIds: Set<number>;
+    shouldMoveBondsIds: Set<number>;
     shouldMoveAtoms: Set<Atom>;
     shouldMoveBonds: Set<Bond>;
 }
@@ -128,22 +129,20 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.mergeAtomsAction = [];
     }
 
-    movedAtomOverAnotherAtomByAtom(atom?: Atom, point?: Vector2) {
-        if (!atom) return false;
-        const center = point ?? atom.getAttributes().center;
+    searchAnAtomToMergeWith(atom: Atom, ignoreAtomsList: number[]): Atom | undefined {
+        const { center } = atom.getAttributes();
         const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
 
-        const ignoreAtomList = [atom.getId()];
-        const atomWasPressed = atomAtPoint(center, ignoreAtomList);
+        const atomWasPressed = atomAtPoint(center, ignoreAtomsList);
         if (atomWasPressed) {
             const replacedAtom = getAtomById(atomWasPressed.id);
             replacedAtom.setVisualState(EntityVisualState.Merge);
             console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
             this.mergeAtomsAction.push({ replacedAtom, replacingAtom: atom });
             console.log("B this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
-            return true;
+            return replacedAtom;
         }
-        return false;
+        return undefined;
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
@@ -212,12 +211,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             shouldMoveAtomsIds = new Set([...shouldMoveAtomsIds, ...connectedAtoms]);
         }, true);
 
-        const movedBondsId: number[] = [];
-
-        shouldMoveBondsIds.forEach((bond) => {
-            movedBondsId.push(bond);
-        });
-
         const shouldMoveAtoms = new Set<Atom>();
         const shouldMoveBonds = new Set<Bond>();
 
@@ -232,7 +225,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         });
 
         return {
-            movedBondsId,
+            shouldMoveAtomsIds,
+            shouldMoveBondsIds,
             shouldMoveAtoms,
             shouldMoveBonds,
         } as IMovesItem;
@@ -295,11 +289,13 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
             this.resetMergedAtoms();
             this.movesItem = this.movesItem ?? this.calculateMultipleAtomsAndBondsToMove(editor);
-            const { shouldMoveAtoms, shouldMoveBonds, movedBondsId } = this.movesItem;
+            const { shouldMoveAtomsIds, shouldMoveBondsIds, shouldMoveAtoms, shouldMoveBonds } = this.movesItem;
 
+            const alreadyMergesAtoms: number[] = Array.from(shouldMoveAtomsIds);
             shouldMoveAtoms.forEach((atom) => {
-                atom.moveByDelta(delta, movedBondsId);
-                this.movedAtomOverAnotherAtomByAtom(atom);
+                atom.moveByDelta(delta, Array.from(shouldMoveBondsIds));
+                const newMergedAtom = this.searchAnAtomToMergeWith(atom, alreadyMergesAtoms);
+                if (newMergedAtom) alreadyMergesAtoms.push(newMergedAtom.getId());
             });
 
             shouldMoveBonds.forEach((bond) => {
@@ -392,9 +388,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.perform(eventHolder);
         if (
             this.movesItem !== undefined &&
-            (this.movesItem.movedBondsId?.length > 0 ||
-                this.movesItem.shouldMoveAtoms?.size > 0 ||
-                this.movesItem.shouldMoveBonds?.size > 0)
+            (this.movesItem.shouldMoveBondsIds?.size > 0 || this.movesItem.shouldMoveAtomsIds?.size > 0)
         ) {
             this.unselectAll(editor);
         }

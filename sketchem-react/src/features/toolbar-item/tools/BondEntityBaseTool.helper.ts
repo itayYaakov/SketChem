@@ -1,5 +1,12 @@
 import { EditorConstants } from "@constants/editor.constant";
-import { BondOrder, BondStereoKekule, EntityType, LayersNames, MouseMode } from "@constants/enum.constants";
+import {
+    BondOrder,
+    BondStereoKekule,
+    EntityType,
+    EntityVisualState,
+    LayersNames,
+    MouseMode,
+} from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
@@ -157,6 +164,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
                     default:
                         return true;
                 }
+                bond.setVisualState(EntityVisualState.AnimatedClick);
                 bond.updateAttributes({ order: newBondOrder });
                 return true;
             }
@@ -166,6 +174,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
                 this.bondOrder === BondOrder.Single &&
                 (this.bondStereo === BondStereoKekule.DOWN || this.bondStereo === BondStereoKekule.UP)
             ) {
+                bond.setVisualState(EntityVisualState.AnimatedClick);
                 bond.updateAttributes({
                     atomStartId: pressedBondAttributes.atomEndId,
                     atomEndId: pressedBondAttributes.atomStartId,
@@ -176,7 +185,10 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
             const newAttributes: Partial<BondAttributes> = {};
             if (pressedBondAttributes.order !== this.bondOrder) newAttributes.order = this.bondOrder;
             if (pressedBondAttributes.stereo !== this.bondStereo) newAttributes.stereo = this.bondStereo;
-            if (newAttributes) bond.updateAttributes(newAttributes);
+            if (newAttributes) {
+                bond.setVisualState(EntityVisualState.AnimatedClick);
+                bond.updateAttributes(newAttributes);
+            }
             return true;
         }
         return false;

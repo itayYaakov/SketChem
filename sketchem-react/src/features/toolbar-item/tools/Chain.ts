@@ -65,7 +65,8 @@ class ChainToolBar extends BondTool {
     initialAngle!: number;
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
-        const { mouseDownLocation, mouseCurrentLocation } = eventHolder;
+        const { mouseDownLocation, mouseCurrentLocation, editor } = eventHolder;
+        editor.setHoverMode(false, true, true);
         this.sectorsIndicator?.remove();
         this.sectorsIndicator = undefined;
 
@@ -204,8 +205,10 @@ class ChainToolBar extends BondTool {
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        const { editor } = eventHolder;
         this.createChain();
         this.cancel();
+        editor.setHoverMode(true, true, true);
     }
 
     cancel() {

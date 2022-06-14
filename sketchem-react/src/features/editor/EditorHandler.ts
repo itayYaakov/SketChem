@@ -187,7 +187,6 @@ export class EditorHandler {
             onMouseEnter: (e: Event, data: EntityEventContext) => {
                 const { id, type } = data;
                 const maps = this.getMaps(type);
-                // const entity: Atom | Bond | undefined = maps.map.get(id);
                 const entity = maps.map.get(id);
                 if (!entity || (this.hovered === entity && this.isHovered()) || maps.selected.has(id)) {
                     this.anchor = entity;
