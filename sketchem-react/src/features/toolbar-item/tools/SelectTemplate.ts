@@ -2,7 +2,7 @@
 /* eslint-disable max-classes-per-file */
 import { AtomConstants } from "@constants/atom.constants";
 import { BondConstants } from "@constants/bond.constants";
-import { EntityType, LayersNames } from "@constants/enum.constants";
+import { EntityType, EntityVisualState, LayersNames } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
@@ -123,7 +123,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     resetMergedAtoms() {
         this.mergeAtomsAction.forEach((action) => {
             const { replacingAtom, replacedAtom } = action;
-            replacedAtom.hover(false);
+            replacedAtom.setVisualState(EntityVisualState.None);
         });
         this.mergeAtomsAction = [];
     }
@@ -137,7 +137,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const atomWasPressed = atomAtPoint(center, ignoreAtomList);
         if (atomWasPressed) {
             const replacedAtom = getAtomById(atomWasPressed.id);
-            replacedAtom.hover(true);
+            replacedAtom.setVisualState(EntityVisualState.Merge);
             console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
             this.mergeAtomsAction.push({ replacedAtom, replacingAtom: atom });
             console.log("B this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
@@ -150,9 +150,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const { editor } = eventHolder;
 
         this.dragged = false;
+        const tempAnchor = eventHolder.editor.anchor;
+
         let atom = eventHolder.editor.getHoveredAtom();
+        if (!(atom && atom.isAlive) && tempAnchor && tempAnchor instanceof Atom) atom = tempAnchor;
         if (!(atom && atom.isAlive) && this.pressedAtomAnchor?.isAlive()) atom = this.pressedAtomAnchor;
+
         let bond = eventHolder.editor.getHoveredBond();
+        if (!(atom && atom.isAlive) && tempAnchor && tempAnchor instanceof Bond) bond = tempAnchor;
         if (!(bond && bond.isAlive()) && this.pressedBondAnchor?.isAlive()) bond = this.pressedBondAnchor;
 
         if (atom && atom.isAlive()) {
@@ -367,6 +372,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
                 this.removeShape();
                 break;
         }
+        editor.setHoverMode(true, true, true, this.selectColor);
     }
 
     mergeNodes() {

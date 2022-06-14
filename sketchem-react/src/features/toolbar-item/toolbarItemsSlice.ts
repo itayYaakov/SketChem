@@ -12,34 +12,32 @@ import {
 } from "@types";
 import { exportFileFromMolecule } from "@utils/KekuleUtils";
 
-const initialLoadFileAction = {
+const initialLoadFileAction: LoadFileAction = {
     content: "",
     format: "",
     replace: false,
-} as LoadFileAction;
+};
 
-const initialSaveFileAction = {
+const initialSaveFileAction: SaveFileAction = {
     format: "",
-    isWaiting: false,
-    response: "",
-} as SaveFileAction;
+};
 
-const initialFrequentAtoms = {
+const initialFrequentAtoms: FrequentAtoms = {
     atoms: AtomConstants.DefaultAtomsLabel,
     currentAtom: "",
-} as FrequentAtoms;
+};
 
-const initialToolbarAction = {
+const initialToolbarAction: ToolbarAction = {
     toolName: "",
-} as ToolbarAction;
+};
 
-const initialState = {
+const initialState: ToolbarItemState = {
     toolbarContext: initialToolbarAction,
     dialogWindow: "",
     importContext: initialLoadFileAction,
     exportContext: initialSaveFileAction,
     frequentAtoms: initialFrequentAtoms,
-} as ToolbarItemState;
+};
 
 function createFrequentAtoms(frequentAtoms: FrequentAtoms, newAtom: string) {
     const frequentAtomsList = [...frequentAtoms.atoms];
@@ -73,12 +71,12 @@ const slice = createSlice({
             // localStorage.setItem('user', JSON.stringify(action.payload))
         },
         reset_tool: (state: ToolbarItemState) => {
-            state.toolbarContext.toolName = "";
-            state.toolbarContext.attributes = undefined;
+            state.toolbarContext = { ...initialToolbarAction };
             state.dialogWindow = "";
         },
         dialog: (state: ToolbarItemState, action: PayloadAction<string>) => {
             state.dialogWindow = action.payload;
+            state.toolbarContext = { ...initialToolbarAction };
             state.toolbarContext.toolName = action.payload;
         },
         // add_frequent_atom: (state: ToolbarItemState, action: PayloadAction<string>) => {
@@ -135,16 +133,32 @@ const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", as
 // eslint-disable-next-line no-unused-vars
 const clearCanvas = createAsyncThunk<void>("clear_canvas", async (_, thunkApi) => {
     thunkApi.dispatch(
-        // slice.actions.tool_change({
-        //     toolName: ToolsConstants.ToolsNames.SelectBox,
-        // })
         slice.actions.tool_change({
-            toolName: ToolsConstants.ToolsNames.Charge,
-            subToolName: ToolsConstants.SubToolsNames.ChargeMinus,
-            attributes: { charge: -1 },
+            toolName: ToolsConstants.ToolsNames.SelectBox,
         })
     );
 });
 
-export const actions = { ...slice.actions, loadFile, clearCanvas, exportToFile };
+const asyncDispatchTool = createAsyncThunk<void, ToolbarAction>("set_selection_tool", async (action, thunkApi) => {
+    console.log("Async dispatch tool");
+    console.table(action);
+    thunkApi.dispatch(slice.actions.tool_change(action));
+});
+
+const asyncDispatchSelect = createAsyncThunk<void>("set_selection_tool", async (_, thunkApi) => {
+    thunkApi.dispatch(
+        slice.actions.tool_change({
+            toolName: ToolsConstants.ToolsNames.SelectBox,
+        })
+    );
+});
+
+export const actions = {
+    ...slice.actions,
+    loadFile,
+    clearCanvas,
+    asyncDispatchTool,
+    asyncDispatchSelect,
+    exportToFile,
+};
 export default slice.reducer;

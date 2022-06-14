@@ -6,6 +6,7 @@ import type { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
+import { MouseEventCallBackProperties } from "@src/types";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
@@ -21,6 +22,11 @@ class EraseBox extends BoxSelect {
     onActivate(_: any, editor: EditorHandler): void {
         this.doAction(editor);
         editor.setHoverMode(true, true, true, this.selectColor);
+    }
+
+    onMouseMove(eventHolder: MouseEventCallBackProperties): void {
+        if (this.selectionMode === 1) return;
+        super.onMouseMove(eventHolder);
     }
 
     doAction(editor: EditorHandler): void {
@@ -43,4 +49,4 @@ const eraseBox = new SimpleToolbarItemButtonBuilder("Erase Box", ToolsConstants.
 
 RegisterToolbarButtonWithName(eraseBox);
 
-export { eraseBox };
+export default eraseBox;

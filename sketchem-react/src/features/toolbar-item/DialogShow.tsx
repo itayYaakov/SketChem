@@ -15,7 +15,6 @@ export function DialogShow() {
     const dispatch = useAppDispatch();
     const dialogWindowName = useSelector(getToolbarDialog, shallowEqual);
     const props = {
-        // onHide: () => dispatch(actions.dialog("")),
         onHide: () => SentDispatchEventWhenToolbarItemIsChanges(dispatch, ToolsConstants.ToolsNames.SelectBox),
     };
     console.log(dialogWindowName);
@@ -24,19 +23,4 @@ export function DialogShow() {
         return <tool.DialogRender {...props} />;
     }
     return null;
-    // let Renderer = null;
-    // switch (dialogWindowName) {
-    //     case Import.name:
-    //         Renderer = (Import.tool as DialogToolbarItem).DialogRender;
-    //         break;
-    //     case PeriodicTableTool.name:
-    //         Renderer = (PeriodicTableTool.tool as DialogToolbarItem).DialogRender;
-    //         break;
-
-    //     default:
-    //         return null;
-    // }
-
-    // if (!Renderer) return null;
-    // return <Renderer {...props} />;
 }

@@ -527,19 +527,6 @@ export class Atom extends Entity {
         }
     }
 
-    hover(isHovered: boolean) {
-        if (!this.hoverCircle) return;
-        if (isHovered) {
-            this.hoverCircle.stroke({ color: "#00fa06", opacity: 0.8, width: 5 });
-            this.hoverCircle.show();
-            // this.hoverCircle.attr({ filter: "drop-shadow(0px 0px 5px #23c081)" });
-        } else {
-            this.hoverCircle.stroke({ color: "#f06", opacity: 0.6, width: 5 });
-            this.hoverCircle.hide();
-            // circle.attr({ filter: "" });
-        }
-    }
-
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
         this.attributes = { ...this.attributes, ...newAttributes };
 

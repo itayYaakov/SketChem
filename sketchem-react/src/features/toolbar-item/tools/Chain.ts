@@ -1,5 +1,5 @@
 import { EditorConstants } from "@constants/editor.constant";
-import { BondOrder, BondStereoKekule, LayersNames, MouseMode } from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityVisualState, LayersNames, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
@@ -41,7 +41,7 @@ class ChainToolBar extends BondTool {
 
     resetMergedAtoms() {
         this.mergeAtomsByIndex?.forEach((atom) => {
-            atom?.hover(false);
+            atom?.setVisualState(EntityVisualState.None);
         });
         this.mergeAtomsByIndex = [];
     }
@@ -157,7 +157,7 @@ class ChainToolBar extends BondTool {
         const replacedAtomNode = atomAtPoint(point, ignoreAtomList);
         if (replacedAtomNode) {
             const replacedAtom = getAtomById(replacedAtomNode.id);
-            replacedAtom.hover(true);
+            replacedAtom.setVisualState(EntityVisualState.Merge);
             this.mergeAtomsByIndex[index] = replacedAtom;
             return true;
         }

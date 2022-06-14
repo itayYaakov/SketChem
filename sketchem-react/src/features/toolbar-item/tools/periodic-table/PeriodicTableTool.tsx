@@ -34,7 +34,7 @@ export function PeriodicTableWindow(props: any) {
             subToolName: ToolsConstants.createAtomSubToolName(atomLabel),
             attributes,
         };
-        dispatch(actions.tool_change(payload));
+        dispatch(actions.asyncDispatchTool(payload));
     };
 
     return (

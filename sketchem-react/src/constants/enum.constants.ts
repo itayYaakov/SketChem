@@ -51,6 +51,7 @@ export enum EntityVisualState {
     None = 1,
     Hover,
     Select,
+    Merge,
 }
 
 export enum MouseMode {

@@ -6,7 +6,6 @@ import { ActionItem, EntityEventContext, EntityEventsFunctions } from "@src/type
 let currentHistoryHolder: ActionItem[] = [];
 
 interface EntityMaps {
-    hover: Map<number, Entity>;
     selected: Map<number, Entity>;
     map: Map<number, Entity>;
 }
@@ -22,18 +21,22 @@ export class EditorHandler {
 
     selectedBonds: Map<number, Bond>;
 
-    hoveredAtom: Map<number, Atom>;
+    hovered?: Entity | Atom | Bond;
 
-    hoveredBond: Map<number, Bond>;
+    anchor?: Entity | Atom | Bond;
+
+    copiedAtoms: Map<number, Atom>;
+
+    copiedBonds: Map<number, Bond>;
 
     constructor(dispatch: any) {
         this.dispatch = dispatch;
         this.atomsMap = EntitiesMapsStorage.atomsMap;
         this.bondsMap = EntitiesMapsStorage.bondsMap;
-        this.selectedAtoms = new Map();
-        this.selectedBonds = new Map();
-        this.hoveredAtom = new Map();
-        this.hoveredBond = new Map();
+        this.selectedAtoms = new Map<number, Atom>();
+        this.selectedBonds = new Map<number, Bond>();
+        this.copiedAtoms = new Map<number, Atom>();
+        this.copiedBonds = new Map<number, Bond>();
     }
 
     addHistoryItem(historyItem: ActionItem) {
@@ -46,12 +49,26 @@ export class EditorHandler {
         });
     }
 
+    private isHovered() {
+        return this.hovered?.visualState === EntityVisualState.Hover;
+    }
+
     getHoveredAtom(): Atom | undefined {
-        return this.hoveredAtom.values().next().value;
+        const candidate = this.hovered;
+        if (candidate && candidate.myType === EntityType.Atom) {
+            // temporal hack - since we cant import Atom and use instance of
+            if (this.isHovered()) return candidate as Atom;
+        }
+        return undefined;
     }
 
     getHoveredBond(): Bond | undefined {
-        return this.hoveredBond.values().next().value;
+        const candidate = this.hovered;
+        if (candidate && candidate.myType === EntityType.Bond) {
+            // temporal hack - since we cant import Atom and use instance of
+            if (this.isHovered()) return candidate as Bond;
+        }
+        return undefined;
     }
 
     setEventListenersForBonds(event?: EntityEventsFunctions) {
@@ -60,34 +77,51 @@ export class EditorHandler {
         });
     }
 
+    updateCopiedContents() {
+        this.copiedAtoms = new Map(this.selectedAtoms);
+        this.copiedBonds = new Map(this.selectedBonds);
+        // make sure both start and end atoms of bonds are copied
+        this.copiedBonds.forEach((bond) => {
+            const { startAtom } = bond;
+            const { endAtom } = bond;
+            if (startAtom && !this.copiedAtoms.has(startAtom.getId())) {
+                this.copiedAtoms.set(startAtom.getId(), startAtom);
+            }
+            if (endAtom && !this.copiedAtoms.has(endAtom.getId())) {
+                this.copiedAtoms.set(endAtom.getId(), endAtom);
+            }
+        });
+    }
+
+    resetCopiedContents() {
+        this.copiedAtoms.clear();
+        this.copiedBonds.clear();
+    }
+
     getMaps(type: EntityType): EntityMaps {
         switch (type) {
             case EntityType.Atom:
                 return {
-                    hover: this.hoveredAtom,
                     selected: this.selectedAtoms,
                     map: this.atomsMap,
                 };
             default:
                 return {
-                    hover: this.hoveredBond,
                     selected: this.selectedBonds,
                     map: this.bondsMap,
                 };
         }
     }
 
-    setHoverModeForEntities(mode: boolean, hoverMap: Map<number, Entity>, color?: string) {
-        hoverMap.forEach((entity) => {
-            if (mode) {
-                entity.setVisualState(EntityVisualState.Hover, color);
-            } else {
-                entity.setVisualState(EntityVisualState.None, color);
-            }
-        });
+    setHoverModeForEntities(mode: boolean, color?: string) {
+        if (mode) {
+            this.hovered?.setVisualState(EntityVisualState.Hover, color);
+        } else if (this.isHovered()) {
+            this.hovered?.setVisualState(EntityVisualState.None, color);
+        }
 
         if (!mode) {
-            hoverMap.clear();
+            this.hovered = undefined;
         }
     }
 
@@ -130,11 +164,11 @@ export class EditorHandler {
     }
 
     setHoverModeForAtoms(mode: boolean) {
-        this.setHoverModeForEntities(mode, this.hoveredAtom);
+        this.setHoverModeForEntities(mode);
     }
 
     setHoverModeForBonds(mode: boolean) {
-        this.setHoverModeForEntities(mode, this.hoveredBond);
+        this.setHoverModeForEntities(mode);
     }
 
     setHoverMode(mode: boolean, atoms: boolean, bonds: boolean, color?: string) {
@@ -143,10 +177,9 @@ export class EditorHandler {
 
         if (!mode) {
             // ???? should delete previous?
-            if (atoms) this.setHoverModeForEntities(false, this.hoveredAtom);
-            if (bonds) this.setHoverModeForEntities(false, this.hoveredBond);
-            this.hoveredAtom.clear();
-            this.hoveredBond.clear();
+            if (atoms) this.setHoverModeForEntities(false);
+            if (bonds) this.setHoverModeForEntities(false);
+            this.hovered = undefined;
             return;
         }
 
@@ -156,18 +189,27 @@ export class EditorHandler {
                 const maps = this.getMaps(type);
                 // const entity: Atom | Bond | undefined = maps.map.get(id);
                 const entity = maps.map.get(id);
-                if (!entity || maps.hover.has(id)) return;
-                if (maps.hover?.size > 0) this.setHoverModeForEntities(false, maps.hover, color);
-                maps.hover.set(id, entity);
-                this.setHoverModeForEntities(true, maps.hover, color);
+                if (!entity || (this.hovered === entity && this.isHovered()) || maps.selected.has(id)) {
+                    this.anchor = entity;
+                    return;
+                }
+                if (this.hovered) this.setHoverModeForEntities(false, color);
+                this.hovered = entity;
+                this.anchor = this.hovered;
+                this.setHoverModeForEntities(true, color);
             },
             onMouseLeave: (e: Event, data: EntityEventContext) => {
                 const { id, type } = data;
                 const maps = this.getMaps(type);
                 const entity: Entity | undefined = maps.map.get(id);
-                if (!entity || !maps.hover.has(id)) return;
+                if (!entity || maps.selected.has(id)) {
+                    this.anchor = undefined;
+                    return;
+                }
+                this.setHoverModeForEntities(false, color);
                 entity.setVisualState(EntityVisualState.None, color);
-                maps.hover.clear();
+                this.hovered = undefined;
+                this.anchor = this.hovered;
             },
         };
 

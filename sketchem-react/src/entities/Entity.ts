@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@types";
 
 const hoverOrSelectColor = "#38e8e8";
+const mergeColor = "#69f0ae";
 const hoverOpacity = 0.5;
 
 export abstract class Entity {
@@ -32,7 +34,15 @@ export abstract class Entity {
 
     protected bbox: Box | undefined;
 
-    protected visualState: EntityVisualState;
+    protected _visualState!: EntityVisualState;
+
+    public get visualState(): EntityVisualState {
+        return this._visualState;
+    }
+
+    private set visualState(value: EntityVisualState) {
+        this._visualState = value;
+    }
 
     constructor(attributes: IEntity) {
         this.lifeStage = EntityLifeStage.New;
@@ -76,15 +86,17 @@ export abstract class Entity {
                 this.hoverOrSelectShape.fill({ opacity: 0 });
                 break;
             case EntityVisualState.Hover:
+                // this.hoverOrSelectShape.fill({ color, opacity: hoverOpacity });
+                this.hoverOrSelectShape.fill({ color: "#bb00b1", opacity: hoverOpacity });
+                break;
             case EntityVisualState.Select:
                 this.hoverOrSelectShape.fill({ color, opacity: 1 });
                 break;
+            case EntityVisualState.Merge:
+                this.hoverOrSelectShape.fill({ color: mergeColor, opacity: 1 });
+                break;
             default:
                 break;
-        }
-
-        if (this.visualState === EntityVisualState.Hover) {
-            this.hoverOrSelectShape.fill({ opacity: hoverOpacity });
         }
     }
 

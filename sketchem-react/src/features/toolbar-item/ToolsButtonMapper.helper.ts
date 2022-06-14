@@ -43,6 +43,6 @@ export function SentDispatchEventWhenToolbarItemIsChanges(dispatch: any, name: s
         if (attributes) payload.attributes = attributes;
         if (subToolName) payload.subToolName = subToolName;
 
-        dispatch(actions.tool_change(payload));
+        dispatch(actions.asyncDispatchTool(payload));
     }
 }

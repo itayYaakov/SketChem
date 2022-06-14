@@ -1,9 +1,10 @@
 $toolbar-min-size: 80%;
-$toolbar-max-size: 96%;
+$toolbar-max-size: 100%;
 
 .app {
     max-width: 100%;
-    position: relative;
+    max-height: 100%;
+    position: fixed;
     display: grid;
     grid-template-areas:    "top top top"
                             "left draw right"

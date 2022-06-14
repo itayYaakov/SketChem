@@ -66,14 +66,20 @@ function SketchPad(props: Props) {
                     activeToolbarButton.current = undefined;
                 } else {
                     activeToolbarButton.current = toolbarButtonRef.current;
-                    activeToolbarButton.current.onActivate?.(currentToolbarContext.attributes, editor);
                 }
             } else {
                 activeToolbarButton.current = undefined;
             }
         }
     }
-    previousToolbarContext.current = currentToolbarContext;
+
+    // set the tool onActivate without messing with redux state
+    useEffect(() => {
+        if (currentToolbarContext !== previousToolbarContext.current) {
+            activeToolbarButton?.current?.onActivate?.(currentToolbarContext.attributes, editor);
+            previousToolbarContext.current = currentToolbarContext;
+        }
+    }, [currentToolbarContext]);
 
     const svgRef = useRef<Svg>(null!);
 

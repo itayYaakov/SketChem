@@ -7,7 +7,7 @@ import { BondTool, Chain, Erase } from "../tools";
 import DebugTools from "../tools/debug_tools";
 
 const toolbarItemsList: ToolbarItemButton[] = [
-    Erase.eraseBox,
+    Erase,
     BondTool.singleBond,
     BondTool.doubleBond,
     BondTool.tripleBond,
