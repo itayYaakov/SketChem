@@ -20,9 +20,12 @@ export class Bond extends Entity {
     static instancesCounter = 1;
 
     // just a demo for now
-    static DefaultAttributes: Partial<BondAttributes> = {
+    static DefaultAttributes: BondAttributes = {
+        id: -1,
         order: BondOrder.Single,
         stereo: BondStereoKekule.NONE,
+        atomStartId: -1,
+        atomEndId: -1,
     };
 
     hoverOrSelectShape: Rect | undefined;
@@ -61,28 +64,32 @@ export class Bond extends Entity {
 
     constructor(args: IBond) {
         super(args);
-        let type: BondOrder;
+        let order: BondOrder;
         let stereo: BondStereoKekule;
         let atomStartId: number;
         let atomEndId: number;
         let id: number;
 
         if (args.props) {
-            ({ order: type, stereo, atomStartId, atomEndId } = args.props);
-            // !!! make sure id is valid - a number, and greater than instance counter
-            id = args.props.optionalId ?? Bond.generateNewId();
+            const { props } = args;
+            id = props.id ?? Bond.generateNewId();
+            if (!props.atomStartId || !props.atomEndId) {
+                throw new Error("Bond must have start and end atoms!");
+            }
+            this.attributes = { ...Bond.DefaultAttributes, ...props, id };
         } else if (args.connectorObj) {
             this.connectorObj = args.connectorObj;
             id = KekuleUtils.getNumericId(this.connectorObj.id);
             stereo = this.connectorObj.stereo;
-            type = this.connectorObj.getBondOrder ? this.connectorObj.getBondOrder() : 0;
+            order = this.connectorObj.getBondOrder ? this.connectorObj.getBondOrder() : 0;
             atomStartId = KekuleUtils.getNumericId(this.connectorObj.getConnectedObjs()[0].id);
             atomEndId = KekuleUtils.getNumericId(this.connectorObj.getConnectedObjs()[1].id);
+
+            this.attributes = { ...Atom.DefaultAttributes, stereo, order, atomStartId, atomEndId, id };
         } else {
             throw new Error(`Bond constructor not implement args = ${args}`);
         }
 
-        this.attributes = { ...Bond.DefaultAttributes, id, order: type, stereo, atomStartId, atomEndId };
         this.connectorObj = this.connectorObj ?? KekuleUtils.registerBondFromAttributes(this.attributes);
 
         this.updateAtomsReference(this.attributes);
@@ -91,18 +98,9 @@ export class Bond extends Entity {
         this.setHoverOrSelectShape();
         this.lifeStage = EntityLifeStage.Initialized;
 
-        const historyItem: ActionItem = {
-            command: "ADD",
-            type: this.myType,
-            atomAttributes: undefined,
-            bondAttributes: this.attributes,
-        };
-
-        // !!! should only draw the valence actually
+        // // !!! should only draw the valence actually
         this.startAtom?.getOuterDrawCommand();
         this.endAtom?.getOuterDrawCommand();
-
-        // addHistoryItem(historyItem);
     }
 
     updateAtomsReference(attributes?: Partial<BondAttributes>) {
@@ -220,7 +218,9 @@ export class Bond extends Entity {
     }
 
     drawStereoAndOrder() {
-        if (!this.elem) throw new Error("Rect is not defined");
+        if (!this.elem) {
+            throw new Error("Rect is not defined");
+        }
 
         if (this.attributes.stereo === BondStereoKekule.NONE) {
             this.elem.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondOrder[this.attributes.order])));

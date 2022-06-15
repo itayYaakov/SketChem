@@ -5,6 +5,7 @@ import { BondConstants } from "@constants/bond.constants";
 import { EntityType, EntityVisualState, LayersNames } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
+import { actions } from "@features/chemistry/chemistrySlice";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
@@ -13,7 +14,7 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BoundingBox, EntityEventContext, EntityEventsFunctions, MouseEventCallBackProperties } from "@types";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -69,7 +70,12 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.movesItem = undefined;
     }
 
-    onActivate(_: any, editor: EditorHandler) {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("SelectTemplate.onActivate: missing attributes or editor");
+        }
         editor.setHoverMode(true, true, true, this.selectColor);
     }
 
@@ -83,8 +89,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             atomId: undefined,
             bondId: undefined,
         };
-        this.movesItem = undefined;
-        this.mergeAtomsAction = [];
     }
 
     calculateDeltaFromAnchor(mouse: Vector2, editor: EditorHandler): Vector2 {
@@ -130,7 +134,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     searchAnAtomToMergeWith(atom: Atom, ignoreAtomsList: number[]): Atom | undefined {
-        const { center } = atom.getAttributes();
+        const center = atom.getCenter();
         const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
 
         const atomWasPressed = atomAtPoint(center, ignoreAtomsList);
@@ -149,6 +153,9 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const { editor } = eventHolder;
 
         this.dragged = false;
+        this.movesItem = undefined;
+        this.mergeAtomsAction = [];
+
         const tempAnchor = eventHolder.editor.anchor;
 
         let atom = eventHolder.editor.getHoveredAtom();
@@ -277,7 +284,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
             if (onlyOneAtom) {
                 editor.applyFunctionToAtoms((atom) => {
-                    atom.updateAttributes({ center: mouseCurrentLocation });
+                    atom.updateAttributes({ center: mouseCurrentLocation.get() });
                 }, true);
             } else if (onlyOneBond) {
                 editor.applyFunctionToBonds((bond) => {
@@ -350,6 +357,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         // });
     }
 
+    mergeNodes() {
+        this.mergeAtomsAction.forEach((action) => {
+            const { replacingAtom, replacedAtom } = action;
+            replacingAtom.mergeWith(replacedAtom);
+        });
+        this.mergeAtomsAction = [];
+    }
+
     perform(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
         // !!! is there special treatment for delete selection tool
@@ -357,6 +372,10 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.doAction(editor);
         this.pressedAtomAnchor = undefined;
         this.pressedBondAnchor = undefined;
+
+        if (this.movesItem && (this.movesItem.shouldMoveAtoms.size > 0 || this.movesItem.shouldMoveBonds.size > 0)) {
+            editor.createHistoryUpdate();
+        }
 
         switch (this.selectionMode) {
             case SelectionMode.Empty:
@@ -371,27 +390,23 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         editor.setHoverMode(true, true, true, this.selectColor);
     }
 
-    mergeNodes() {
-        this.mergeAtomsAction.forEach((action) => {
-            const { replacingAtom, replacedAtom } = action;
-            replacingAtom.mergeWith(replacedAtom);
-        });
-        this.mergeAtomsAction = [];
-    }
-
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
         this.perform(eventHolder);
     }
 
     onMouseLeave(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
+        const wasThereShape = this.isThereShape();
         this.perform(eventHolder);
-        if (
-            this.movesItem !== undefined &&
-            (this.movesItem.shouldMoveBondsIds?.size > 0 || this.movesItem.shouldMoveAtomsIds?.size > 0)
-        ) {
-            this.unselectAll(editor);
-        }
+        // if (wasThereShape) {
+        //     this.unselectAll(editor);
+        // }
+        // if (
+        //     this.movesItem !== undefined &&
+        //     (this.movesItem.shouldMoveBondsIds?.size > 0 || this.movesItem.shouldMoveAtomsIds?.size > 0)
+        // ) {
+        //     this.unselectAll(editor);
+        // }
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;
@@ -401,6 +416,8 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     abstract createShape(eventHolder: MouseEventCallBackProperties): void;
 
     abstract updateShape(eventHolder: MouseEventCallBackProperties): void;
+
+    abstract isThereShape(): boolean;
 
     abstract removeShape(): void;
 
@@ -449,8 +466,13 @@ export class BoxSelect extends SelectTemplate {
         this.rect.width(width).height(height);
     }
 
+    isThereShape(): boolean {
+        return this.rect !== undefined;
+    }
+
     removeShape(): void {
         this.rect?.remove();
+        this.rect = undefined;
     }
 }
 
@@ -517,8 +539,13 @@ class LassoSelect extends SelectTemplate {
         this.path.plot(this.pathArray);
     }
 
+    isThereShape(): boolean {
+        return this.path !== undefined;
+    }
+
     removeShape(): void {
         this.path?.remove();
+        this.path = undefined;
     }
 }
 

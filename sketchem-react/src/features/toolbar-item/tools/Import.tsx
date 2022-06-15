@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
 import SelectSearch from "react-select-search";
 
-import { DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
@@ -39,8 +39,8 @@ function SupportedFiles(props: any) {
     );
 }
 
-function ImportFileTab(props: any) {
-    const { onHide, title } = props;
+function ImportFileTab(props: DialogProps & { title: string }) {
+    const { onHide, editor, title } = props;
     const [format, setFormat] = useState("mol");
     console.log(format);
 
@@ -59,6 +59,7 @@ function ImportFileTab(props: any) {
             replace: true,
         };
         dispatch(actions.loadFile(payload));
+        editor.createHistoryUpdate();
         onHide();
     };
 
@@ -110,10 +111,10 @@ function ImportFileTab(props: any) {
 
 const defaultTab = "paste";
 
-export function DialogLoadWindow(props: any) {
+export function DialogLoadWindow(props: DialogProps) {
     const [modalShow, setModalShow] = useState(true);
     const [key, setKey] = useState(defaultTab);
-    const { onHide } = props;
+    const { onHide, editor } = props;
 
     const hideMe = () => {
         setModalShow(false);
@@ -136,10 +137,10 @@ export function DialogLoadWindow(props: any) {
                 className="mb-3"
             >
                 <Tab eventKey="paste" title="From Paste">
-                    <ImportFileTab onHide={hideMe} title="From Paste" />
+                    <ImportFileTab onHide={hideMe} editor={editor} title="From Paste" />
                 </Tab>
                 <Tab eventKey="file" title="From file">
-                    <ImportFileTab onHide={hideMe} title="From file" />
+                    <ImportFileTab onHide={hideMe} editor={editor} title="From file" />
                 </Tab>
             </Tabs>
         </Modal>
@@ -151,9 +152,9 @@ class ImportToolBarTemplate implements DialogToolbarItem {
 
     keyboardKeys?: string[];
 
-    DialogRender: (props: any) => JSX.Element;
+    DialogRender: (props: DialogProps) => JSX.Element;
 
-    constructor(name: string, onToolClick: (props: any) => JSX.Element, keyboardKeys?: string[]) {
+    constructor(name: string, onToolClick: (props: DialogProps) => JSX.Element, keyboardKeys?: string[]) {
         this.name = name;
         this.keyboardKeys = keyboardKeys ?? undefined;
         this.DialogRender = onToolClick;

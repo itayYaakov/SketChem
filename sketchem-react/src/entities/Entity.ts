@@ -27,7 +27,7 @@ const hoverOrSelectColor = "#9bf3f3";
 const hoverColor = "#cc68e8";
 const mergeColor = "#69f0ae";
 const hoverOpacity = 0.4;
-const animationDuration = 120;
+const animationDuration = 180;
 
 export abstract class Entity {
     abstract attributes: EntityAttributes;

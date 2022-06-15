@@ -15,6 +15,8 @@ export enum ToolsNames {
     PeriodicTable = "periodic_table",
     SelectBox = "select_box",
     SelectLasso = "select_lasso",
+    Undo = "undo",
+    Redo = "redo",
     DebugLoadExampleMol = "debug_load_example_mol",
     DebugDrawAtomTree = "debug_draw_atom_tree",
     DebugDrawBondTree = "debug_draw_bond_tree",

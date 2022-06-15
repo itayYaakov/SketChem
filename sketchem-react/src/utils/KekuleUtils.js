@@ -225,7 +225,7 @@ export function registerAtomFromAttributes(attributes) {
     const { symbol, charge, center } = attributes;
     atom.setSymbol(symbol);
     atom.setCharge(charge);
-    atom.setCoord2D(center.get());
+    atom.setCoord2D(center);
 
     return atom;
 }

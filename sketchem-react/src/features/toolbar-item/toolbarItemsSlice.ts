@@ -111,8 +111,13 @@ const slice = createSlice({
     //   },
 });
 
-const loadFile = createAsyncThunk<void, LoadFileAction>("load_file", async (fileContext: LoadFileAction) => {
+const loadFile = createAsyncThunk<void, LoadFileAction>("load_file", async (fileContext: LoadFileAction, thunkApi) => {
     drawMolFromFile(fileContext);
+    thunkApi.dispatch(
+        slice.actions.tool_change({
+            toolName: "",
+        })
+    );
 });
 
 const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", async (saveAction: SaveFileAction) => {
@@ -130,18 +135,7 @@ const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", as
     window.URL.revokeObjectURL(url);
 });
 
-// eslint-disable-next-line no-unused-vars
-const clearCanvas = createAsyncThunk<void>("clear_canvas", async (_, thunkApi) => {
-    thunkApi.dispatch(
-        slice.actions.tool_change({
-            toolName: ToolsConstants.ToolsNames.SelectBox,
-        })
-    );
-});
-
 const asyncDispatchTool = createAsyncThunk<void, ToolbarAction>("set_selection_tool", async (action, thunkApi) => {
-    console.log("Async dispatch tool");
-    console.table(action);
     thunkApi.dispatch(slice.actions.tool_change(action));
 });
 
@@ -153,12 +147,20 @@ const asyncDispatchSelect = createAsyncThunk<void>("set_selection_tool", async (
     );
 });
 
+const asyncDispatchNone = createAsyncThunk<void>("set_empty_tool", async (_, thunkApi) => {
+    thunkApi.dispatch(
+        slice.actions.tool_change({
+            toolName: "",
+        })
+    );
+});
+
 export const actions = {
     ...slice.actions,
     loadFile,
-    clearCanvas,
     asyncDispatchTool,
     asyncDispatchSelect,
+    asyncDispatchNone,
     exportToFile,
 };
 export default slice.reducer;

@@ -35,7 +35,7 @@ $hover-active-border-width: 5px;
     $hover-border-color,
     $active-border-color: $hover-border-color) {
 
-    &:not(.toolbar_icon_button_active):hover {
+    &:not([disabled]):not(.toolbar_icon_button_active):hover {
         box-shadow: inset $shadow-sizes1 $shadow-sizes2 $hover-border-color !important;
     }
 
@@ -62,7 +62,7 @@ $hover-active-border-width: 5px;
     background-color: none;
     border: none;
 
-    &:not(.toolbar_icon_button_active):hover {
+    &:not([disabled]):not(.toolbar_icon_button_active):hover {
         color: $hover-color;
         background-color: $hover-background;
 

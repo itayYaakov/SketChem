@@ -9,6 +9,7 @@ import {
 } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
+import { actions } from "@features/chemistry/chemistrySlice";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
@@ -17,9 +18,9 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
 import { EventHandler } from "react";
 
-import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";
 
-export abstract class BondEntityBaseTool implements ActiveToolbarItem {
+export abstract class EntityBaseTool implements ActiveToolbarItem {
     bondOrder!: BondOrder;
 
     bondStereo!: BondStereoKekule;
@@ -38,7 +39,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
         dragged?: boolean;
     };
 
-    onActivate?(...params: any): void;
+    onActivate?(attrs?: LaunchAttrs): void;
 
     onMouseDown?(e: MouseEventCallBackProperties): void;
 
@@ -50,6 +51,11 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
 
     onDeactivate?(): void;
 
+    createHistoryUpdate(e: MouseEventCallBackProperties) {
+        const { editor } = e;
+        editor.createHistoryUpdate();
+    }
+
     protected changeSelectionBonds(editor: EditorHandler) {
         // create a function that accept a bond and update it's attributes with current tool attributes
         const updateBondAttributes = (bond: Bond) => {
@@ -59,9 +65,10 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
             });
         };
 
-        editor.applyFunctionToBonds(updateBondAttributes, true);
+        const changed = editor.applyFunctionToBonds(updateBondAttributes, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
+        if (changed) editor.createHistoryUpdate();
     }
 
     atomWasPressed(point: Vector2, eventHolder: MouseEventCallBackProperties) {
@@ -197,25 +204,33 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
         const { mouseDownLocation, mouseCurrentLocation, editor } = eventHolder;
 
+        console.log("A-4 Start Atom = ", this.context.startAtom);
         if (this.mode !== MouseMode.AtomPressed && this.mode !== MouseMode.EmptyPress) return;
         editor.setHoverMode(true, true, false);
-
+        console.log("A-3 Start Atom = ", this.context.startAtom);
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
+        console.log("A-2 Start Atom = ", this.context.startAtom);
 
         if (distance < ToolsConstants.ValidMouseMoveDistance) {
+            if (this.context.dragged === false) return;
             const ignoreAtomRemove = this.destroyAtomsCreatedByMe("both");
 
             console.debug(`Bond ${this.context.bond?.getId()} was destroyed`);
             this.context.bond?.destroy(ignoreAtomRemove);
             this.context.bond = undefined;
             this.context.startAtom?.getOuterDrawCommand();
+            console.log("A-1 Start Atom = ", this.context.startAtom);
             return;
         }
 
+        console.log("A0 Start Atom = ", this.context.startAtom);
         if (!this.context.startAtom) {
+            console.log("A Start Atom = ", this.context.startAtom);
             this.context.startAtom = this.createAtom(mouseDownLocation);
+            console.log("B Start Atom = ", this.context.startAtom);
             this.context.startAtomIsPredefined = false;
             if (!this.context.startAtom) {
+                console.log("C Start Atom = ", this.context.startAtom);
                 return;
             }
         }
@@ -230,7 +245,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
         // if mouse is not moved to an existing atom and end atom is not created yet
         if (!this.mouseMovedToAnExistingAtom(mouseCurrentLocation)) {
             if (this.context.endAtom && this.context.endAtomIsPredefined !== true) {
-                this.context.endAtom.updateAttributes({ center: endAtomCenter });
+                this.context.endAtom.updateAttributes({ center: endAtomCenter.get() });
             } else {
                 this.context.endAtom = this.createAtom(endAtomCenter);
                 this.context.endAtomIsPredefined = false;
@@ -276,7 +291,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
         const { symbol } = this;
         const atomArgs = {
             props: {
-                center,
+                center: center.get(),
                 symbol,
             },
         } as IAtom;
@@ -297,7 +312,7 @@ export abstract class BondEntityBaseTool implements ActiveToolbarItem {
         } as IBond;
 
         const bond = new Bond(bondArgs);
-        bond.draw();
+        bond.getOuterDrawCommand();
 
         return bond;
     }

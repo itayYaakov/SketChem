@@ -1,9 +1,20 @@
 import { AtomConstants } from "@constants/atom.constants";
 import * as ToolsConstants from "@constants/tools.constants";
-import { MouseEventCallBackProperties, ToolbarItemButtonAttributes } from "@types";
+import { EditorHandler } from "@features/editor/EditorHandler";
+import { MouseEventCallBackProperties, ToolbarAction, ToolbarItemButtonAttributes } from "@types";
 
+export interface LaunchAttrs {
+    toolAttributes?: ToolbarItemButtonAttributes;
+    editor?: EditorHandler;
+    previousToolContext?: ToolbarAction;
+}
+
+export interface DialogProps {
+    editor: EditorHandler;
+    onHide: () => void;
+}
 export interface ActiveToolbarItem {
-    readonly onActivate?: (...params: any) => void;
+    readonly onActivate?: (props?: LaunchAttrs) => void;
 
     readonly onMouseDown?: (e: MouseEventCallBackProperties) => void;
 
@@ -19,7 +30,7 @@ export interface ActiveToolbarItem {
 }
 
 export interface DialogToolbarItem {
-    readonly DialogRender: (props: any) => JSX.Element;
+    readonly DialogRender: (props: DialogProps) => JSX.Element;
 }
 
 export type ToolbarItem = ActiveToolbarItem | DialogToolbarItem;

@@ -1,17 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
 import { actions } from "../../toolbarItemsSlice";
 import { RegisterToolbarWithName } from "../ToolsMapper.helper";
 
 class DrawMolClass implements ActiveToolbarItem {
     i: number = 0;
 
-    onActivate() {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("DrawMolClass.onActivate: missing attributes or editor");
+        }
+
         if (this.i !== 0) {
             return;
         }
@@ -23,6 +30,7 @@ class DrawMolClass implements ActiveToolbarItem {
             replace: true,
         };
         store.dispatch(actions.loadFile(payload));
+        editor.createHistoryUpdate();
     }
     // {
     //     name: "Load an example .mol file (debug)",

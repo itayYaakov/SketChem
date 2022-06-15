@@ -2,13 +2,19 @@ import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 class Copy implements ActiveToolbarItem {
-    onActivate(_: any, editor: EditorHandler): void {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("Copy.onActivate: missing attributes or editor");
+        }
+
         editor.updateCopiedContents();
         editor.setHoverMode(false, true, true);
         editor.resetSelectedAtoms();

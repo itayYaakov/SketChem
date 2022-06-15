@@ -21,8 +21,10 @@ import { ReactComponent as ExportIcon } from "./export.svg";
 import { ReactComponent as ImportIcon } from "./import.svg";
 import { ReactComponent as PasteIcon } from "./paste.svg";
 import { ReactComponent as PeriodicTable } from "./periodic_table.svg";
+import { ReactComponent as RedoIcon } from "./redo.svg";
 import { ReactComponent as SelectBoxIcon } from "./select_box.svg";
 import { ReactComponent as SelectLassoIcon } from "./select_lasso.svg";
+import { ReactComponent as UndoIcon } from "./undo.svg";
 
 type ButtonType = React.FunctionComponent<
     React.SVGProps<SVGSVGElement> & {
@@ -48,9 +50,14 @@ IconsMap.set(ToolsConstants.SubToolsNames.BondSingle, BondSingleIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondTriple, BondTripleIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondWedgeBack, BondWedgeBackIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondWedgeFront, BondWedgeFrontIcon);
+
 // charge
 IconsMap.set(ToolsConstants.SubToolsNames.ChargeMinus, ChargeMinus);
 IconsMap.set(ToolsConstants.SubToolsNames.ChargePlus, ChargePlus);
+
+// undo redo
+IconsMap.set(ToolsConstants.ToolsNames.Undo, UndoIcon);
+IconsMap.set(ToolsConstants.ToolsNames.Redo, RedoIcon);
 
 // const IconSize = "1.5em";
 const IconSize = "2rem";

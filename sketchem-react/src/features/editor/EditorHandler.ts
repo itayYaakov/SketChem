@@ -1,9 +1,8 @@
 import { EntityType, EntityVisualState } from "@constants/enum.constants";
+import { actions } from "@features/chemistry/chemistrySlice";
 import { EntitiesMapsStorage } from "@features/shared/storage";
-import type { Atom, Bond, Entity } from "@src/entities";
-import { ActionItem, EntityEventContext, EntityEventsFunctions } from "@src/types";
-
-let currentHistoryHolder: ActionItem[] = [];
+import { Atom, Bond, Entity } from "@src/entities";
+import { ActionItem, ChemistryState, EntityEventContext, EntityEventsFunctions } from "@src/types";
 
 interface EntityMaps {
     selected: Map<number, Entity>;
@@ -29,7 +28,8 @@ export class EditorHandler {
 
     copiedBonds: Map<number, Bond>;
 
-    constructor(dispatch: any) {
+    constructor(dispatch?: any) {
+        console.log("I'm created editor handler!!");
         this.dispatch = dispatch;
         this.atomsMap = EntitiesMapsStorage.atomsMap;
         this.bondsMap = EntitiesMapsStorage.bondsMap;
@@ -39,8 +39,88 @@ export class EditorHandler {
         this.copiedBonds = new Map<number, Bond>();
     }
 
-    addHistoryItem(historyItem: ActionItem) {
-        currentHistoryHolder.push(historyItem);
+    setDispatch(dispatch: any) {
+        this.dispatch = dispatch;
+    }
+
+    private createFullStateObject() {
+        const result: ChemistryState = {
+            atoms: [],
+            bonds: [],
+        };
+        this.atomsMap.forEach((atom, id) => {
+            result.atoms!.push({
+                id,
+                attributes: atom.getAttributes(),
+            });
+        });
+        this.bondsMap.forEach((bond, id) => {
+            result.bonds!.push({
+                id,
+                attributes: bond.getAttributes(),
+            });
+        });
+
+        return result;
+    }
+
+    createHistoryUpdate() {
+        const currentState = this.createFullStateObject();
+        this.dispatch(actions.update_history_state(currentState));
+    }
+
+    editAtomsAndBondsBasedOnStateObject(state: ChemistryState) {
+        let start = performance.now();
+
+        const stateAtomsIds = new Set<number>();
+        const stateBondsIds = new Set<number>();
+
+        const ignoreBondsIds = state.bonds?.map((bond) => bond.id);
+
+        state.atoms?.forEach((atom) => {
+            stateAtomsIds.add(atom.id);
+            if (this.atomsMap.has(atom.id)) {
+                const entity = this.atomsMap.get(atom.id);
+                entity?.updateAttributes(atom.attributes, ignoreBondsIds);
+            } else {
+                const entity = new Atom({
+                    props: atom.attributes,
+                });
+            }
+        });
+
+        const end2 = performance.now();
+        console.log(`editAtomsAndBondsBasedOnStateObject A took ${end2 - start} ms`);
+        start = performance.now();
+
+        state.bonds?.forEach((bond) => {
+            stateBondsIds.add(bond.id);
+            if (this.bondsMap.has(bond.id)) {
+                const entity = this.bondsMap.get(bond.id);
+                entity?.updateAttributes(bond.attributes);
+            } else {
+                const entity = new Bond({
+                    props: bond.attributes,
+                });
+            }
+        });
+
+        this.atomsMap.forEach((atom, id) => {
+            if (!stateAtomsIds.has(id)) {
+                atom.destroy([], false);
+            }
+            atom.getOuterDrawCommand();
+        });
+
+        this.bondsMap.forEach((bond, id) => {
+            if (!stateBondsIds.has(id)) {
+                bond.destroy([], false);
+            }
+            bond.getOuterDrawCommand();
+        });
+
+        const end = performance.now();
+        console.log(`editAtomsAndBondsBasedOnStateObject took ${end - start} ms`);
     }
 
     setEventListenersForAtoms(event?: EntityEventsFunctions) {
@@ -130,6 +210,7 @@ export class EditorHandler {
         map.forEach((entity) => {
             func(entity);
         });
+        return map.size;
     }
 
     applyFunctionToBonds(func: (bond: Bond) => void, onlySelected: boolean) {
@@ -137,6 +218,7 @@ export class EditorHandler {
         map.forEach((entity) => {
             func(entity);
         });
+        return map.size;
     }
 
     resetSelectedAtoms() {
@@ -225,11 +307,5 @@ export class EditorHandler {
             atom.getOuterDrawCommand();
         });
         // !!! also for bonds
-    }
-
-    sealHistory() {
-        // There's a problem with center beeing unserialized
-        // this.dispatch!(actions.update_history(currentHistoryHolder));
-        currentHistoryHolder = [];
     }
 }

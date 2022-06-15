@@ -25,8 +25,10 @@ export class Atom extends Entity {
         charge: 0,
         symbol: "C",
         color: "#ffffff",
-        center: Vector2.zero(),
+        center: Vector2.zero().get(),
     };
+
+    protected center: Vector2 = Vector2.zero();
 
     protected hoverOrSelectShape: Circle | undefined;
 
@@ -65,7 +67,7 @@ export class Atom extends Entity {
         this.showValenceError = false;
         if (args.props) {
             const { props } = args;
-            // !!! make sure id is valid - a number, and greater than instance counter
+            // !!! make sure itd is valid - a number, and greater than instance counter
             id = props.id ?? Atom.generateNewId();
             color = props.color;
             this.attributes = { ...Atom.DefaultAttributes, ...props, id };
@@ -76,8 +78,7 @@ export class Atom extends Entity {
             color = undefined;
             const charge = this.nodeObj.getCharge();
             const symbol = this.nodeObj.getLabel();
-            const coord2D = this.nodeObj.getCoord2D();
-            const center = new Vector2(coord2D.x, coord2D.y);
+            const center = this.nodeObj.getCoord2D();
             this.attributes = { ...Atom.DefaultAttributes, charge, symbol, center, id };
         } else {
             throw new Error(`Atom constructor not implement args = ${args}`);
@@ -86,7 +87,7 @@ export class Atom extends Entity {
         const elementsMap = ElementsData.elementsBySymbolMap;
         this.element = elementsMap.get(this.attributes.symbol);
         this.attributes.color = this.getColor(this.element, color);
-        this.attributes.center = this.attributes.center.clone();
+        this.center = new Vector2(this.attributes.center.x, this.attributes.center.y);
         this.showValenceError = false;
         this.implicitHydrogenCount = 0;
         this.calculateImplicitHydrogen();
@@ -114,7 +115,7 @@ export class Atom extends Entity {
         if (add) {
             this.lastTreeNode = {
                 id: this.attributes.id,
-                point: this.attributes.center,
+                point: this.center,
                 entityType: this.myType,
             };
             EntitiesMapsStorage.atomsTree.insert(this.lastTreeNode);
@@ -163,8 +164,9 @@ export class Atom extends Entity {
     }
 
     moveByDelta(delta: Vector2, ignoreNotifyBondsIds: number[] = []) {
-        const newPosition = this.attributes.center.addNew(delta);
-        this.updateAttributes({ center: newPosition }, ignoreNotifyBondsIds);
+        const newPosition = this.center.addNew(delta);
+        this.center = newPosition;
+        this.updateAttributes({ center: newPosition.get() }, ignoreNotifyBondsIds);
     }
 
     getNeighbors() {
@@ -265,6 +267,7 @@ export class Atom extends Entity {
 
         replacedAtom.destroy([], false);
         this.updateAttributes({ center: newPosition });
+        this.center = new Vector2(newPosition.x, newPosition.y);
         this.draw();
     }
 
@@ -348,11 +351,6 @@ export class Atom extends Entity {
         this.backgroundCircle
             .radius((textBbox.width / 2) * 1.2, (textBbox.height / 2) * 1.2)
             .center(textBbox.cx, textBbox.cy);
-
-        // this.backgroundCircle
-        //     .radius(Math.max(textBbox.width, textBbox.height) / 2)
-        //     // .radius((Math.max(textBbox.width, textBbox.height) / 2) * 1)
-        //     .center(textBbox.cx, textBbox.cy);
     }
 
     private moveDrawings() {
@@ -528,42 +526,34 @@ export class Atom extends Entity {
     }
 
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
-        this.attributes = { ...this.attributes, ...newAttributes };
+        const moved = newAttributes.center !== undefined && newAttributes.center !== this.attributes.center;
+        const labelChanged = newAttributes.symbol !== undefined && newAttributes.symbol !== this.attributes.symbol;
+        const chargeChanged = newAttributes.charge !== undefined && newAttributes.charge !== this.attributes.charge;
 
-        const moved = newAttributes.center !== undefined;
-        const redrawCharge = newAttributes.charge !== undefined || moved;
-        const redrawLabel = newAttributes.charge !== undefined || newAttributes.symbol !== undefined || moved;
+        this.attributes = { ...this.attributes, ...newAttributes };
 
         if (moved) {
             this.modifyTree(false);
             // !!! remove kekule update in here
             this.nodeObj.setCoord2D({ x: newAttributes.center!.x, y: newAttributes.center!.y });
-            // this.draw();
-            // this.moveDrawings();
-            this.draw();
+            this.center = new Vector2(newAttributes.center!.x, newAttributes.center!.y);
+
             this.modifyTree(true);
             this.notifyConnectedBonds(ignoreNotifyBondsIds);
-        } else {
-            if (redrawCharge) {
-                this.nodeObj.setCharge(this.attributes.charge);
-            }
-            if (redrawLabel) {
-                this.nodeObj.setSymbol(this.attributes.symbol);
-                this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
-                this.attributes.color = this.getColor(this.element);
-            }
-            this.calculateImplicitHydrogen();
-            this.draw();
         }
 
-        const historyItem: ActionItem = {
-            command: "CHANGE",
-            type: this.myType,
-            atomAttributes: this.attributes,
-            bondAttributes: undefined,
-        };
+        if (chargeChanged) {
+            this.nodeObj.setCharge(this.attributes.charge);
+        }
 
-        // addHistoryItem(historyItem);
+        if (labelChanged) {
+            this.nodeObj.setSymbol(this.attributes.symbol);
+            this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
+            this.attributes.color = this.getColor(this.element);
+        }
+
+        if (chargeChanged || labelChanged) this.calculateImplicitHydrogen();
+        this.draw();
     }
 
     destroy(ignoreBondRemove: number[] = [], IShouldNotifyBonds: boolean = true) {
@@ -599,7 +589,7 @@ export class Atom extends Entity {
     }
 
     getCenter() {
-        return this.attributes.center.clone();
+        return this.center.clone();
     }
 
     getSymbol() {

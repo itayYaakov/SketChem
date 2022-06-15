@@ -9,4 +9,5 @@ export { default as Export } from "./Export";
 export { default as Import } from "./Import";
 export { default as Paste } from "./Paste";
 export { PeriodicTableTool } from "./periodic-table";
-export * as selectToolBarItems from "./SelectTemplate";
+export * as SelectToolBarItems from "./SelectTemplate";
+export * as UnReDo from "./Unredo";

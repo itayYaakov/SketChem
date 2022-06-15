@@ -1,23 +1,20 @@
 import { useAppDispatch, useAppSelector } from "@app/hooks";
-import { getToolbarFrequentAtoms, getToolbarItemContext } from "@app/selectors";
+import {
+    getToolbarFrequentAtoms,
+    getToolbarItemContext,
+    isChemistryRedoEnabled,
+    isChemistryUndoEnabled,
+} from "@app/selectors";
 import { Direction } from "@constants/enum.constants";
-import { ToolbarAction } from "@src/types";
+import * as ToolsConstants from "@constants/tools.constants";
 import IconByName from "@styles/icons";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
 
-import {
-    ActiveToolbarItem,
-    DialogToolbarItem,
-    isDialogToolbarItem,
-    ToolbarItem,
-    ToolbarItemButton,
-} from "./ToolbarItem";
-import { actions } from "./toolbarItemsSlice";
+import { ToolbarItemButton } from "./ToolbarItem";
 import { generateAtomsButtons } from "./tools";
-import { GetToolbarByName } from "./tools/ToolsMapper.helper";
 import { SentDispatchEventWhenToolbarItemIsChanges } from "./ToolsButtonMapper.helper";
 
 interface IToolbarItemsProps {
@@ -28,6 +25,19 @@ interface IToolbarItemsProps {
 }
 
 type Props = IToolbarItemsProps;
+
+function isUnredoDisabled(tool: ToolbarItemButton, undoDisabled: boolean, redoDisabled: boolean) {
+    switch (tool.toolName) {
+        case ToolsConstants.ToolsNames.Undo:
+            // return pastLength === 0;
+            return undoDisabled;
+        case ToolsConstants.ToolsNames.Redo:
+            // return futureLength === 0;
+            return redoDisabled;
+        default:
+            return false;
+    }
+}
 
 export function ToolbarItems(props: Props) {
     const dispatch = useAppDispatch();
@@ -42,8 +52,12 @@ export function ToolbarItems(props: Props) {
 
     const currentToolbarContext = useSelector(getToolbarItemContext);
     const frequentAtoms = useSelector(getToolbarFrequentAtoms);
+    const undoDisabled = !useSelector(isChemistryUndoEnabled);
+    const redoDisabled = !useSelector(isChemistryRedoEnabled);
+    // const undoDisabled = false;
+    // const redoDisabled = true;
 
-    // programmly add the frequent atoms to the toolbar
+    // programmatically add the frequent atoms to the toolbar
     if (direction === Direction.Right) {
         const frequentAtomsButtons = generateAtomsButtons(frequentAtoms.atoms);
         modifiedToolbarItemsList = [...modifiedToolbarItemsList, ...frequentAtomsButtons];
@@ -54,35 +68,6 @@ export function ToolbarItems(props: Props) {
     const onToolbarClick = (event: React.MouseEvent<HTMLButtonElement>, toolbarItem: ToolbarItemButton) => {
         event.stopPropagation();
         SentDispatchEventWhenToolbarItemIsChanges(dispatch, toolbarItem.subToolName ?? toolbarItem.toolName);
-
-        // const tool = GetToolbarByName(toolbarItem.toolName);
-        // const buttonHtml = event.currentTarget;
-
-        // // remove the active class from the previous active toolbar item
-        // document.querySelectorAll(`.${styles.toolbar_icon_button_active}`).forEach((button) => {
-        //     button.classList.remove(styles.toolbar_icon_button_active);
-        //     button.removeAttribute("selected");
-        // });
-
-        // if (!tool) {
-        //     console.log(`ToolbarItem: ${toolbarItem.toolName} not found`);
-        //     return;
-        // }
-        // buttonHtml.classList.add(styles.toolbar_icon_button_active);
-        // buttonHtml.setAttribute("selected", "true");
-
-        // if (isDialogToolbarItem(tool)) {
-        //     dispatch(actions.dialog(toolbarItem.toolName));
-        // } else {
-        //     const payload: ToolbarAction = {
-        //         toolName: toolbarItem.toolName,
-        //     };
-        //     const { attributes, subToolName } = toolbarItem;
-        //     if (attributes) payload.attributes = attributes;
-        //     if (subToolName) payload.subToolName = subToolName;
-
-        //     dispatch(actions.tool_change(payload));
-        // }
     };
 
     return (
@@ -91,14 +76,15 @@ export function ToolbarItems(props: Props) {
                 const name = item.subToolName ?? item.toolName;
                 const isActive = currentToolbarName === name;
                 const activeClass = isActive ? styles.toolbar_icon_button_active : "";
+                const disabled = isUnredoDisabled(item, undoDisabled, redoDisabled);
                 return (
                     <button
                         type="button"
-                        // className={styles.button}
                         onClick={(e) => onToolbarClick(e, item)}
                         key={name}
                         aria-label={name}
                         title={name}
+                        disabled={disabled}
                         className={clsx(
                             styles.toolbar_icon_button,
                             styles[`toolbar_icon_button_${directionLower}`],

@@ -23,7 +23,8 @@
         "browserslist",
         "dmove",
         "kekule",
-        "sketchem"
+        "sketchem",
+        "undoable"
     ],
     "files.exclude": {
         "**/*.min.js": true,

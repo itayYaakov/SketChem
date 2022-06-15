@@ -8,7 +8,7 @@ import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { MouseEventCallBackProperties } from "@src/types";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BoxSelect } from "./SelectTemplate";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
@@ -19,7 +19,12 @@ class EraseBox extends BoxSelect {
     shapeFillColor: string = "#df5c83";
     // delete all selectedAtoms
 
-    onActivate(_: any, editor: EditorHandler): void {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("EraseBox.onActivate: missing attributes or editor");
+        }
         this.doAction(editor);
         editor.setHoverMode(true, true, true, this.selectColor);
     }
@@ -30,14 +35,16 @@ class EraseBox extends BoxSelect {
     }
 
     doAction(editor: EditorHandler): void {
-        editor.applyFunctionToAtoms((atom: Atom) => {
+        let changed = 0;
+        changed += editor.applyFunctionToAtoms((atom: Atom) => {
             atom.destroy();
         }, true);
-        editor.applyFunctionToBonds((bond: Bond) => {
+        changed += editor.applyFunctionToBonds((bond: Bond) => {
             bond.destroy();
         }, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
+        if (changed > 0) editor.createHistoryUpdate();
         editor.setHoverMode(true, true, true, this.selectColor);
     }
 }

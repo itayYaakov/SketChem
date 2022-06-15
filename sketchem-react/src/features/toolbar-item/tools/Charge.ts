@@ -5,7 +5,7 @@ import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IChargeAttributes, MouseEventCallBackProperties } from "@src/types";
 
-import { ActiveToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -23,12 +23,19 @@ class Charge implements ActiveToolbarItem {
             this.updateAtomCharge(atom);
         };
 
-        editor.applyFunctionToAtoms(setAtomCharge, true);
+        const changed = editor.applyFunctionToAtoms(setAtomCharge, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
+        if (changed > 0) editor.createHistoryUpdate();
     }
 
-    onActivate(attributes: IChargeAttributes, editor: EditorHandler) {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { toolAttributes, editor } = attrs;
+        if (!toolAttributes || !editor) {
+            throw new Error("Charge.onActivate: missing attributes or editor");
+        }
+        const attributes = toolAttributes as IChargeAttributes;
         this.charge = attributes.charge;
         this.changeSelectionCharge(editor);
         editor.setHoverMode(true, true, false);
@@ -47,6 +54,7 @@ class Charge implements ActiveToolbarItem {
         atom.setVisualState(EntityVisualState.AnimatedClick);
 
         this.updateAtomCharge(atom);
+        editor.createHistoryUpdate();
     }
 }
 

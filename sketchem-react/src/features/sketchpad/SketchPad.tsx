@@ -3,12 +3,13 @@ import "./svgpanzoom";
 
 import { useWindowSize } from "@app/resizeHook";
 import { getToolbarItemContext } from "@app/selectors";
-import { Direction, LayersNames, MouseButtons, MouseEventsNames } from "@constants/enum.constants";
+import { MouseButtons, MouseEventsNames } from "@constants/enum.constants";
 import type Editor from "@features/editor/Editor";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import {
     ActiveToolbarItem,
     isDialogToolbarItem,
+    LaunchAttrs,
     ToolbarItem,
     ToolbarItemButton,
 } from "@features/toolbar-item/ToolbarItem";
@@ -19,9 +20,10 @@ import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, ToolbarAction } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
+import * as _ from "lodash";
 // import panzoom, { PanZoom } from "panzoom";
 import React, { useEffect, useRef } from "react";
-import { shallowEqual, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import SetDefs from "./SetDefs";
 
@@ -71,12 +73,18 @@ function SketchPad(props: Props) {
                 activeToolbarButton.current = undefined;
             }
         }
+    } else {
+        activeToolbarButton.current = undefined;
     }
 
     // set the tool onActivate without messing with redux state
     useEffect(() => {
-        if (currentToolbarContext !== previousToolbarContext.current) {
-            activeToolbarButton?.current?.onActivate?.(currentToolbarContext.attributes, editor);
+        if (currentToolbarContext && !_.isEqual(currentToolbarContext, previousToolbarContext.current)) {
+            activeToolbarButton?.current?.onActivate?.({
+                toolAttributes: currentToolbarContext.attributes,
+                editor,
+                previousToolContext: previousToolbarContext.current,
+            } as LaunchAttrs);
             previousToolbarContext.current = currentToolbarContext;
         }
     }, [currentToolbarContext]);

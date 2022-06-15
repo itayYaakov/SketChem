@@ -5,9 +5,9 @@ import { Atom } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IAtomAttributes, MouseEventCallBackProperties } from "@types";
 
-import { ToolbarItemButton } from "../ToolbarItem";
+import { LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";
 import { IsToolbarButtonExists, RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
-import { BondEntityBaseTool as EntityBaseTool } from "./BondEntityBaseTool.helper";
+import { EntityBaseTool } from "./BondEntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 export interface AtomToolbarItemButton extends ToolbarItemButton {
@@ -28,7 +28,13 @@ export class AtomToolBarItem extends EntityBaseTool {
         };
     }
 
-    onActivate(attributes: IAtomAttributes, editor: EditorHandler) {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { toolAttributes, editor } = attrs;
+        if (!toolAttributes || !editor) {
+            throw new Error("AtomToolBarItem.onActivate: missing attributes or editor");
+        }
+        const attributes = toolAttributes as IAtomAttributes;
         this.init();
         const atomElement = ElementsData.elementsBySymbolMap.get(attributes.label);
         if (!atomElement) throw new Error(`Atom element with symbol ${attributes.label} wasn't not found`);
@@ -47,9 +53,9 @@ export class AtomToolBarItem extends EntityBaseTool {
             });
         };
 
-        editor.applyFunctionToAtoms(updateAtomAttributes, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
+        editor.applyFunctionToAtoms(updateAtomAttributes, true);
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
@@ -95,6 +101,7 @@ export class AtomToolBarItem extends EntityBaseTool {
         }
 
         editor.setHoverMode(true, true, false);
+        this.createHistoryUpdate(eventHolder);
     }
 }
 

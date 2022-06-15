@@ -3,15 +3,15 @@ import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { IBondAttributes, MouseEventCallBackProperties } from "@types";
 
-import { ToolbarItemButton } from "../ToolbarItem";
+import { LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
-import { BondEntityBaseTool } from "./BondEntityBaseTool.helper";
+import { EntityBaseTool } from "./BondEntityBaseTool.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 export interface BondToolButton extends ToolbarItemButton {
     attributes: IBondAttributes;
 }
-export class BondTool extends BondEntityBaseTool {
+export class BondTool extends EntityBaseTool {
     init() {
         this.mode = MouseMode.Default;
         console.debug(`Bond ${this.context?.bond?.getId()} was destroyed`);
@@ -20,7 +20,13 @@ export class BondTool extends BondEntityBaseTool {
         this.symbol = "C";
     }
 
-    onActivate(attributes: IBondAttributes, editor: EditorHandler) {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { toolAttributes, editor } = attrs;
+        if (!toolAttributes || !editor) {
+            throw new Error("BondTool.onActivate: missing attributes or editor");
+        }
+        const attributes = toolAttributes as IBondAttributes;
         this.init();
         this.bondOrder = attributes.bondOrder;
         this.bondStereo = attributes.bondStereo;
@@ -31,7 +37,7 @@ export class BondTool extends BondEntityBaseTool {
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
         this.init();
-        const { mouseDownLocation, editor } = eventHolder;
+        const { mouseDownLocation } = eventHolder;
 
         if (this.atomWasPressed(mouseDownLocation, eventHolder)) return;
 
@@ -59,14 +65,16 @@ export class BondTool extends BondEntityBaseTool {
             return;
         }
 
-        if (this.mode === MouseMode.AtomPressed) {
+        if (this.mode === MouseMode.AtomPressed && !this.context.endAtom) {
             this.context.startAtom?.setVisualState(EntityVisualState.AnimatedClick);
         }
 
         this.context.startAtom?.getOuterDrawCommand();
 
         if (this.context.endAtom === undefined && !this.context.dragged) {
-            if (!this.context.startAtom) throw new Error("startAtom is undefined");
+            if (!this.context.startAtom) {
+                throw new Error("startAtom is undefined");
+            }
 
             const endAtomCenter = this.calculatePosition(this.context.startAtom);
             this.context.endAtom = this.createAtom(endAtomCenter);
@@ -79,6 +87,7 @@ export class BondTool extends BondEntityBaseTool {
         this.createMoveAndHandleBond();
         this.init();
         editor.setHoverMode(true, true, true);
+        this.createHistoryUpdate(eventHolder);
     }
 }
 

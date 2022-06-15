@@ -1,8 +1,7 @@
 import type { BondOrder, BondStereoKekule, EntityType } from "@constants/enum.constants";
-import type { Atom } from "@entities";
 import type { EditorHandler } from "@features/editor/EditorHandler";
-import type { Number as SVGNumber, Rect, SVG, Svg } from "@svgdotjs/svg.js";
 import Vector2 from "@utils/mathsTs/Vector2";
+import { StateWithHistory } from "redux-undo";
 
 //= =============================================================================
 // Items
@@ -38,7 +37,10 @@ export interface EntityEventsFunctions {
 // Chemistry - Atom
 export interface AtomAttributes {
     id: number;
-    center: Vector2;
+    center: {
+        x: number;
+        y: number;
+    };
     charge: number;
     symbol: string;
     color: string;
@@ -62,20 +64,31 @@ export interface BondAttributes {
 // Chemistry - Bond
 export interface IBond {
     connectorObj?: any;
-    props?: {
-        order: BondOrder;
-        stereo: BondStereoKekule;
-        // index of first connected atom
-        atomStartId: number;
-        // index of second connected atom
-        atomEndId: number;
-        optionalId?: number;
-    };
+    props?: Partial<BondAttributes>;
 }
 
 export type EntityAttributes = AtomAttributes | BondAttributes;
 
 export type IEntity = IAtom | IBond;
+
+//= =============================================================================
+// Chemistry Undo Redo
+//= =============================================================================
+
+interface AtomState {
+    id: number;
+    attributes: AtomAttributes;
+}
+interface BondState {
+    id: number;
+    attributes: BondAttributes;
+}
+
+// export interface ChemistryFullState {
+export interface ChemistryState {
+    atoms?: AtomState[];
+    bonds?: BondState[];
+}
 
 //= =============================================================================
 // Actions Attributes
@@ -142,15 +155,14 @@ export interface ToolbarItemState {
     importContext: LoadFileAction;
     exportContext: SaveFileAction;
     frequentAtoms: FrequentAtoms;
-    // bondMouseEvent: BondMouseEventState;
 }
-export interface ChemistryState {
-    items: ActionItem[][];
-}
+// export interface ChemistryState {
+//     items: ActionItem[][];
+// }
 
 export interface RootState {
     toolbarItem: ToolbarItemState;
-    chemistry: ChemistryState;
+    chemistry: StateWithHistory<ChemistryState>;
 }
 //= =============================================================================
 // API

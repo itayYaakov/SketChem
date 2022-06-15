@@ -2,6 +2,7 @@
 import "@styles/App.scss";
 
 import Editor from "@features/editor/Editor";
+import { EditorHandler } from "@features/editor/EditorHandler";
 import {
     BottomToolbarProps,
     DialogShow,
@@ -13,10 +14,8 @@ import {
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
 import React from "react";
-import { Col, Container, Row } from "react-bootstrap";
 
-import ButtonsShowcase from "./buttons";
-import logo from "./logo.svg";
+const editorHandler = new EditorHandler();
 
 function App() {
     // if (loading) {
@@ -42,11 +41,11 @@ function App() {
             </div>
 
             <div className={styles.draw}>
-                <Editor />
+                <Editor editorHandler={editorHandler} />
                 {/* SVG sketchpad is placed here */}
             </div>
 
-            <DialogShow />
+            <DialogShow editorHandler={editorHandler} />
         </div>
     );
 }

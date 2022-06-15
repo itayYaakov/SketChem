@@ -5,15 +5,25 @@ import { EditorHandler } from "@features/editor/EditorHandler";
 import { IAtom, IBond } from "@src/types";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
 class Paste implements ActiveToolbarItem {
-    onActivate(_: any, editor: EditorHandler): void {
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("Paste.onActivate: missing attributes or editor");
+        }
         const ca = editor.copiedAtoms;
         const cb = editor.copiedBonds;
+
+        if (ca.size === 0 || cb.size === 0) {
+            store.dispatch(actions.asyncDispatchSelect());
+            return;
+        }
 
         const createdAtoms = new Map<number, Atom>();
         const createdBonds = new Map<number, Bond>();
@@ -68,7 +78,9 @@ class Paste implements ActiveToolbarItem {
         editor.resetCopiedContents();
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
-        store.dispatch(actions.clearCanvas());
+        editor.createHistoryUpdate();
+
+        store.dispatch(actions.asyncDispatchSelect());
     }
 }
 

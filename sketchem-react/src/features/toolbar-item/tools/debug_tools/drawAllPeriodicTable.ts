@@ -13,13 +13,17 @@ import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle } from "@svgdotjs/svg.js";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
 import { RegisterToolbarWithName } from "../ToolsMapper.helper";
 
 const { atomsTree, atomsMap, bondsTree, bondsMap } = EntitiesMapsStorage;
 
 class DrawAllPeriodicTable implements ActiveToolbarItem {
     onActivate() {
+        // const { editor } = attrs;
+        // if (!editor) {
+        //     throw new Error("SelectTemplate.onActivate: missing attributes or editor");
+        // }
         const padding = 80;
         const startX = 1000;
         const atomCenter = new Vector2(startX, 500);
@@ -35,7 +39,7 @@ class DrawAllPeriodicTable implements ActiveToolbarItem {
 
             atomCenter.addValuesSelf(padding, 0);
 
-            const atom = new Atom({ props: { symbol: elem.symbol, center: atomCenter } } as IAtom);
+            const atom = new Atom({ props: { symbol: elem.symbol, center: atomCenter.get() } } as IAtom);
             atom.getOuterDrawCommand();
         }
     }
