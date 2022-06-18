@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { BondConstants } from "@constants/bond.constants";
+import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder, BondStereoKekule, EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
 import { actions } from "@features/chemistry/chemistrySlice";
 // import { addHistoryItem } from "@features/editor/Editor";
@@ -9,7 +10,7 @@ import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
-import { ActionItem, BondAttributes, IBond } from "@types";
+import { BondAttributes, IBond } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
 // !!! MOVE TO REDUX??
@@ -85,7 +86,7 @@ export class Bond extends Entity {
             atomStartId = KekuleUtils.getNumericId(this.connectorObj.getConnectedObjs()[0].id);
             atomEndId = KekuleUtils.getNumericId(this.connectorObj.getConnectedObjs()[1].id);
 
-            this.attributes = { ...Atom.DefaultAttributes, stereo, order, atomStartId, atomEndId, id };
+            this.attributes = { ...Bond.DefaultAttributes, stereo, order, atomStartId, atomEndId, id };
         } else {
             throw new Error(`Bond constructor not implement args = ${args}`);
         }
@@ -117,17 +118,7 @@ export class Bond extends Entity {
             return;
         }
         this.center = this.startAtom.getCenter().addNew(this.endAtom.getCenter()).scaleSelf(0.5);
-        // this.center.x -= BondConstants.padding / 2;
     }
-
-    // setBondCenter(rect?: Rect) {
-    //     if (!rect) {
-    //         this.center = Vector2.zero();
-    //         return;
-    //     }
-    //     const bbox = rect.bbox();
-    //     this.center = new Vector2((bbox.x + bbox.x2) / 2, (bbox.y + bbox.y2) / 2);
-    // }
 
     protected modifyTree(add: boolean = true) {
         if (add) {
@@ -158,16 +149,66 @@ export class Bond extends Entity {
         this.modifyTree(false);
     }
 
+    stCircle: Circle[] = [];
+
     move() {
         if (!this.startAtom || !this.endAtom) return;
 
         this.modifyTree(false);
 
-        const startPosition = this.startAtom.getCenter();
-        const endPosition = this.endAtom.getCenter();
+        const startCenter = this.startAtom.getCenter();
+        const endCenter = this.endAtom.getCenter();
 
-        const angle = AngleUtils.radToDeg(endPosition.angle(startPosition));
+        const angle1Rad = startCenter.angle(endCenter);
+        const angle1Deg = AngleUtils.radToDeg(angle1Rad);
+        const distanceCenters = startCenter.distance(endCenter);
+
+        const startPositionBase = this.startAtom.calculateEllipsePointOnCircumferenceGivenAngle(angle1Rad + Math.PI);
+        const endPositionBase = this.endAtom.calculateEllipsePointOnCircumferenceGivenAngle(angle1Rad);
+
+        const startPositionHover = startPositionBase;
+        const endPositionHover = endPositionBase;
+
+        const distanceForHoverShape = startPositionHover.distance(endPositionHover);
+
+        let delta = endPositionBase.subNew(startPositionBase);
+
+        if (distanceCenters > 0.9 * EditorConstants.Scale) {
+            delta = delta.scaleNew(EditorConstants.Scale / distanceCenters);
+        }
+        const deltaX = 0.1 * delta.x;
+        const deltaY = 0.1 * delta.y;
+
+        const startPosition = startPositionBase.addValues(deltaX, deltaY);
+        const endPosition = endPositionBase.addValues(-deltaX, -deltaY);
+
+        const angle2Rad = startPosition.angle(endPosition) + Math.PI / 2;
+        const angle2Deg = AngleUtils.radToDeg(angle2Rad);
+
         const distance = startPosition.distance(endPosition);
+
+        // this.stCircle[0]?.remove();
+        // this.stCircle[1]?.remove();
+        // this.stCircle[7]?.remove();
+        // this.stCircle[0] = LayersUtils.getLayer(LayersNames.General)
+        //     .circle(2)
+        //     .center(startPositionHover.x, startPositionHover.y)
+        //     .fill("orange");
+        // this.stCircle[1] = LayersUtils.getLayer(LayersNames.General)
+        //     .circle(2)
+        //     .center(endPositionHover.x, endPositionHover.y)
+        //     .fill("purple");
+
+        // this.stCircle[2]?.remove();
+        // this.stCircle[2] = LayersUtils.getLayer(LayersNames.General)
+        //     .circle(2)
+        //     .center(startPosition.x, startPosition.y)
+        //     .fill("green");
+        // this.stCircle[3]?.remove();
+        // this.stCircle[3] = LayersUtils.getLayer(LayersNames.General)
+        //     .circle(2)
+        //     .center(endPosition.x, endPosition.y)
+        //     .fill("blue");
 
         this.elem =
             this.elem ??
@@ -176,25 +217,46 @@ export class Bond extends Entity {
                 .attr({ "pointer-events": "none" })
                 .id(IdUtils.getBondElemId(this.attributes.id));
 
-        this.elem.width(BondConstants.padding).height(distance);
+        const rectangleTopLeft = {
+            x: startPosition.x - (BondConstants.padding / 2) * Math.cos(angle2Rad),
+            y: startPosition.y - (BondConstants.padding / 2) * Math.sin(angle2Rad),
+        };
 
-        this.elem.move(startPosition.x, startPosition.y);
+        const hoverTopLeft = {
+            x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(angle2Rad),
+            y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(angle2Rad),
+        };
 
-        this.elem.transform({
-            translate: [-BondConstants.padding / 2, 0],
-            origin: "top center",
-            rotate: angle - 90,
-        });
+        // this.stCircle[5]?.remove();
+        // this.stCircle[5] = LayersUtils.getLayer(LayersNames.General)
+        //     .circle(2)
+        //     .center(rectangleTopLeft.x, rectangleTopLeft.y)
+        //     .fill("red");
+
+        this.elem
+            .width(BondConstants.padding)
+            .height(distance)
+            .x(rectangleTopLeft.x)
+            .y(rectangleTopLeft.y)
+            .attr(this.createTransformObject(angle2Deg, rectangleTopLeft));
 
         this.hoverOrSelectShape
             ?.width(BondConstants.padding)
-            .height(distance * 0.7)
-            .center(this.elem.cx(), this.elem.cy())
-            .transform(this.elem.transform());
+            .height(distanceForHoverShape)
+            .x(hoverTopLeft.x)
+            .y(hoverTopLeft.y)
+            .attr(this.createTransformObject(angle2Deg, hoverTopLeft));
 
-        this.setBondCenter();
+        // this.setBondCenter();
+        this.center = Vector2.midpoint(startPosition, endPosition, 0.5);
 
         this.modifyTree(true);
+    }
+
+    private createTransformObject(angle2Deg: number, anchor: { x: number; y: number }) {
+        return {
+            transform: `rotate(${angle2Deg}, ${anchor.x}, ${anchor.y})`,
+        };
     }
 
     protected setHoverOrSelectShape() {
@@ -205,7 +267,7 @@ export class Bond extends Entity {
                 .fill({ opacity: 0 })
                 .attr({ "pointer-events": "bounding-box" })
                 .radius(10)
-                .id(`bond_${IdUtils.getAtomElemId(this.getId())}_hover`);
+                .id(`${IdUtils.getBondElemId(this.getId())}_hover`);
 
         // this..show().fill("#0fa0fa");
     }
@@ -340,15 +402,6 @@ export class Bond extends Entity {
             this.startAtom?.getOuterDrawCommand();
             this.endAtom?.getOuterDrawCommand();
         }
-
-        const historyItem: ActionItem = {
-            command: "CHANGE",
-            type: this.myType,
-            atomAttributes: undefined,
-            bondAttributes: this.attributes,
-        };
-
-        // addHistoryItem(historyItem);
     }
 
     destroy(ignoreAtomRemove: number[] = [], IShouldNotifyAtoms: boolean = true) {
@@ -368,13 +421,6 @@ export class Bond extends Entity {
             this.connectorObj = null;
         }
         this.lifeStage = EntityLifeStage.Destroyed;
-
-        const historyItem: ActionItem = {
-            command: "REMOVE",
-            type: this.myType,
-            atomAttributes: undefined,
-            bondAttributes: this.attributes,
-        };
 
         // bonds need to redraw after connecting bond was removed
         this.startAtom?.getOuterDrawCommand();

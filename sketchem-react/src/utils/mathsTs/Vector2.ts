@@ -443,6 +443,9 @@ export default class Vector2 {
      */
     static equals = (a: Vector2, b: Vector2): boolean => a.x === b.x && a.y === b.y;
 
+    static midpoint = (a: Vector2, b: Vector2, percent: number): Vector2 =>
+        new Vector2(a.x + (b.x - a.x) * percent, a.y + (b.y - a.y) * percent);
+
     /**
      * Generates a (single-line) string representation of the 2-element vector `a`
      *

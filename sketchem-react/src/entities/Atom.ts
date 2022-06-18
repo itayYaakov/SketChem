@@ -10,7 +10,7 @@ import { LayersUtils } from "@src/utils/LayersUtils";
 import * as ValenceUtils from "@src/utils/ValenceUtils";
 import styles from "@styles/index.module.scss";
 import { Circle, Ellipse, Line, Rect, SVG, Svg, Text, Tspan } from "@svgdotjs/svg.js";
-import { ActionItem, AtomAttributes, IAtom } from "@types";
+import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 
@@ -34,12 +34,7 @@ export class Atom extends Entity {
 
     attributes!: AtomAttributes;
 
-    private backgroundRect: Rect | undefined;
-
-    // private backgroundCircle: Circle | undefined;
-    private backgroundCircle: Ellipse | undefined;
-
-    private hoverCircle: Circle | undefined;
+    // private backgroundCircle: Ellipse | undefined;
 
     private symbolLabel: Text | undefined;
 
@@ -56,6 +51,8 @@ export class Atom extends Entity {
     private showValenceError: boolean;
 
     private implicitHydrogenCount: number;
+
+    private backgroundRadiuses: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
 
     myType: EntityType = EntityType.Atom;
 
@@ -95,15 +92,6 @@ export class Atom extends Entity {
         this.addInstanceToMap();
         this.setHoverOrSelectShape();
         this.lifeStage = EntityLifeStage.Initialized;
-
-        const historyItem: ActionItem = {
-            command: "ADD",
-            type: this.myType,
-            atomAttributes: this.attributes,
-            bondAttributes: undefined,
-        };
-        // editorObj?.addHistoryItem(historyItem);
-        // editorObj?.sealHistory();
     }
 
     getColor(element: PtElement | undefined, color?: string) {
@@ -170,16 +158,16 @@ export class Atom extends Entity {
     }
 
     getNeighbors() {
-        return KekuleUtils.getAtomNeighbors(this.nodeObj);
+        return KekuleUtils.getAtomNeighbors(this.getKekuleNode());
     }
 
     getNeighborsIds() {
-        return KekuleUtils.getAtomNeighborsIds(this.nodeObj);
+        return KekuleUtils.getAtomNeighborsIds(this.getKekuleNode());
     }
 
     getConnectedBonds() {
         const connectedBonds = new Set<Bond>();
-        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
+        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.getKekuleNode());
 
         connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
@@ -192,7 +180,7 @@ export class Atom extends Entity {
 
     getConnectedBondsIds() {
         const connectedBondsIds = new Set<number>();
-        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.nodeObj);
+        const connectedBondsKekule: any[] | [] = KekuleUtils.getLinkedBonds(this.getKekuleNode());
 
         connectedBondsKekule.forEach((bondKekule: any) => {
             const id = KekuleUtils.getNumericId(bondKekule.id);
@@ -272,16 +260,12 @@ export class Atom extends Entity {
     }
 
     protected undraw() {
-        this.backgroundRect?.remove();
-        this.backgroundCircle?.remove();
-        this.hoverCircle?.remove();
+        // this.backgroundCircle?.remove();
         this.symbolLabel?.remove();
         this.valenceErrorLine?.remove();
         this.valenceErrorRectangle?.remove();
         this.hoverOrSelectShape?.remove();
-        this.backgroundRect = undefined;
-        this.backgroundCircle = undefined;
-        this.hoverCircle = undefined;
+        // this.backgroundCircle = undefined;
         this.symbolLabel = undefined;
         this.valenceErrorLine = undefined;
         this.valenceErrorRectangle = undefined;
@@ -335,42 +319,60 @@ export class Atom extends Entity {
 
         this.drawValenceError(this.symbolLabel);
 
-        this.backgroundCircle =
-            this.backgroundCircle ??
-            LayersUtils.getLayer(LayersNames.AtomLabelBackground)
-                .ellipse(0, 0)
-                // .circle()
-                .fill("#ffffff")
-                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
+        // this.backgroundCircle =
+        //     this.backgroundCircle ??
+        //     LayersUtils.getLayer(LayersNames.AtomLabelBackground)
+        //         .ellipse(0, 0)
+        //         // .circle()
+        //         .fill("#ffffff")
+        //         .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle`);
 
         this.bbox = this.symbolLabel.bbox();
         const textBbox = this.bbox;
 
         // !!! Why 0.8 decrease height?
 
-        this.backgroundCircle
-            .radius((textBbox.width / 2) * 1.2, (textBbox.height / 2) * 1.2)
-            .center(textBbox.cx, textBbox.cy);
+        this.backgroundRadiuses = {
+            x: (textBbox.width / 2) * 1.2,
+            y: (textBbox.height / 2) * 1.2,
+        };
+
+        // if (!this.backgroundRadiuses.x || !this.backgroundRadiuses.y) return;
+
+        // this.backgroundCircle
+        //     .radius(this.backgroundRadiuses.x, this.backgroundRadiuses.y)
+        //     .center(textBbox.cx, textBbox.cy);
     }
 
-    private moveDrawings() {
+    calculateEllipsePointOnCircumferenceGivenAngle(angle: number) {
+        // this function is used to calculate the point on circumference of the ellipse, so the bond can be drawn with it's correct starting point and end point
+        const { center } = this;
+        const { x: radiusX, y: radiusY } = this.backgroundRadiuses;
+        if (!radiusX || !radiusY) this.drawLabel();
+        if (!radiusX || !radiusY) return new Vector2(center.x, center.y);
+        const x = center.x + radiusX * Math.cos(angle);
+        const y = center.y + radiusY * Math.sin(angle);
+        return new Vector2(x, y);
+    }
+
+    private moveDrawings(previousCenter: { x: number; y: number }) {
         if (!this.symbolLabel) this.draw();
         if (!this.symbolLabel) return;
 
         const { center } = this.attributes;
 
-        const dx = this.symbolLabel.cx() - center.x;
-        const dy = this.symbolLabel.cy() - center.y;
+        const dx = previousCenter.x - center.x;
+        const dy = previousCenter.y - center.y;
 
-        this.symbolLabel.center(center.x, center.y);
+        this.symbolLabel.dmove(-dx, -dy);
 
         this.valenceErrorLine?.dmove(-dx, -dy);
         // charge affect the center - need to take care of it
         //  this.drawCharge(this.symbolLabel);
 
-        const textBbox = this.symbolLabel.bbox();
+        // const textBbox = this.symbolLabel.bbox();
 
-        this.backgroundCircle!.center(textBbox.cx, textBbox.cy);
+        // this.backgroundCircle!.center(textBbox.cx, textBbox.cy);
         this.drawHover();
     }
 
@@ -385,7 +387,7 @@ export class Atom extends Entity {
             return;
         }
 
-        const connectorObjects = KekuleUtils.getAtomConnectorsObject(this.nodeObj);
+        const connectorObjects = KekuleUtils.getAtomConnectorsObject(this.getKekuleNode());
         const totalBondsSum = KekuleUtils.getBondOrderSum(connectorObjects);
 
         const hydrogenCount = ValenceUtils.calculateImplicitHydrogenCount(
@@ -491,17 +493,6 @@ export class Atom extends Entity {
     private drawHover() {
         const { center } = this.attributes;
 
-        this.hoverCircle =
-            this.hoverCircle ??
-            LayersUtils.getLayer(LayersNames.AtomHover)
-                .circle()
-                .fill("none")
-                .stroke({ color: "#f06", opacity: 0.6, width: 5 })
-                .id(`${IdUtils.getAtomElemId(this.attributes.id)}_circle_hover`)
-                .hide();
-
-        this.hoverCircle.radius(AtomConstants.HoverRadius).center(center.x, center.y);
-
         this.hoverOrSelectShape?.radius(AtomConstants.HoverRadius).center(center.x, center.y);
     }
 
@@ -514,46 +505,37 @@ export class Atom extends Entity {
                 .id(`atom_${IdUtils.getAtomElemId(this.getId())}_hover`);
     }
 
-    select(isSelected: boolean) {
-        if (!this.hoverCircle) return;
-        if (isSelected) {
-            this.hoverCircle.show();
-            // this.hoverCircle.attr({ filter: "drop-shadow(0px 0px 5px #23c081)" });
-        } else {
-            this.hoverCircle.hide();
-            // circle.attr({ filter: "" });
-        }
-    }
-
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
         const moved = newAttributes.center !== undefined && newAttributes.center !== this.attributes.center;
         const labelChanged = newAttributes.symbol !== undefined && newAttributes.symbol !== this.attributes.symbol;
         const chargeChanged = newAttributes.charge !== undefined && newAttributes.charge !== this.attributes.charge;
 
+        const oldCenter = this.attributes.center;
         this.attributes = { ...this.attributes, ...newAttributes };
 
         if (moved) {
             this.modifyTree(false);
             // !!! remove kekule update in here
-            this.nodeObj.setCoord2D({ x: newAttributes.center!.x, y: newAttributes.center!.y });
             this.center = new Vector2(newAttributes.center!.x, newAttributes.center!.y);
-
             this.modifyTree(true);
             this.notifyConnectedBonds(ignoreNotifyBondsIds);
         }
 
-        if (chargeChanged) {
-            this.nodeObj.setCharge(this.attributes.charge);
-        }
-
         if (labelChanged) {
-            this.nodeObj.setSymbol(this.attributes.symbol);
             this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
             this.attributes.color = this.getColor(this.element);
         }
 
-        if (chargeChanged || labelChanged) this.calculateImplicitHydrogen();
-        this.draw();
+        if (chargeChanged || labelChanged) {
+            this.calculateImplicitHydrogen();
+            this.draw();
+        }
+
+        if (moved) {
+            // doesn't work well
+            // this.moveDrawings(oldCenter);
+            this.draw();
+        }
     }
 
     destroy(ignoreBondRemove: number[] = [], IShouldNotifyBonds: boolean = true) {
@@ -561,7 +543,7 @@ export class Atom extends Entity {
             return;
         }
         this.lifeStage = EntityLifeStage.DestroyInit;
-        if (this.nodeObj) {
+        if (this.getKekuleNode()) {
             this.showValenceError = false;
             this.undraw();
             if (IShouldNotifyBonds) {
@@ -569,23 +551,22 @@ export class Atom extends Entity {
             }
 
             this.removeInstanceFromMapAndTree();
-            KekuleUtils.destroy(this.nodeObj);
+            KekuleUtils.destroy(this.getKekuleNode());
             this.nodeObj = undefined;
         }
-        const historyItem: ActionItem = {
-            command: "REMOVE",
-            type: this.myType,
-            atomAttributes: this.attributes,
-            bondAttributes: undefined,
-        };
-
-        // addHistoryItem(historyItem);
 
         this.lifeStage = EntityLifeStage.Destroyed;
     }
 
     getKekuleNode() {
+        this.updateKekuleNode();
         return this.nodeObj;
+    }
+
+    updateKekuleNode() {
+        this.nodeObj.setCoord2D({ x: this.attributes.center.x, y: this.attributes.center.y });
+        this.nodeObj.setCharge(this.attributes.charge);
+        this.nodeObj.setSymbol(this.attributes.symbol);
     }
 
     getCenter() {

@@ -1,25 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { AtomConstants } from "@constants/atom.constants";
-import { EditorConstants } from "@constants/editor.constant";
-import {
-    EntityLifeStage,
-    EntityType,
-    EntityVisualState,
-    LayersNames,
-    MouseEventsNames,
-} from "@constants/enum.constants";
-import { IdUtils } from "@src/utils/IdUtils";
-import { LayersUtils } from "@src/utils/LayersUtils";
-import { Box, Circle, Ellipse, Line, Rect, Shape, SVG, Svg, Text, Tspan } from "@svgdotjs/svg.js";
-import {
-    ActionItem,
-    AtomAttributes,
-    BondAttributes,
-    EntityAttributes,
-    EntityEventContext,
-    EntityEventsFunctions,
-    IEntity,
-} from "@types";
+import { EntityLifeStage, EntityType, EntityVisualState, MouseEventsNames } from "@constants/enum.constants";
+import { Box, Circle, Rect, Shape } from "@svgdotjs/svg.js";
+import { EntityAttributes, EntityEventContext, EntityEventsFunctions, IEntity } from "@types";
 
 // const hoverOrSelectColor = "#38e8e8";
 const hoverOrSelectColor = "#9bf3f3";

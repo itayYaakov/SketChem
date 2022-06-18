@@ -84,7 +84,8 @@ export default function SetDefs(canvas: Svg) {
     bondFilter.dropShadow(bondFilter.$sourceAlpha, 0, 0, 3).attr({ "flood-color": "#aa00aa", "flood-opacity": 0.8 });
     bondFilter.dropShadow(bondFilter.$sourceAlpha, 0, 0, 2).attr({ "flood-color": "#ff00ff", "flood-opacity": 0.9 });
 
-    const poly = canvas.defs().polygon("0,1 1,1 0.52,0 0.48,0");
+    // const poly = canvas.defs().polygon("0,1 1,1 0.52,0 0.48,0");
+    const poly = canvas.defs().polygon("0.2,1 0.8,1 0.5,0");
 
     const clip = canvas
         .defs()

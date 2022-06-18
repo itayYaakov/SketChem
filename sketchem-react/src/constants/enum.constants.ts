@@ -37,9 +37,9 @@ export enum MouseEventsNames {
 
 export enum LayersNames {
     Root = "root",
+    AtomLabelBackground = "atom_label_background",
     BondHover = "bond_hover",
     Bond = "bond",
-    AtomLabelBackground = "atom_label_background",
     AtomHover = "atom_hover",
     AtomValenceError = "atom_valence_error",
     AtomLabelLabel = "atom_label_label",

@@ -73,8 +73,33 @@ export function importMoleculeFromFile(file, format) {
     }
 }
 
+function getBoundingBox(molec) {
+    // {x2: maxX, x1: minX, y2: maxY, y1: minY}
+    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = mol.getContainerBox2D();
+    const xDelta = maxX - minX;
+    const yDelta = maxY - minY;
+    return { minX, minY, maxX, maxY, xDelta, yDelta };
+}
+
+function transformMoleculeBoundingBox(molec) {
+    const bbox = getBoundingBox(molec);
+    const targetBoundingBox = { minX: 0, minY: 0, width: 10 };
+
+    const scale = targetBoundingBox.width / bbox.xDelta;
+
+    // transfer all points from bbox to targetBoundingBox
+    for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
+        const node = mol.getNodeAt(i);
+        const { x, y } = node.absCoord2D;
+        const newX = (x - bbox.minX) * scale + targetBoundingBox.minX;
+        const newY = -(y - bbox.maxY) * scale + targetBoundingBox.minY;
+        node.setCoord2D({ x: newX, y: newY });
+    }
+}
+
 export function exportFileFromMolecule(format) {
     try {
+        transformMoleculeBoundingBox(chemDocument);
         const data = Kekule.IO.saveFormatData(chemDocument, format);
         return data;
     } catch (error) {
@@ -94,9 +119,15 @@ export function enableIndigo() {
     Kekule.Indigo.enable();
 }
 
-export function getSupportedReadFormats() {
+export function getSupportedReadFormatsOptions() {
     const formats = Kekule.IO.ChemDataReaderManager.getAllReadableFormats();
     return getFileFormatsOptions(formats);
+}
+
+export function getSupportedReadFormats() {
+    const formats = Kekule.IO.ChemDataReaderManager.getAllReadableFormats();
+    // join all formats by comma
+    return formats.map((format) => format.id).join(", ");
 }
 
 export function getSupportedWriteFormats() {
@@ -680,7 +711,60 @@ function calcPreferred2DBondGrowingLocation(startingObj, bondLength, defAngle, a
     });
 }
 
+/**
+ * Load chem object from a File object.
+ * Note this function relies on FileApi support.
+ * @param {File} file
+ * @param {Function} callback Callback function when the file is loaded. Has two params (chemObj, success, srcData).
+ * @param {String | undefined} formatId If not set, format will be get from file name automatically.
+ * @param {Hash | undefined} options Additional options to read data. Different data format may have different options.
+ */
+export function loadFileData(file, callback, formatId = undefined, options = undefined) {
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        try {
+            const fileName = file.name;
+            const ext = Kekule.UrlUtils.extractFileExt(fileName);
+            let formatInfo;
+            if (!formatId) {
+                formatInfo = Kekule.IO.DataFormatsManager.findFormat(null, ext);
+            } else formatInfo = Kekule.IO.DataFormatsManager.getFormatInfo(formatId);
+
+            if (!formatInfo) {
+                const msg = `ErrorMsg.NO_SUITABLE_READER_FOR_FILEEXT${ext}`;
+                console.error(msg);
+                return;
+            }
+
+            // const isBinary = (formatInfo.dataType === Kekule.IO.ChemDataType.BINARY);
+            const isBinary = Kekule.IO.ChemDataType.isBinaryType(formatInfo.dataType);
+
+            // try open it the file by FileReader
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = reader.result;
+                const chemObj = Kekule.IO.loadFormatData(content, formatInfo.id, options);
+                if (chemObj && chemObj.getSrcInfo) {
+                    const info = chemObj.getSrcInfo();
+                    info.fileName = fileName;
+                }
+                // const success = !!chemObj;
+                const success = chemObj !== false;
+                callback(chemObj, success, content);
+            };
+
+            if (isBinary)
+                // reader.readAsBinaryString(file);
+                reader.readAsArrayBuffer(file);
+            else reader.readAsText(file);
+        } catch (e) {
+            console.error("Error in Kekule.IO.loadFileData:", e);
+        }
+    } else {
+        console.error("FileApi not supported");
+    }
+}
+
 // ? Convert to buttons in the future?
 // ! currently disabled by default
-// enableBabel()
-// enableIndigo()
+enableBabel();
+enableIndigo();
