@@ -51,8 +51,10 @@ export class BondTool extends EntityBaseTool {
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
 
+        this.context.startAtom?.getOuterDrawCommand();
+        this.context.endAtom?.getOuterDrawCommand();
+
         if (this.mode === MouseMode.Default) {
-            // !!! ??? what to doc
             return;
         }
 
@@ -61,7 +63,9 @@ export class BondTool extends EntityBaseTool {
         }
 
         if (this.mode === MouseMode.EmptyPress && this.context.endAtom) {
-            // !!! ??? all is draw - just need to send action?
+            this.init();
+            editor.setHoverMode(true, true, true);
+            this.createHistoryUpdate(eventHolder);
             return;
         }
 

@@ -10,12 +10,10 @@ import {
     ToolbarAction,
     ToolbarItemState,
 } from "@types";
-import { exportFileFromMolecule } from "@utils/KekuleUtils";
 
 const initialLoadFileAction: LoadFileAction = {
     content: "",
     format: "",
-    replace: false,
 };
 
 const initialSaveFileAction: SaveFileAction = {
@@ -120,21 +118,6 @@ const loadFile = createAsyncThunk<void, LoadFileAction>("load_file", async (file
     );
 });
 
-const exportToFile = createAsyncThunk<void, SaveFileAction>("export_to_file", async (saveAction: SaveFileAction) => {
-    const file = exportFileFromMolecule(saveAction.format);
-    console.log("file content:");
-    console.log(file);
-    return;
-    // convert string to blob with mime type and download it
-    const blob = new Blob([file], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "file.txt";
-    link.click();
-    window.URL.revokeObjectURL(url);
-});
-
 const asyncDispatchTool = createAsyncThunk<void, ToolbarAction>("set_selection_tool", async (action, thunkApi) => {
     thunkApi.dispatch(slice.actions.tool_change(action));
 });
@@ -161,6 +144,5 @@ export const actions = {
     asyncDispatchTool,
     asyncDispatchSelect,
     asyncDispatchNone,
-    exportToFile,
 };
 export default slice.reducer;

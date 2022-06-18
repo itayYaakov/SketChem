@@ -18,6 +18,10 @@ $txtColor: #fefefe;
     @include buttons_category_base(c.$red-A700, c.$red-A400);
 }
 
+.buttons_green {
+    @include buttons_category_base(c.$green-800, c.$green-600);
+}
+
 @mixin buttons_category_base($baseColor, $hoverColor) {
     @include button-variant($baseColor, $btnBorderColor, $txtColor, $hoverColor, $btnBorderColor, $txtColor);
     // @include button-variant($baseColor, $btnBorderColor, $txtColor);

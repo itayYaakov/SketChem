@@ -18,18 +18,8 @@ class ClearCanvas implements ActiveToolbarItem {
         }
         const { atomsMap, bondsMap } = EntitiesMapsStorage;
 
-        let changed = 0;
-
-        atomsMap.forEach((atom) => {
-            atom.destroy([], false);
-            changed += 1;
-        });
-        bondsMap.forEach((bond) => {
-            bond.destroy([], false);
-            changed += 1;
-        });
-
-        if (changed > 0) editor.createHistoryUpdate();
+        const changed = editor.clear();
+        editor.createHistoryUpdate();
 
         store.dispatch(actions.asyncDispatchSelect());
     }

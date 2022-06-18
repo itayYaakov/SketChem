@@ -3,12 +3,13 @@ import * as ToolsConstants from "@constants/tools.constants";
 import { SaveFileAction } from "@src/types";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
+import { exportFileFromMolecule } from "@utils/KekuleUtils";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, Container, Form, Modal, Row, Tabs } from "react-bootstrap";
 import SelectSearch from "react-select-search";
 
-import { DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
@@ -31,30 +32,28 @@ function SupportedFiles(props: any) {
                 </option>
             ))}
         </Form.Select>
-        // <SelectSearch
-        //     //
-        //     options={selectOptions}
-        //     search
-        //     placeholder="Select export file extension"
-        // />
     );
 }
 
-function ExportFileTab(props: any) {
-    const { onHide, title } = props;
+function ExportFile(props: DialogProps & { title: string }) {
+    const { onHide, editor, title } = props;
     const [format, setFormat] = useState("mol");
     console.log(format);
 
-    const dispatch = useAppDispatch();
-
-    // const inputRef = React.createRef<HTMLTextAreaElement>();
-
-    const loadText = () => {
-        console.log("Export file from export.tsx");
-        const payload: SaveFileAction = {
-            format,
-        };
-        dispatch(actions.exportToFile(payload));
+    const loadText = (download: boolean) => {
+        editor.updateAllKekuleNodes();
+        const content = exportFileFromMolecule(format);
+        if (download) {
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `sketChem_mol.${format}`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            navigator.clipboard.writeText(content);
+        }
         onHide();
     };
 
@@ -67,26 +66,16 @@ function ExportFileTab(props: any) {
                     <Row>
                         <SupportedFiles selectOptions={options} onFormatChange={setFormat} initialFormat={format} />
                     </Row>
-                    <Row>
-                        {/* <Col>
-                            <textarea
-                                ref={inputRef}
-                                rows={12}
-                                className="w-100"
-                                placeholder="Paste content of any file (from the supported formats)"
-                            />
-                        </Col> */}
-                    </Row>
                 </Container>
             </Modal.Body>
             <Modal.Footer>
                 <div className="me-auto">
                     {/* Todo!! actually replace or add the molecule on the canvas */}
-                    <Button className="m-2" onClick={loadText}>
-                        Replace
+                    <Button className="m-2" onClick={() => loadText(true)}>
+                        Download
                     </Button>
-                    <Button className="m-2" onClick={loadText}>
-                        Add
+                    <Button className="m-2" onClick={() => loadText(false)}>
+                        Copy
                     </Button>
                 </div>
                 <Button className="m-2" onClick={onHide}>
@@ -99,10 +88,10 @@ function ExportFileTab(props: any) {
 
 const defaultTab = "paste";
 
-export function DialogLoadWindow(props: any) {
+export function DialogLoadWindow(props: DialogProps) {
     const [modalShow, setModalShow] = useState(true);
     const [key, setKey] = useState(defaultTab);
-    const { onHide } = props;
+    const { onHide, editor } = props;
 
     const hideMe = () => {
         setModalShow(false);
@@ -110,27 +99,14 @@ export function DialogLoadWindow(props: any) {
     };
 
     return (
-        // <Modal {...props} size="xl" aria-labelledby="contained-modal-title-vcenter" centered>
         <Modal
             show={modalShow}
             // size="xl"
-            dialogClassName={clsx(styles.export_dialog, "stupid_Test")}
+            dialogClassName={clsx(styles.export_dialog)}
             aria-labelledby="contained-modal-title-vcenter"
             centered
         >
-            <Tabs
-                id="controlled-tab-example"
-                activeKey={key}
-                onSelect={(k) => setKey(k ?? defaultTab)}
-                className="mb-3"
-            >
-                <Tab eventKey="paste" title="From Paste">
-                    <ExportFileTab onHide={hideMe} title="From Paste" />
-                </Tab>
-                <Tab eventKey="file" title="From file">
-                    <ExportFileTab onHide={hideMe} title="From file" />
-                </Tab>
-            </Tabs>
+            <ExportFile onHide={hideMe} editor={editor} title="From Paste" />
         </Modal>
     );
 }
@@ -140,9 +116,9 @@ class ExportToolBarTemplate implements DialogToolbarItem {
 
     keyboardKeys?: string[];
 
-    DialogRender: (props: any) => JSX.Element;
+    DialogRender: (props: DialogProps) => JSX.Element;
 
-    constructor(name: string, onToolClick: (props: any) => JSX.Element, keyboardKeys?: string[]) {
+    constructor(name: string, onToolClick: (props: DialogProps) => JSX.Element, keyboardKeys?: string[]) {
         this.name = name;
         this.keyboardKeys = keyboardKeys ?? undefined;
         this.DialogRender = onToolClick;

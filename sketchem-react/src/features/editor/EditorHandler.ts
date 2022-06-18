@@ -2,7 +2,7 @@ import { EntityType, EntityVisualState } from "@constants/enum.constants";
 import { actions } from "@features/chemistry/chemistrySlice";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { Atom, Bond, Entity } from "@src/entities";
-import { ActionItem, ChemistryState, EntityEventContext, EntityEventsFunctions } from "@src/types";
+import { ChemistryState, EntityEventContext, EntityEventsFunctions } from "@src/types";
 
 interface EntityMaps {
     selected: Map<number, Entity>;
@@ -62,6 +62,20 @@ export class EditorHandler {
         });
 
         return result;
+    }
+
+    clear() {
+        let changed = 0;
+        this.atomsMap.forEach((atom) => {
+            atom.destroy([], false);
+            changed += 1;
+        });
+        this.bondsMap.forEach((bond) => {
+            bond.destroy([], false);
+            changed += 1;
+        });
+
+        return changed;
     }
 
     createHistoryUpdate() {
@@ -126,6 +140,12 @@ export class EditorHandler {
     setEventListenersForAtoms(event?: EntityEventsFunctions) {
         this.atomsMap.forEach((atom) => {
             atom.setListeners(event);
+        });
+    }
+
+    updateAllKekuleNodes() {
+        this.atomsMap.forEach((atom) => {
+            atom.updateKekuleNode();
         });
     }
 

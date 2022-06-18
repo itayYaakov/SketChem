@@ -1,7 +1,7 @@
 import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
-import { ActionItem, ChemistryState } from "@types";
+import { ChemistryState } from "@types";
 import hash from "object-hash";
-import undoable, { StateWithHistory } from "redux-undo";
+import undoable from "redux-undo";
 
 const initialState = {} as any as ChemistryState;
 

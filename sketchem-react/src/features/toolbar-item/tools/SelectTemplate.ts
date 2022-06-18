@@ -135,11 +135,25 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     searchAnAtomToMergeWith(atom: Atom, ignoreAtomsList: number[]): Atom | undefined {
         const center = atom.getCenter();
-        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
+        const { atomsMap } = EntitiesMapsStorage;
 
-        const atomWasPressed = atomAtPoint(center, ignoreAtomsList);
-        if (atomWasPressed) {
-            const replacedAtom = getAtomById(atomWasPressed.id);
+        let atomWasPressed: Atom | undefined;
+        let minimumDistance = Number.MAX_VALUE;
+
+        // find closet minimum distance atom
+        atomsMap.forEach((mAtom, id) => {
+            if (ignoreAtomsList.includes(id)) return;
+            const atomCenter = mAtom.getCenter();
+            const distance = center.distance(atomCenter);
+            if (distance < minimumDistance) {
+                minimumDistance = distance;
+                atomWasPressed = mAtom;
+            }
+        });
+
+        if (atomWasPressed && minimumDistance < AtomConstants.SelectDistance) {
+            const replacedAtom = atomWasPressed;
+            if (!replacedAtom) return undefined;
             replacedAtom.setVisualState(EntityVisualState.Merge);
             console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
             this.mergeAtomsAction.push({ replacedAtom, replacingAtom: atom });
@@ -299,11 +313,15 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             const { shouldMoveAtomsIds, shouldMoveBondsIds, shouldMoveAtoms, shouldMoveBonds } = this.movesItem;
 
             const alreadyMergesAtoms: number[] = Array.from(shouldMoveAtomsIds);
+            const shouldMoveBondsIdsArray = Array.from(shouldMoveBondsIds);
+            performance.mark("beforeMergeAtoms");
             shouldMoveAtoms.forEach((atom) => {
-                atom.moveByDelta(delta, Array.from(shouldMoveBondsIds));
+                atom.moveByDelta(delta, shouldMoveBondsIdsArray);
                 const newMergedAtom = this.searchAnAtomToMergeWith(atom, alreadyMergesAtoms);
                 if (newMergedAtom) alreadyMergesAtoms.push(newMergedAtom.getId());
             });
+            performance.mark("afterMergeAtoms");
+            console.log(performance.measure("mergeAtoms", "beforeMergeAtoms", "afterMergeAtoms"));
 
             shouldMoveBonds.forEach((bond) => {
                 bond.moveByDelta(delta, false);
@@ -398,15 +416,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         const { editor } = eventHolder;
         const wasThereShape = this.isThereShape();
         this.perform(eventHolder);
-        // if (wasThereShape) {
-        //     this.unselectAll(editor);
-        // }
-        // if (
-        //     this.movesItem !== undefined &&
-        //     (this.movesItem.shouldMoveBondsIds?.size > 0 || this.movesItem.shouldMoveAtomsIds?.size > 0)
-        // ) {
-        //     this.unselectAll(editor);
-        // }
     }
 
     abstract setEdgePoints(eventHolder: MouseEventCallBackProperties): void;

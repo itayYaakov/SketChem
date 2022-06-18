@@ -72,9 +72,6 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
     }
 
     atomWasPressed(point: Vector2, eventHolder: MouseEventCallBackProperties) {
-        const { getAtomById, atomAtPoint } = EntitiesMapsStorage;
-
-        // const atomWasPressed = atomAtPoint(point);
         const atom = eventHolder.editor.getHoveredAtom();
         if (atom) {
             this.mode = MouseMode.AtomPressed;
@@ -123,10 +120,10 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
 
         let ignoreAtomList;
         if (this.context.endAtomIsPredefined === true) {
-            console.log("ignoreAtomList = this.createIgnoreAtomList(start);");
+            // console.log("ignoreAtomList = this.createIgnoreAtomList(start);");
             ignoreAtomList = this.createIgnoreAtomList("start");
         } else {
-            console.log("ignoreAtomList = this.createIgnoreAtomList(both);");
+            // console.log("ignoreAtomList = this.createIgnoreAtomList(both);");
             ignoreAtomList = this.createIgnoreAtomList("both");
         }
 
@@ -139,17 +136,14 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             const atom = getAtomById(draggedToAtom.id);
             this.context.endAtom = atom;
             this.context.endAtomIsPredefined = true;
-            console.log("found atom");
+            // console.log("found atom");
             return true;
         }
-        console.log("Couldn't find atom");
+        // console.log("Couldn't find atom");
         return false;
     }
 
     bondWasPressed(point: Vector2, eventHolder: MouseEventCallBackProperties) {
-        const { getBondById, bondAtPoint } = EntitiesMapsStorage;
-
-        // const bondWasPressed = bondAtPoint(point);
         const bond = eventHolder.editor.getHoveredBond();
         if (bond) {
             this.mode = MouseMode.BondPressed;
@@ -247,6 +241,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             if (this.context.endAtom && this.context.endAtomIsPredefined !== true) {
                 this.context.endAtom.updateAttributes({ center: endAtomCenter.get() });
             } else {
+                this.context.endAtom?.getOuterDrawCommand();
                 this.context.endAtom = this.createAtom(endAtomCenter);
                 this.context.endAtomIsPredefined = false;
             }
@@ -348,6 +343,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         }
 
         if (Object.keys(bondAttributes).length > 0) {
+            this.context.bond.getConnectedAtoms().forEach((atom) => atom.getOuterDrawCommand());
             this.context.bond.updateAttributes(bondAttributes);
         }
     }

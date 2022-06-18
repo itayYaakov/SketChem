@@ -1,18 +1,97 @@
 import { useAppDispatch } from "@app/hooks";
 import * as ToolsConstants from "@constants/tools.constants";
+import { drawMol } from "@features/chemistry/kekuleHandler";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
-import SelectSearch from "react-select-search";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Col, Container, Form, FormLabel, Modal, Row, Tab, Tabs } from "react-bootstrap";
 
 import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
-let isLibsEnabled = false;
+function ImportFileTab(props: DialogProps & { title: string }) {
+    const { onHide, editor } = props;
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const accepts = KekuleUtils.getSupportedReadFormats();
+    const myId = "uploadButtonImport";
+
+    const handleUpload = () => {
+        inputRef.current?.click();
+        console.log("Finally selected");
+    };
+
+    const loadText = (replace: boolean) => {
+        console.log("replace=", replace);
+        if (!inputRef.current?.files) return;
+        if (replace) {
+            editor.clear();
+        }
+        const file = inputRef.current?.files[0];
+        KekuleUtils.loadFileData(file, (mol: any, success: boolean) => {
+            if (success && mol) {
+                drawMol(mol);
+                editor.createHistoryUpdate();
+            }
+            onHide();
+        });
+    };
+
+    const handleDisplayFileDetails = (file: File | undefined) => {
+        if (!file) return;
+        setUploadedFileName(file.name);
+    };
+
+    return (
+        <>
+            <Modal.Body className="show-grid">
+                <Container fluid>
+                    <Row>
+                        <Col>
+                            <FormLabel htmlFor={myId}>Choose file:</FormLabel>
+                            <input
+                                ref={inputRef}
+                                id={myId}
+                                accept={accepts}
+                                onChange={(e) => handleDisplayFileDetails(e.target.files?.[0])}
+                                className="d-none"
+                                type="file"
+                                hidden
+                            />
+                        </Col>
+                        <Col>
+                            <Button
+                                role="button"
+                                onClick={handleUpload}
+                                className={uploadedFileName ? styles.buttons_green : styles.button_ok}
+                            >
+                                {uploadedFileName || "Upload"}
+                            </Button>
+                        </Col>
+                    </Row>
+                </Container>
+            </Modal.Body>
+            <Modal.Footer>
+                <div className="me-auto">
+                    {/* Todo!! actually replace or add the molecule on the canvas */}
+                    <Button className="m-2" onClick={() => loadText(true)}>
+                        Replace
+                    </Button>
+                    <Button className="m-2" onClick={() => loadText(false)}>
+                        Add
+                    </Button>
+                </div>
+                <Button className={clsx("m-2", styles.buttons_close)} onClick={onHide}>
+                    Close
+                </Button>
+            </Modal.Footer>
+        </>
+    );
+}
 
 function SupportedFiles(props: any) {
     /**
@@ -30,16 +109,10 @@ function SupportedFiles(props: any) {
                 </option>
             ))}
         </Form.Select>
-        // <SelectSearch
-        //     //
-        //     options={selectOptions}
-        //     search
-        //     placeholder="Select import file extension"
-        // />
     );
 }
 
-function ImportFileTab(props: DialogProps & { title: string }) {
+function ImportTextTab(props: DialogProps & { title: string }) {
     const { onHide, editor, title } = props;
     const [format, setFormat] = useState("mol");
     console.log(format);
@@ -48,29 +121,23 @@ function ImportFileTab(props: DialogProps & { title: string }) {
 
     const inputRef = React.createRef<HTMLTextAreaElement>();
 
-    const loadText = () => {
-        console.log("Print text");
+    const loadText = (replace: boolean) => {
         const textValue = inputRef?.current?.value;
         if (!textValue) return;
         console.log(textValue);
         const payload = {
             content: textValue,
             format,
-            replace: true,
         };
+        if (replace) {
+            editor.clear();
+        }
         dispatch(actions.loadFile(payload));
         editor.createHistoryUpdate();
         onHide();
     };
 
-    // !!!! find a better place
-    useEffect(() => {
-        if (isLibsEnabled) return;
-        KekuleUtils.enableBabel();
-        KekuleUtils.enableIndigo();
-        isLibsEnabled = true;
-    }, []);
-    const options = KekuleUtils.getSupportedReadFormats();
+    const options = KekuleUtils.getSupportedReadFormatsOptions();
 
     return (
         <>
@@ -79,29 +146,27 @@ function ImportFileTab(props: DialogProps & { title: string }) {
                     <Row>
                         <SupportedFiles selectOptions={options} onFormatChange={setFormat} initialFormat={format} />
                     </Row>
-                    <Row>
-                        <Col>
-                            <textarea
-                                ref={inputRef}
-                                rows={12}
-                                className="w-100"
-                                placeholder="Paste content of any file (from the supported formats)"
-                            />
-                        </Col>
+                    <Row className="mt-2">
+                        <textarea
+                            ref={inputRef}
+                            rows={12}
+                            className="w-100"
+                            placeholder="Paste content of any file (from the supported formats)"
+                        />
                     </Row>
                 </Container>
             </Modal.Body>
             <Modal.Footer>
                 <div className="me-auto">
                     {/* Todo!! actually replace or add the molecule on the canvas */}
-                    <Button className="m-2" onClick={loadText}>
+                    <Button className="m-2" onClick={() => loadText(true)}>
                         Replace
                     </Button>
-                    <Button className="m-2" onClick={loadText}>
+                    <Button className="m-2" onClick={() => loadText(false)}>
                         Add
                     </Button>
                 </div>
-                <Button className="m-2" onClick={onHide}>
+                <Button className={clsx("m-2", styles.buttons_close)} onClick={onHide}>
                     Close
                 </Button>
             </Modal.Footer>
@@ -137,7 +202,7 @@ export function DialogLoadWindow(props: DialogProps) {
                 className="mb-3"
             >
                 <Tab eventKey="paste" title="From Paste">
-                    <ImportFileTab onHide={hideMe} editor={editor} title="From Paste" />
+                    <ImportTextTab onHide={hideMe} editor={editor} title="From Paste" />
                 </Tab>
                 <Tab eventKey="file" title="From file">
                     <ImportFileTab onHide={hideMe} editor={editor} title="From file" />

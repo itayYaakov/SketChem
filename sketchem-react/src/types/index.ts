@@ -6,13 +6,6 @@ import { StateWithHistory } from "redux-undo";
 //= =============================================================================
 // Items
 //= =============================================================================
-export interface ActionItem {
-    command: "ADD" | "CHANGE" | "REMOVE";
-    type: EntityType;
-    atomAttributes?: AtomAttributes;
-    bondAttributes?: BondAttributes;
-}
-
 export interface EntityEventContext {
     id: number;
     type: EntityType;
@@ -25,11 +18,6 @@ export interface EntityEventsFunctions {
     onMouseClick?: (e: Event, data: EntityEventContext) => void;
     onMouseLeave?: (e: Event, data: EntityEventContext) => void;
 }
-
-// interface ActionItems {
-//     commands: ActionItem[];
-// }
-
 //= =============================================================================
 // Chemistry
 //= =============================================================================
@@ -138,7 +126,6 @@ export interface ToolbarAction {
 export interface LoadFileAction {
     content: string;
     format: string;
-    replace?: boolean;
 }
 export interface SaveFileAction {
     format: string;
@@ -156,10 +143,6 @@ export interface ToolbarItemState {
     exportContext: SaveFileAction;
     frequentAtoms: FrequentAtoms;
 }
-// export interface ChemistryState {
-//     items: ActionItem[][];
-// }
-
 export interface RootState {
     toolbarItem: ToolbarItemState;
     chemistry: StateWithHistory<ChemistryState>;

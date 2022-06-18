@@ -15,7 +15,7 @@ const getBoundingBox = (mol) => {
     return { minX, minY, maxX, maxY };
 };
 
-const drawMol = (mol) => {
+export const drawMol = (mol) => {
     // const removed = KekuleUtils.getRemovedNodesAndConnectorsAfterFunction(
     //     mol,
     //     mol.clearExplicitBondHydrogens.bind(mol)
@@ -77,6 +77,7 @@ const drawMol = (mol) => {
     for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
         const node = mol.getNodeAt(i);
         const { x, y } = node.absCoord2D;
+        if (Number.isNaN(x) || Number.isNaN(y)) throw new Error("Invalid atom coord, please check molecule file");
         const pos = new Vector2(x, -y).scaleSelf(molScale).addSelf(pointsDelta);
         // const pos = new Vector2(x, -y);
         // pos.scaleNew(molScale);

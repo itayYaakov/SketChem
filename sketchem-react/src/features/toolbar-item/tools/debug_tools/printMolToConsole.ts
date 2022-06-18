@@ -5,16 +5,21 @@ import * as ToolsConstants from "@constants/tools.constants";
 import { actions } from "@features/toolbar-item/toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 import { SaveFileAction } from "@src/types";
+import { exportFileFromMolecule } from "@src/utils/KekuleUtils";
 
-import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";
 import { RegisterToolbarWithName } from "../ToolsMapper.helper";
 
 class ExportMolToConsole implements ActiveToolbarItem {
-    onActivate() {
-        const payload: SaveFileAction = {
-            format: "mol",
-        };
-        store.dispatch(actions.exportToFile(payload));
+    onActivate(attrs?: LaunchAttrs) {
+        if (!attrs) return;
+        const { editor } = attrs;
+        if (!editor) {
+            throw new Error("Paste.onActivate: missing attributes or editor");
+        }
+        editor.updateAllKekuleNodes();
+        const content = exportFileFromMolecule("mdl");
+        console.log(content);
     }
 }
 
