@@ -1,16 +1,12 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AtomConstants } from "@constants/atom.constants";
-import { ElementsData } from "@constants/elements.constants";
-import { EntityType, LayersNames } from "@constants/enum.constants";
+import { LayersNames } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
-import type { NamedPoint, PointRBush } from "@features/shared/storage";
+import type { PointRBush } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
-import { IAtom, MouseEventCallBackProperties } from "@src/types";
 import { LayersUtils } from "@src/utils/LayersUtils";
-import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle } from "@svgdotjs/svg.js";
 
 import { ActiveToolbarItem, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";

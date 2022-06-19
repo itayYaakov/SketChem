@@ -5,12 +5,10 @@ import { Atom, Bond } from "@entities";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import styles from "@styles/index.module.scss";
 import { Path, PathArray, Text } from "@svgdotjs/svg.js";
 import { IAtom, IBond, MouseEventCallBackProperties } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
-import { ActiveToolbarItem } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BondTool, BondToolButton } from "./BondTool";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";

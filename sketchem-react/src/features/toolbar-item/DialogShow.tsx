@@ -3,9 +3,7 @@ import { useAppDispatch } from "@app/hooks";
 import { getToolbarDialog } from "@app/selectors";
 import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
-import styles from "@styles/index.module.scss";
-import clsx from "clsx";
-import React, { useRef, useState } from "react";
+import React from "react";
 import { shallowEqual, useSelector } from "react-redux";
 
 import { isDialogToolbarItem } from "./ToolbarItem";

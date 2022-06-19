@@ -1,6 +1,5 @@
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
-import { EditorHandler } from "@features/editor/EditorHandler";
 
 import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";

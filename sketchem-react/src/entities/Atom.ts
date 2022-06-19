@@ -2,17 +2,15 @@ import { AtomConstants } from "@constants/atom.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { ElementsData, PtElement } from "@constants/elements.constants";
 import { EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
-// import { editorObj } from "@features/editor/Editor";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import * as ValenceUtils from "@src/utils/ValenceUtils";
 import styles from "@styles/index.module.scss";
-import { Circle, Ellipse, Line, Rect, SVG, Svg, Text, Tspan } from "@svgdotjs/svg.js";
+import { Circle, Line, Rect, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
-import clsx from "clsx";
 
 import type { Bond } from "./Bond";
 import { Entity } from "./Entity";
@@ -57,7 +55,7 @@ export class Atom extends Entity {
     myType: EntityType = EntityType.Atom;
 
     constructor(args: IAtom) {
-        super(args);
+        super();
         this.lifeStage = EntityLifeStage.New;
         let id;
         let color;
@@ -510,12 +508,10 @@ export class Atom extends Entity {
         const labelChanged = newAttributes.symbol !== undefined && newAttributes.symbol !== this.attributes.symbol;
         const chargeChanged = newAttributes.charge !== undefined && newAttributes.charge !== this.attributes.charge;
 
-        const oldCenter = this.attributes.center;
         this.attributes = { ...this.attributes, ...newAttributes };
 
         if (moved) {
             this.modifyTree(false);
-            // !!! remove kekule update in here
             this.center = new Vector2(newAttributes.center!.x, newAttributes.center!.y);
             this.modifyTree(true);
             this.notifyConnectedBonds(ignoreNotifyBondsIds);

@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { EntityLifeStage, EntityType, EntityVisualState, MouseEventsNames } from "@constants/enum.constants";
 import { Box, Circle, Rect, Shape } from "@svgdotjs/svg.js";
-import { EntityAttributes, EntityEventContext, EntityEventsFunctions, IEntity } from "@types";
+import { EntityAttributes, EntityEventContext, EntityEventsFunctions } from "@types";
 
 // const hoverOrSelectColor = "#38e8e8";
 const hoverOrSelectColor = "#9bf3f3";
@@ -30,7 +30,7 @@ export abstract class Entity {
         this._visualState = value;
     }
 
-    constructor(attributes: IEntity) {
+    constructor() {
         this.lifeStage = EntityLifeStage.New;
         this.visualState = EntityVisualState.None;
     }
@@ -42,7 +42,7 @@ export abstract class Entity {
     protected abstract setHoverOrSelectShape(): void;
 
     // implement
-    protected modifyTree(add: boolean): void {}
+    protected abstract modifyTree(add: boolean): void;
 
     // implement
     protected addInstanceToMap(): void {}

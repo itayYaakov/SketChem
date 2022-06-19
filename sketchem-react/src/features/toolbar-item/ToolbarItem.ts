@@ -1,4 +1,3 @@
-import { AtomConstants } from "@constants/atom.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { MouseEventCallBackProperties, ToolbarAction, ToolbarItemButtonAttributes } from "@types";

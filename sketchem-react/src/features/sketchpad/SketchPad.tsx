@@ -4,24 +4,16 @@ import "./svgpanzoom";
 import { useWindowSize } from "@app/resizeHook";
 import { getToolbarItemContext } from "@app/selectors";
 import { MouseButtons, MouseEventsNames } from "@constants/enum.constants";
-import type Editor from "@features/editor/Editor";
 import { EditorHandler } from "@features/editor/EditorHandler";
-import {
-    ActiveToolbarItem,
-    isDialogToolbarItem,
-    LaunchAttrs,
-    ToolbarItem,
-    ToolbarItemButton,
-} from "@features/toolbar-item/ToolbarItem";
+import { ActiveToolbarItem, isDialogToolbarItem, LaunchAttrs, ToolbarItem } from "@features/toolbar-item/ToolbarItem";
 import { GetToolbarByName } from "@features/toolbar-item/tools/ToolsMapper.helper";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import styles from "@styles/index.module.scss";
-import { Number as SVGNumber, Point, SVG, Svg } from "@svgdotjs/svg.js";
+import { SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, ToolbarAction } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
 import * as _ from "lodash";
-// import panzoom, { PanZoom } from "panzoom";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 

@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * @module
  */
 
-import { fpad as pad, lerp as slerp } from "./maths";
+import { fpad as pad } from "./maths";
 
 export default class Vector2 {
     x: number;

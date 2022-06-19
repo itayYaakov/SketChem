@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AtomConstants } from "@constants/atom.constants";
-import { EntityType } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import type { Atom, Bond } from "@entities";
 import { EditorHandler } from "@features/editor/EditorHandler";
-import type { NamedPoint } from "@features/shared/storage";
-import { EntitiesMapsStorage } from "@features/shared/storage";
 import { MouseEventCallBackProperties } from "@src/types";
 
-import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
+import { LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { BoxSelect } from "./SelectTemplate";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";

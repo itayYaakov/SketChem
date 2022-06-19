@@ -1,7 +1,6 @@
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
-import { EditorHandler } from "@features/editor/EditorHandler";
 import { IAtom, IBond } from "@src/types";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 

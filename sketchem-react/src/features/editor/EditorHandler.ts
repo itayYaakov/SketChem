@@ -84,7 +84,7 @@ export class EditorHandler {
     }
 
     editAtomsAndBondsBasedOnStateObject(state: ChemistryState) {
-        let start = performance.now();
+        // let start = performance.now();
 
         const stateAtomsIds = new Set<number>();
         const stateBondsIds = new Set<number>();
@@ -97,15 +97,16 @@ export class EditorHandler {
                 const entity = this.atomsMap.get(atom.id);
                 entity?.updateAttributes(atom.attributes, ignoreBondsIds);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
                 const entity = new Atom({
                     props: atom.attributes,
                 });
             }
         });
 
-        const end2 = performance.now();
-        console.log(`editAtomsAndBondsBasedOnStateObject A took ${end2 - start} ms`);
-        start = performance.now();
+        // const end2 = performance.now();
+        // console.log(`editAtomsAndBondsBasedOnStateObject A took ${end2 - start} ms`);
+        // start = performance.now();
 
         state.bonds?.forEach((bond) => {
             stateBondsIds.add(bond.id);
@@ -113,6 +114,7 @@ export class EditorHandler {
                 const entity = this.bondsMap.get(bond.id);
                 entity?.updateAttributes(bond.attributes);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
                 const entity = new Bond({
                     props: bond.attributes,
                 });
@@ -133,8 +135,8 @@ export class EditorHandler {
             bond.execOuterDrawCommand();
         });
 
-        const end = performance.now();
-        console.log(`editAtomsAndBondsBasedOnStateObject took ${end - start} ms`);
+        // const end = performance.now();
+        // console.log(`editAtomsAndBondsBasedOnStateObject took ${end - start} ms`);
     }
 
     setEventListenersForAtoms(event?: EntityEventsFunctions) {

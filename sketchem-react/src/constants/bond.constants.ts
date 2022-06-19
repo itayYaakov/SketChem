@@ -1,9 +1,5 @@
 import type { IBondCache } from "@src/types";
-import { LayersUtils } from "@src/utils/LayersUtils";
-import Vector2 from "@src/utils/mathsTs/Vector2";
 import { PathArray } from "@svgdotjs/svg.js";
-
-import { LayersNames } from "./enum.constants";
 
 const BondPadding = 16;
 const HalfBondPadding = BondPadding / 2;
@@ -20,8 +16,6 @@ const createBondWedgeBackPointsArray = (cache: IBondCache) => {
 
     const tempX = cache.startPosition.x;
     const tempY = cache.startPosition.y;
-
-    console.log("distance", length, "sectors", sectors);
 
     for (let i = 1; i <= sectors; i += 1) {
         const tempBarHeight = (i / sectors) * BondPadding;
@@ -52,23 +46,6 @@ const createBondWedgeFrontPointsArray = (cache: IBondCache) => {
 
     const pathArray = new PathArray(pointArray);
     return pathArray;
-};
-
-const findParallelLinePoints = (cache: IBondCache, distance: number) => {
-    const delta = cache.endPosition.subNew(cache.startPosition).normalize();
-    const length = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-    const dx = delta.x / length;
-    const dy = delta.y / length;
-
-    const nx = dy;
-    const ny = -dx;
-
-    return {
-        x3: cache.startPosition.x + distance * nx,
-        y3: cache.startPosition.y + distance * ny,
-        x4: cache.endPosition.x + distance * nx,
-        y4: cache.endPosition.y + distance * ny,
-    };
 };
 
 const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 2 | 3) => {

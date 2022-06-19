@@ -1,6 +1,5 @@
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
-import { EditorHandler } from "@features/editor/EditorHandler";
 import { ToolbarAction } from "@src/types";
 import { ActionCreators } from "redux-undo";
 

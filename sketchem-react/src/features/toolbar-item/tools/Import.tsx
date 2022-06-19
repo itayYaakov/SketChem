@@ -4,14 +4,15 @@ import { drawMol } from "@features/chemistry/kekuleHandler";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Col, Container, Form, FormLabel, Modal, Row, Tab, Tabs } from "react-bootstrap";
 
-import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { DialogProps, ToolbarItemButton } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
+// eslint-disable-next-line react/no-unused-prop-types, @typescript-eslint/no-unused-vars, no-unused-vars
 function ImportFileTab(props: DialogProps & { title: string }) {
     const { onHide, editor } = props;
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
@@ -111,9 +112,9 @@ function SupportedFiles(props: any) {
         </Form.Select>
     );
 }
-
+// eslint-disable-next-line react/no-unused-prop-types, @typescript-eslint/no-unused-vars, no-unused-vars
 function ImportTextTab(props: DialogProps & { title: string }) {
-    const { onHide, editor, title } = props;
+    const { onHide, editor } = props;
     const [format, setFormat] = useState("mol");
     console.log(format);
 
@@ -210,20 +211,6 @@ export function DialogLoadWindow(props: DialogProps) {
             </Tabs>
         </Modal>
     );
-}
-
-class ImportToolBarTemplate implements DialogToolbarItem {
-    name: string;
-
-    keyboardKeys?: string[];
-
-    DialogRender: (props: DialogProps) => JSX.Element;
-
-    constructor(name: string, onToolClick: (props: DialogProps) => JSX.Element, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys ?? undefined;
-        this.DialogRender = onToolClick;
-    }
 }
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Import, {

@@ -1,24 +1,14 @@
 import { EditorConstants } from "@constants/editor.constant";
-import {
-    BondOrder,
-    BondStereoKekule,
-    EntityType,
-    EntityVisualState,
-    LayersNames,
-    MouseMode,
-} from "@constants/enum.constants";
+import { BondOrder, BondStereoKekule, EntityVisualState, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
-import { actions } from "@features/chemistry/chemistrySlice";
 import { EditorHandler } from "@features/editor/EditorHandler";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
-import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
 import { BondAttributes, IAtom, IBond, MouseEventCallBackProperties } from "@types";
-import { EventHandler } from "react";
 
-import { ActiveToolbarItem, LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";
+import { ActiveToolbarItem, LaunchAttrs } from "../ToolbarItem";
 
 export abstract class EntityBaseTool implements ActiveToolbarItem {
     bondOrder!: BondOrder;
@@ -319,7 +309,6 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             return;
         }
 
-        const { getAtomById } = EntitiesMapsStorage;
         const bondAttributes: Partial<BondAttributes> = this.context.bond.getAttributes();
         const { atomStartId: currentBondStartAtomId, atomEndId: currentBondEndAtomId } = bondAttributes;
 

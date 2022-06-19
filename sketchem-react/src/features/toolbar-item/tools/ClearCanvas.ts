@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
-import { EditorHandler } from "@features/editor/EditorHandler";
-import { EntitiesMapsStorage } from "@features/shared/storage";
 
 import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../ToolbarItem";
 import { actions } from "../toolbarItemsSlice";
@@ -16,10 +14,8 @@ class ClearCanvas implements ActiveToolbarItem {
         if (!editor) {
             throw new Error("ClearCanvas.onActivate: missing attributes or editor");
         }
-        const { atomsMap, bondsMap } = EntitiesMapsStorage;
-
         const changed = editor.clear();
-        editor.createHistoryUpdate();
+        if (changed) editor.createHistoryUpdate();
 
         store.dispatch(actions.asyncDispatchSelect());
     }

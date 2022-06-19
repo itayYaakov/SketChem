@@ -1,10 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
-import { actions } from "@features/toolbar-item/toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
-import { SaveFileAction } from "@src/types";
 import { exportFileFromMolecule } from "@src/utils/KekuleUtils";
 
 import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";

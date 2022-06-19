@@ -2,14 +2,13 @@
 import { BondConstants } from "@constants/bond.constants";
 import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder, BondStereoKekule, EntityLifeStage, EntityType, LayersNames } from "@constants/enum.constants";
-import { actions } from "@features/chemistry/chemistrySlice";
 // import { addHistoryItem } from "@features/editor/Editor";
 import { EntitiesMapsStorage, NamedPoint } from "@features/shared/storage";
 import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { Circle, Gradient, Line, Path, PathArray, Rect, SVG, Svg } from "@svgdotjs/svg.js";
+import { Circle, Gradient, Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BondAttributes, IBond, IBondCache } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
@@ -76,7 +75,7 @@ export class Bond extends Entity {
     };
 
     constructor(args: IBond) {
-        super(args);
+        super();
         let order: BondOrder;
         let stereo: BondStereoKekule;
         let atomStartId: number;
@@ -180,7 +179,6 @@ export class Bond extends Entity {
         const endCenter = this.endAtom.getCenter();
 
         const angle1Rad = startCenter.angle(endCenter);
-        const angle1Deg = AngleUtils.radToDeg(angle1Rad);
         const distanceCenters = startCenter.distance(endCenter);
 
         const startPositionBase = this.startAtom.calculateEllipsePointOnCircumferenceGivenAngle(angle1Rad + Math.PI);
@@ -206,11 +204,6 @@ export class Bond extends Entity {
         this.cache.angleDeg = AngleUtils.radToDeg(this.cache.angleRad);
 
         this.cache.distance = this.cache.startPosition.distance(this.cache.endPosition);
-
-        const rectangleTopLeft = {
-            x: this.cache.startPosition.x,
-            y: this.cache.startPosition.y,
-        };
 
         const hoverTopLeft = {
             x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(this.cache.angleRad),

@@ -3,7 +3,6 @@
 import { ElementsData } from "@constants/elements.constants";
 
 import { MDLValence } from "./mdlValance";
-import openBabelValence from "./openBabelValance";
 
 const defaultValenceByElement = new Map<string, number[]>();
 

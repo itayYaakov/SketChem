@@ -1,5 +1,3 @@
-import { ElementsData } from "./elements.constants";
-
 export enum ToolsNames {
     Empty = "",
     Atom = "atom",

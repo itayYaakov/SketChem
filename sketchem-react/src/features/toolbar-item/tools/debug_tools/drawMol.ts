@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { store } from "@app/store";
 import * as ToolsConstants from "@constants/tools.constants";
-import { EditorHandler } from "@features/editor/EditorHandler";
-import { EntitiesMapsStorage } from "@features/shared/storage";
 import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButtonMapper.helper";
 
 import { ActiveToolbarItem, LaunchAttrs, SimpleToolbarItemButtonBuilder } from "../../ToolbarItem";

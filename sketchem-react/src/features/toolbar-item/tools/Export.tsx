@@ -6,7 +6,7 @@ import clsx from "clsx";
 import React, { useState } from "react";
 import { Button, Container, Form, Modal, Row } from "react-bootstrap";
 
-import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
+import { DialogProps, ToolbarItemButton } from "../ToolbarItem";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
 
@@ -29,8 +29,9 @@ function SupportedFiles(props: any) {
     );
 }
 
+// eslint-disable-next-line react/no-unused-prop-types, @typescript-eslint/no-unused-vars, no-unused-vars
 function ExportFile(props: DialogProps & { title: string }) {
-    const { onHide, editor, title } = props;
+    const { onHide, editor } = props;
     const [format, setFormat] = useState("mol");
     console.log(format);
 
@@ -80,11 +81,8 @@ function ExportFile(props: DialogProps & { title: string }) {
     );
 }
 
-const defaultTab = "paste";
-
 export function DialogLoadWindow(props: DialogProps) {
     const [modalShow, setModalShow] = useState(true);
-    const [key, setKey] = useState(defaultTab);
     const { onHide, editor } = props;
 
     const hideMe = () => {
@@ -103,20 +101,6 @@ export function DialogLoadWindow(props: DialogProps) {
             <ExportFile onHide={hideMe} editor={editor} title="From Paste" />
         </Modal>
     );
-}
-
-class ExportToolBarTemplate implements DialogToolbarItem {
-    name: string;
-
-    keyboardKeys?: string[];
-
-    DialogRender: (props: DialogProps) => JSX.Element;
-
-    constructor(name: string, onToolClick: (props: DialogProps) => JSX.Element, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys ?? undefined;
-        this.DialogRender = onToolClick;
-    }
 }
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Export, {

@@ -1,13 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
 import { AtomConstants } from "@constants/atom.constants";
-import { BondConstants } from "@constants/bond.constants";
 import { EntityType, EntityVisualState, LayersNames } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
 import { Atom, Bond } from "@entities";
-import { actions } from "@features/chemistry/chemistrySlice";
 import { EditorHandler } from "@features/editor/EditorHandler";
-import type { NamedPoint } from "@features/shared/storage";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
@@ -127,7 +123,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     resetMergedAtoms() {
         this.mergeAtomsAction.forEach((action) => {
-            const { replacingAtom, replacedAtom } = action;
+            const { replacedAtom } = action;
             replacedAtom.setVisualState(EntityVisualState.None);
         });
         this.mergeAtomsAction = [];
@@ -413,8 +409,6 @@ abstract class SelectTemplate implements ActiveToolbarItem {
     }
 
     onMouseLeave(eventHolder: MouseEventCallBackProperties) {
-        const { editor } = eventHolder;
-        const wasThereShape = this.isThereShape();
         this.perform(eventHolder);
     }
 
@@ -430,7 +424,7 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
     abstract removeShape(): void;
 
-    doAction(...params: any): void {}
+    abstract doAction(...params: any): void;
 }
 
 export class BoxSelect extends SelectTemplate {
@@ -445,7 +439,7 @@ export class BoxSelect extends SelectTemplate {
         this.maxBoundingBoxPoint = Vector2.max(mouseDownLocation, mouseCurrentLocation);
     }
 
-    pointIsInShape(x: number, y: number, bBox: BoundingBox) {
+    pointIsInShape() {
         return true;
     }
 
@@ -483,6 +477,9 @@ export class BoxSelect extends SelectTemplate {
         this.rect?.remove();
         this.rect = undefined;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    doAction(_: any): void {}
 }
 
 class LassoSelect extends SelectTemplate {
@@ -495,7 +492,7 @@ class LassoSelect extends SelectTemplate {
     shapeFillColor: string = "#5cdfdd";
 
     setEdgePoints(eventHolder: MouseEventCallBackProperties) {
-        const { mouseCurrentLocation, mouseDownLocation } = eventHolder;
+        const { mouseCurrentLocation } = eventHolder;
         this.minBoundingBoxPoint.minSelf(mouseCurrentLocation);
         this.maxBoundingBoxPoint.maxSelf(mouseCurrentLocation);
     }
@@ -556,13 +553,12 @@ class LassoSelect extends SelectTemplate {
         this.path?.remove();
         this.path = undefined;
     }
+
+    doAction(): void {}
 }
 
 const boxSelectTool = new BoxSelect();
 const lassoSelectTool = new LassoSelect();
-
-// !!!! delete later !! not needed
-export { boxSelectTool };
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectBox, boxSelectTool);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectLasso, lassoSelectTool);

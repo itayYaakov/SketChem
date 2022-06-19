@@ -3,7 +3,6 @@ import { BondConstants } from "@constants/bond.constants";
 import { EntityType } from "@constants/enum.constants";
 import type { Atom, Bond } from "@entities";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { Svg } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 
 import { mergeArrays } from "./oldRbushKnn";

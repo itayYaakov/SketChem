@@ -1,4 +1,3 @@
-import type { PtElement } from "@constants/elements.constants";
 import { ElementsData } from "@constants/elements.constants";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
@@ -11,6 +10,7 @@ const MaxColumn = 18;
 
 interface PeriodicTableProps {
     className?: string | undefined;
+    // eslint-disable-next-line react/no-unused-prop-types
     onAtomClick?: ((atomLabel: string) => void) | undefined;
 }
 
@@ -115,7 +115,9 @@ function PeriodicTable(props: PeriodicTableProps) {
 
 PeriodicTable.defaultProps = {
     className: "",
-    onAtomClick: () => {},
+    onAtomClick: () => {
+        // currently not used, in the future it will be used to show the atom details, or select multiple atoms
+    },
 };
 
 export default PeriodicTable;

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-undef */
 import { EditorConstants } from "@constants/editor.constant";
@@ -76,7 +78,7 @@ export function importMoleculeFromFile(file, format) {
 
 function getBoundingBox(molec) {
     // {x2: maxX, x1: minX, y2: maxY, y1: minY}
-    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = mol.getContainerBox2D();
+    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = molec.getContainerBox2D();
     const xDelta = maxX - minX;
     const yDelta = maxY - minY;
     return { minX, minY, maxX, maxY, xDelta, yDelta };
@@ -602,7 +604,7 @@ export function calcMostEmptyDirectionAngleOfChemObj(obj, linkedObjs, allowCoord
 
 // wrapper for function, print before and after
 export function getRemovedNodesAndConnectorsAfterFunction(my_mol, func) {
-    return function (...args) {
+    return (...args) => {
         const nodesBefore = my_mol.getConnectors().map((x) => x.id);
         const connectorsBefore = my_mol.getNodes().map((x) => x.id);
 
@@ -652,7 +654,7 @@ export function calcPreferred2DBondGrowingDirection(startingObj, defBondAngle, a
             if (angle1 < 0) angle1 += Math.PI * 2;
             if (angle2 < 0) angle2 += Math.PI * 2;
             let finalAngle;
-            // we have two appliable angles, if they are not the same, choose the one closest to horizontal line
+            // we have two applicable angles, if they are not the same, choose the one closest to horizontal line
             if (angle1 !== angle2) {
                 const ca1 = Math.min(
                     angle1 > Math.PI ? Math.abs(angle1 - Math.PI * 2) : angle1,
@@ -673,27 +675,6 @@ export function calcPreferred2DBondGrowingDirection(startingObj, defBondAngle, a
             return finalAngle;
         }
     }
-}
-
-function kekuleinitPropValues() {
-    const degreeStep = Math.PI / 180;
-
-    // init defBondAngles array
-    const angles = [];
-    const BO = Kekule.BondOrder;
-    // const angle120 = (Math.PI * 2) / 3;
-    // angles[0] = angle120; // default value for unset bonds
-    // angles[BO.EXPLICIT_AROMATIC] = [angle120];
-    // angles[BO.TRIPLE] = [Math.PI];
-    // angles[BO.DOUBLE] = [angle120];
-    // angles[BO.DOUBLE][BO.DOUBLE] = Math.PI;
-    // angles[BO.SINGLE] = [angle120];
-
-    this.setDefBondAngles(angles);
-    this.setBondConstrainedDirectionDelta((10 * Math.PI) / 180);
-    this.setBondConstrainedDirectionAngles([0, 90 * degreeStep, 180 * degreeStep, 270 * degreeStep]);
-    this.setBondConstrainedDirectionAngleThreshold(degreeStep * 3);
-    this.setInitialBondDirection(30 * degreeStep);
 }
 
 /**
@@ -742,14 +723,13 @@ export function loadFileData(file, callback, formatId = undefined, options = und
 
             // try open it the file by FileReader
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = (e) => {
                 const content = reader.result;
                 const chemObj = Kekule.IO.loadFormatData(content, formatInfo.id, options);
                 if (chemObj && chemObj.getSrcInfo) {
                     const info = chemObj.getSrcInfo();
                     info.fileName = fileName;
                 }
-                // const success = !!chemObj;
                 const success = chemObj !== false;
                 callback(chemObj, success, content);
             };
@@ -767,6 +747,5 @@ export function loadFileData(file, callback, formatId = undefined, options = und
 }
 
 // ? Convert to buttons in the future?
-// ! currently disabled by default
 enableBabel();
 enableIndigo();

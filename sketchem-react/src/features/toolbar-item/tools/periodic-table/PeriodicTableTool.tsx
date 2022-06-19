@@ -5,10 +5,10 @@ import { RegisterToolbarButtonWithName } from "@features/toolbar-item/ToolsButto
 import { IAtomAttributes, ToolbarAction } from "@src/types";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, Modal, Row, Tab, Tabs } from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, Card, Modal } from "react-bootstrap";
 
-import { DialogToolbarItem, ToolbarItemButton } from "../../ToolbarItem";
+import { ToolbarItemButton } from "../../ToolbarItem";
 import { RegisterToolbarWithName } from "../ToolsMapper.helper";
 // import { actions } from "../toolbarItemsSlice";
 import PeriodicTable from "./PeriodicTable";
@@ -64,20 +64,6 @@ export function PeriodicTableWindow(props: any) {
             </Card>
         </Modal>
     );
-}
-
-class PeriodicTableToolbarItem implements DialogToolbarItem {
-    name: string;
-
-    keyboardKeys?: string[];
-
-    DialogRender: (props: any) => JSX.Element;
-
-    constructor(name: string, onToolClick: (props: any) => JSX.Element, keyboardKeys?: string[]) {
-        this.name = name;
-        this.keyboardKeys = keyboardKeys ?? undefined;
-        this.DialogRender = onToolClick;
-    }
 }
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.PeriodicTable, {

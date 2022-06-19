@@ -1,6 +1,5 @@
 import { BondOrder, BondStereoKekule, EntityVisualState, MouseMode } from "@constants/enum.constants";
 import * as ToolsConstants from "@constants/tools.constants";
-import { EditorHandler } from "@features/editor/EditorHandler";
 import { IBondAttributes, MouseEventCallBackProperties } from "@types";
 
 import { LaunchAttrs, ToolbarItemButton } from "../ToolbarItem";

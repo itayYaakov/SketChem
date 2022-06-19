@@ -15,7 +15,6 @@ import { ReactComponent as ChargeMinus } from "./charge_minus.svg";
 import { ReactComponent as ChargePlus } from "./charge_plus.svg";
 import { ReactComponent as ClearCanvasIcon } from "./clear_canvas.svg";
 import { ReactComponent as CopyIcon } from "./copy.svg";
-import { ReactComponent as DebugIcon } from "./debug.svg";
 import { ReactComponent as EraseIcon } from "./erase.svg";
 import { ReactComponent as ExportIcon } from "./export.svg";
 import { ReactComponent as ImportIcon } from "./import.svg";
@@ -59,7 +58,6 @@ IconsMap.set(ToolsConstants.SubToolsNames.ChargePlus, ChargePlus);
 IconsMap.set(ToolsConstants.ToolsNames.Undo, UndoIcon);
 IconsMap.set(ToolsConstants.ToolsNames.Redo, RedoIcon);
 
-// const IconSize = "1.5em";
 const IconSize = "2rem";
 const IconFontSize = "1.5rem";
 
@@ -70,7 +68,7 @@ function generateAtomIcon(tool: AtomToolbarItemButton): (props: any) => JSX.Elem
 
     // create an div with label in horizontal and vertical center, and with the color
     function Icon(props: any) {
-        const { width, height } = props;
+        const { height } = props;
         return (
             <div
                 style={{
@@ -100,7 +98,7 @@ function generateAtomIcon(tool: AtomToolbarItemButton): (props: any) => JSX.Elem
 function generateDebugIcon(tool: ToolbarItemButton): (props: any) => JSX.Element {
     const { name } = tool;
 
-    function Icon(props: any) {
+    function Icon() {
         return (
             <div
                 style={{
