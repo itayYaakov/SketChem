@@ -1,5 +1,6 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-undef */
+import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder } from "@constants/enum.constants";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 
@@ -86,7 +87,7 @@ function transformMoleculeBoundingBox(molec) {
     const targetBoundingBox = { minX: 0, minY: 0, width: 10 };
 
     // const scale = targetBoundingBox.width / bbox.xDelta;
-    const scale = 1;
+    const scale = 1 / EditorConstants.Scale;
 
     // transfer all points from bbox to targetBoundingBox
     for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
