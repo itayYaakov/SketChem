@@ -85,7 +85,8 @@ function transformMoleculeBoundingBox(molec) {
     const bbox = getBoundingBox(molec);
     const targetBoundingBox = { minX: 0, minY: 0, width: 10 };
 
-    const scale = targetBoundingBox.width / bbox.xDelta;
+    // const scale = targetBoundingBox.width / bbox.xDelta;
+    const scale = 1;
 
     // transfer all points from bbox to targetBoundingBox
     for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
