@@ -93,6 +93,16 @@ export interface IBondAttributes {
     readonly bondStereo: BondStereoKekule;
 }
 
+export interface IBondCache {
+    startPosition: Vector2;
+    endPosition: Vector2;
+    color1: string;
+    color2: string;
+    angleRad: number;
+    angleDeg: number;
+    distance: number;
+}
+
 export interface IChargeAttributes {
     readonly charge: number;
 }

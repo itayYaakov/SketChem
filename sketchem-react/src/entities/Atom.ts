@@ -83,7 +83,7 @@ export class Atom extends Entity {
 
         const elementsMap = ElementsData.elementsBySymbolMap;
         this.element = elementsMap.get(this.attributes.symbol);
-        this.attributes.color = this.getColor(this.element, color);
+        this.attributes.color = this.getElementColor(this.element, color);
         this.center = new Vector2(this.attributes.center.x, this.attributes.center.y);
         this.showValenceError = false;
         this.implicitHydrogenCount = 0;
@@ -94,7 +94,7 @@ export class Atom extends Entity {
         this.lifeStage = EntityLifeStage.Initialized;
     }
 
-    getColor(element: PtElement | undefined, color?: string) {
+    private getElementColor(element: PtElement | undefined, color?: string) {
         return color ?? element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000";
         // return color ?? element?.customColor ?? element?.jmolColor ?? element?.cpkColor ?? "#000000";
     }
@@ -196,7 +196,7 @@ export class Atom extends Entity {
             if (ignoreNotify.includes(bond.getId())) {
                 return;
             }
-            bond.move();
+            bond.getOuterDrawCommand();
         });
     }
 
@@ -523,7 +523,8 @@ export class Atom extends Entity {
 
         if (labelChanged) {
             this.element = ElementsData.elementsBySymbolMap.get(this.attributes.symbol);
-            this.attributes.color = this.getColor(this.element);
+            this.attributes.color = this.getElementColor(this.element);
+            this.notifyConnectedBonds();
         }
 
         if (chargeChanged || labelChanged) {
@@ -571,6 +572,10 @@ export class Atom extends Entity {
 
     getCenter() {
         return this.center.clone();
+    }
+
+    getColor() {
+        return this.attributes.color;
     }
 
     getSymbol() {

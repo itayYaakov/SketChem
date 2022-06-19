@@ -25,8 +25,6 @@ import * as _ from "lodash";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
-import SetDefs from "./SetDefs";
-
 interface Props {
     editor: EditorHandler;
 }
@@ -244,7 +242,6 @@ function SketchPad(props: Props) {
     }
 
     useEffect(setupSvg, []);
-    useEffect(() => SetDefs(svgRef.current), []);
     useEffect(() => LayersUtils.setLayers(svgRef.current), []);
     useEffect(() => resizeEvent(svgRef.current, initialZoomRatio.current), [useWindowSize()]);
 

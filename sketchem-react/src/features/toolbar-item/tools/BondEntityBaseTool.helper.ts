@@ -338,7 +338,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             delete bondAttributes.atomEndId;
             // only move the bond if end atom id hasn't changed and it's not predefined
             if (this.context.endAtomIsPredefined === false) {
-                this.context.bond.move();
+                this.context.bond.getOuterDrawCommand();
             }
         }
 

@@ -9,8 +9,8 @@ import { IdUtils } from "@src/utils/IdUtils";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@src/utils/mathsTs/Vector2";
-import { Circle, Line, Rect, SVG, Svg } from "@svgdotjs/svg.js";
-import { BondAttributes, IBond } from "@types";
+import { Circle, Gradient, Line, Path, PathArray, Rect, SVG, Svg } from "@svgdotjs/svg.js";
+import { BondAttributes, IBond, IBondCache } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
 
 // !!! MOVE TO REDUX??
@@ -33,7 +33,9 @@ export class Bond extends Entity {
 
     attributes: BondAttributes;
 
-    private elem: Rect | undefined;
+    private elem: Path | undefined;
+
+    private gradient: Gradient | undefined;
 
     private _startAtom: Atom | undefined;
 
@@ -62,6 +64,16 @@ export class Bond extends Entity {
     private lastTreeNode: NamedPoint | undefined;
 
     myType: EntityType = EntityType.Bond;
+
+    private cache: IBondCache = {
+        startPosition: Vector2.zero(),
+        endPosition: Vector2.zero(),
+        color1: "#000000",
+        color2: "#000000",
+        angleRad: 0,
+        angleDeg: 0,
+        distance: 0,
+    };
 
     constructor(args: IBond) {
         super(args);
@@ -151,7 +163,7 @@ export class Bond extends Entity {
 
     stCircle: Circle[] = [];
 
-    move() {
+    private move() {
         if (!this.startAtom || !this.endAtom) return;
 
         this.modifyTree(false);
@@ -179,76 +191,32 @@ export class Bond extends Entity {
         const deltaX = 0.1 * delta.x;
         const deltaY = 0.1 * delta.y;
 
-        const startPosition = startPositionBase.addValues(deltaX, deltaY);
-        const endPosition = endPositionBase.addValues(-deltaX, -deltaY);
+        this.cache.startPosition = startPositionBase.addValues(deltaX, deltaY);
+        this.cache.endPosition = endPositionBase.addValues(-deltaX, -deltaY);
 
-        const angle2Rad = startPosition.angle(endPosition) + Math.PI / 2;
-        const angle2Deg = AngleUtils.radToDeg(angle2Rad);
+        this.cache.angleRad = this.cache.startPosition.angle(this.cache.endPosition) + Math.PI / 2;
+        this.cache.angleDeg = AngleUtils.radToDeg(this.cache.angleRad);
 
-        const distance = startPosition.distance(endPosition);
-
-        // this.stCircle[0]?.remove();
-        // this.stCircle[1]?.remove();
-        // this.stCircle[7]?.remove();
-        // this.stCircle[0] = LayersUtils.getLayer(LayersNames.General)
-        //     .circle(2)
-        //     .center(startPositionHover.x, startPositionHover.y)
-        //     .fill("orange");
-        // this.stCircle[1] = LayersUtils.getLayer(LayersNames.General)
-        //     .circle(2)
-        //     .center(endPositionHover.x, endPositionHover.y)
-        //     .fill("purple");
-
-        // this.stCircle[2]?.remove();
-        // this.stCircle[2] = LayersUtils.getLayer(LayersNames.General)
-        //     .circle(2)
-        //     .center(startPosition.x, startPosition.y)
-        //     .fill("green");
-        // this.stCircle[3]?.remove();
-        // this.stCircle[3] = LayersUtils.getLayer(LayersNames.General)
-        //     .circle(2)
-        //     .center(endPosition.x, endPosition.y)
-        //     .fill("blue");
-
-        this.elem =
-            this.elem ??
-            LayersUtils.getLayer(LayersNames.Bond)
-                .rect(0, 0)
-                .attr({ "pointer-events": "none" })
-                .id(IdUtils.getBondElemId(this.attributes.id));
+        this.cache.distance = this.cache.startPosition.distance(this.cache.endPosition);
 
         const rectangleTopLeft = {
-            x: startPosition.x - (BondConstants.padding / 2) * Math.cos(angle2Rad),
-            y: startPosition.y - (BondConstants.padding / 2) * Math.sin(angle2Rad),
+            x: this.cache.startPosition.x,
+            y: this.cache.startPosition.y,
         };
 
         const hoverTopLeft = {
-            x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(angle2Rad),
-            y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(angle2Rad),
+            x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(this.cache.angleRad),
+            y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(this.cache.angleRad),
         };
-
-        // this.stCircle[5]?.remove();
-        // this.stCircle[5] = LayersUtils.getLayer(LayersNames.General)
-        //     .circle(2)
-        //     .center(rectangleTopLeft.x, rectangleTopLeft.y)
-        //     .fill("red");
-
-        this.elem
-            .width(BondConstants.padding)
-            .height(distance)
-            .x(rectangleTopLeft.x)
-            .y(rectangleTopLeft.y)
-            .attr(this.createTransformObject(angle2Deg, rectangleTopLeft));
 
         this.hoverOrSelectShape
             ?.width(BondConstants.padding)
             .height(distanceForHoverShape)
             .x(hoverTopLeft.x)
             .y(hoverTopLeft.y)
-            .attr(this.createTransformObject(angle2Deg, hoverTopLeft));
+            .attr(this.createTransformObject(this.cache.angleDeg, hoverTopLeft));
 
-        // this.setBondCenter();
-        this.center = Vector2.midpoint(startPosition, endPosition, 0.5);
+        this.center = Vector2.midpoint(this.cache.startPosition, this.cache.endPosition, 0.5);
 
         this.modifyTree(true);
     }
@@ -274,30 +242,96 @@ export class Bond extends Entity {
 
     protected undraw() {
         this.elem?.remove();
+        this.gradient?.remove();
         this.hoverOrSelectShape?.remove();
         this.elem = undefined;
+        this.gradient = undefined;
         this.hoverOrSelectShape = undefined;
     }
 
     drawStereoAndOrder() {
-        if (!this.elem) {
-            throw new Error("Rect is not defined");
+        // const pathArray = BondConstants.createBondWedgeBackPointsArray(this.center, this.center);
+
+        this.elem =
+            this.elem ??
+            LayersUtils.getLayer(LayersNames.Bond)
+                .path()
+                .fill("none")
+                .attr({ "pointer-events": "none" })
+                .id(IdUtils.getBondElemId(this.attributes.id))
+                .stroke({
+                    color: "black",
+                    width: BondConstants.wedgeStroke,
+                    linecap: "round",
+                    linejoin: "round",
+                });
+
+        const singleBond = this.attributes.order === BondOrder.Single;
+        const doubleBond = this.attributes.order === BondOrder.Double;
+        const tripleBond = this.attributes.order === BondOrder.Triple;
+        const stereoNone = this.attributes.stereo === BondStereoKekule.NONE;
+        const wedgeBack = this.attributes.stereo === BondStereoKekule.DOWN;
+        const wedgeFront = this.attributes.stereo === BondStereoKekule.UP;
+
+        let pathArray: PathArray | undefined;
+
+        if (wedgeBack && singleBond) {
+            pathArray = BondConstants.createBondWedgeBackPointsArray(this.cache);
+        } else if (wedgeFront && singleBond) {
+            pathArray = BondConstants.createBondWedgeFrontPointsArray(this.cache);
+        } else if (stereoNone && singleBond) {
+            pathArray = BondConstants.createRegularBondPointsArray(this.cache, 1);
+        } else if (stereoNone && doubleBond) {
+            pathArray = BondConstants.createRegularBondPointsArray(this.cache, 2);
+        } else if (stereoNone && tripleBond) {
+            pathArray = BondConstants.createRegularBondPointsArray(this.cache, 3);
         }
 
-        if (this.attributes.stereo === BondStereoKekule.NONE) {
-            this.elem.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondOrder[this.attributes.order])));
-        } else {
-            this.elem.fill(IdUtils.getUrlId(IdUtils.getDefElemId(BondStereoKekule[this.attributes.stereo])));
+        if (pathArray) this.elem.plot(pathArray);
+        let rotate = true;
+        let drawGradient = true;
+        if (wedgeBack && singleBond) {
+            this.elem?.attr(this.createTransformObject(this.cache.angleDeg + 90, this.cache.startPosition));
+            rotate = false;
+        }
+        if (wedgeFront && singleBond) {
+            this.elem?.fill("black");
+            drawGradient = false;
         }
 
-        switch (this.attributes.stereo) {
-            case BondStereoKekule.DOWN:
-            case BondStereoKekule.UP:
-                this.elem.attr("clip-path", IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.poly_clip_id)));
-                break;
+        if (drawGradient) {
+            this.createOrUpdateGradient(rotate);
+            this.elem?.stroke(this.gradient!.url());
+        }
+    }
 
-            default:
-                this.elem.attr("clip-path", "");
+    createOrUpdateGradient(rotate: boolean) {
+        const color1 = this.startAtom?.getColor() ?? "#000000";
+        const color2 = this.endAtom?.getColor() ?? "#000000";
+        this.gradient =
+            this.gradient ??
+            LayersUtils.getLayer(LayersNames.Root)
+                .gradient("linear", (add) => {
+                    add.stop(0, color1);
+                    add.stop(1, color2);
+                })
+                // .attr({ gradientUnits: "userSpaceOnUse" })
+                .id(`${IdUtils.getBondElemId(this.attributes.id)}_gradient`);
+
+        if (color1 !== this.cache.color1 || color2 !== this.cache.color2) {
+            this.cache.color1 = color1;
+            this.cache.color2 = color2;
+            this.gradient.update((add) => {
+                add.stop(0, color1);
+                add.stop(1, color2);
+            });
+        }
+
+        if (rotate) {
+            this.gradient.attr({
+                gradientTransform: `rotate(${this.cache.angleDeg + 90} 0.5 0)`,
+                // gradientTransform: `rotate(${this.cache.angleDeg + 90} 0.5 0)`,
+            });
         }
     }
 
@@ -309,23 +343,6 @@ export class Bond extends Entity {
     getOuterDrawCommand() {
         if (this.lifeStage !== EntityLifeStage.Initialized) return;
         this.draw();
-    }
-
-    select(isSelected: boolean) {
-        if (!this.elem) throw new Error("Rect is not defined");
-
-        if (isSelected) {
-            this.elem.attr({ filter: IdUtils.getUrlId(IdUtils.getDefElemId(BondConstants.hoverFilter)) });
-
-            if (this.attributes.stereo === BondStereoKekule.UP) {
-                this.elem.attr({ "fill-opacity": 0.7 });
-            }
-        } else {
-            this.elem.attr({ filter: "" });
-            if (this.attributes.stereo === BondStereoKekule.UP) {
-                this.elem.attr({ "fill-opacity": 1 });
-            }
-        }
     }
 
     getConnectedAtoms() {
@@ -374,7 +391,7 @@ export class Bond extends Entity {
             this.endAtom?.moveByDelta(delta, [this.attributes.id]);
         }
 
-        this.move();
+        this.draw();
     }
 
     getCenter() {

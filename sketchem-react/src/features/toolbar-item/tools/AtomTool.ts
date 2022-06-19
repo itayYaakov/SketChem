@@ -53,9 +53,9 @@ export class AtomToolBarItem extends EntityBaseTool {
             });
         };
 
+        editor.applyFunctionToAtoms(updateAtomAttributes, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
-        editor.applyFunctionToAtoms(updateAtomAttributes, true);
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {

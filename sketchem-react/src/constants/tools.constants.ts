@@ -46,4 +46,4 @@ export function createAtomSubToolName(label: string) {
     return `${label} Atom`;
 }
 
-export const ValidMouseMoveDistance = 30;
+export const ValidMouseMoveDistance = 15;
