@@ -11,7 +11,7 @@ const BondWedgeStroke = 2;
 const BondWedgeBarsPadding = 4;
 
 // There's a problem to apply an svg gradient to path with x or y delta of 0
-const deltaNoise = 0.0001;
+const deltaNoise = 0.001;
 
 const createBondWedgeBackPointsArray = (cache: IBondCache) => {
     const length = cache.distance;
@@ -74,7 +74,7 @@ const findParallelLinePoints = (cache: IBondCache, distance: number) => {
 const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 2 | 3) => {
     const pointArray: any[] = [];
     let noise = 0;
-    if (cache.angleDeg % 90 === 0) {
+    if (Math.abs(cache.angleDeg % 90) < 0.00001) {
         noise = deltaNoise;
     }
 
