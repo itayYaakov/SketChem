@@ -55,7 +55,7 @@ export abstract class Entity {
     // ! should be private
     abstract draw(): void;
 
-    abstract getOuterDrawCommand(): void;
+    abstract execOuterDrawCommand(): void;
 
     abstract myType: EntityType;
 

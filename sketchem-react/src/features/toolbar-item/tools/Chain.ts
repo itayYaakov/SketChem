@@ -58,7 +58,7 @@ class ChainToolBar extends BondTool {
         this.finalAtomsCenters = [];
         super.onMouseDown(eventHolder);
         if (this.context.startAtom !== undefined && this.context.startAtomIsPredefined === false) {
-            this.context.startAtom.getOuterDrawCommand();
+            this.context.startAtom.execOuterDrawCommand();
         }
     }
 
@@ -180,7 +180,7 @@ class ChainToolBar extends BondTool {
             ignoreAtomList.push(chainAtom.getId());
 
             this.chainAddedAtoms.push(chainAtom);
-            chainAtom.getOuterDrawCommand();
+            chainAtom.execOuterDrawCommand();
 
             const bondArgs = {
                 props: {
@@ -192,7 +192,7 @@ class ChainToolBar extends BondTool {
             } as IBond;
 
             const bond = new Bond(bondArgs);
-            bond.getOuterDrawCommand();
+            bond.execOuterDrawCommand();
 
             const possibleMergedAtom = this.mergeAtomsByIndex[index];
             if (possibleMergedAtom !== undefined) {

@@ -67,12 +67,12 @@ class Paste implements ActiveToolbarItem {
 
         createdAtoms.forEach((a) => {
             a.moveByDelta(delta, movedBondsIds);
-            a.getOuterDrawCommand();
+            a.execOuterDrawCommand();
         });
 
         createdBonds.forEach((b) => {
             b.moveByDelta(delta, false);
-            b.getOuterDrawCommand();
+            b.execOuterDrawCommand();
         });
 
         editor.resetCopiedContents();

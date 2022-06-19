@@ -51,8 +51,8 @@ export class BondTool extends EntityBaseTool {
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
 
-        this.context.startAtom?.getOuterDrawCommand();
-        this.context.endAtom?.getOuterDrawCommand();
+        this.context.startAtom?.execOuterDrawCommand();
+        this.context.endAtom?.execOuterDrawCommand();
 
         if (this.mode === MouseMode.Default) {
             return;
@@ -73,7 +73,7 @@ export class BondTool extends EntityBaseTool {
             this.context.startAtom?.setVisualState(EntityVisualState.AnimatedClick);
         }
 
-        this.context.startAtom?.getOuterDrawCommand();
+        this.context.startAtom?.execOuterDrawCommand();
 
         if (this.context.endAtom === undefined && !this.context.dragged) {
             if (!this.context.startAtom) {
@@ -84,8 +84,8 @@ export class BondTool extends EntityBaseTool {
             this.context.endAtom = this.createAtom(endAtomCenter);
             this.context.endAtomIsPredefined = false;
 
-            this.context.startAtom.getOuterDrawCommand();
-            this.context.endAtom.getOuterDrawCommand();
+            this.context.startAtom.execOuterDrawCommand();
+            this.context.endAtom.execOuterDrawCommand();
         }
 
         this.createMoveAndHandleBond();

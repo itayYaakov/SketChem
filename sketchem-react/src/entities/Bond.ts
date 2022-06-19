@@ -112,16 +112,24 @@ export class Bond extends Entity {
         this.lifeStage = EntityLifeStage.Initialized;
 
         // // !!! should only draw the valence actually
-        this.startAtom?.getOuterDrawCommand();
-        this.endAtom?.getOuterDrawCommand();
+        this.startAtom?.execOuterDrawCommand();
+        this.endAtom?.execOuterDrawCommand();
     }
 
     updateAtomsReference(attributes?: Partial<BondAttributes>) {
         if (!attributes) return;
 
         const { getAtomById } = EntitiesMapsStorage;
-        if (this.attributes.atomStartId) this.startAtom = getAtomById(this.attributes.atomStartId);
-        if (this.attributes.atomEndId) this.endAtom = getAtomById(this.attributes.atomEndId);
+        if (attributes.atomStartId) {
+            this.startAtom?.execOuterDrawCommand();
+            this.startAtom = getAtomById(attributes.atomStartId);
+            this.startAtom?.execOuterDrawCommand();
+        }
+        if (attributes.atomEndId) {
+            this.endAtom?.execOuterDrawCommand();
+            this.endAtom = getAtomById(attributes.atomEndId);
+            this.endAtom?.execOuterDrawCommand();
+        }
     }
 
     setBondCenter() {
@@ -340,7 +348,7 @@ export class Bond extends Entity {
         this.drawStereoAndOrder();
     }
 
-    getOuterDrawCommand() {
+    execOuterDrawCommand() {
         if (this.lifeStage !== EntityLifeStage.Initialized) return;
         this.draw();
     }
@@ -406,18 +414,18 @@ export class Bond extends Entity {
 
         // !!! not really moved - just changed atom end id or start id
         if (moved) {
-            this.updateAtomsReference(newAttributes);
             // console.debug(`Kekule destroy bond ${this.attributes.id}`);
             KekuleUtils.destroy(this.connectorObj);
             this.connectorObj = null;
             this.connectorObj = KekuleUtils.registerBondFromAttributes(this.attributes);
+            this.updateAtomsReference(newAttributes);
             this.draw();
         }
         if (redraw) {
             this.drawStereoAndOrder();
             // !!! should only draw the valence actually
-            this.startAtom?.getOuterDrawCommand();
-            this.endAtom?.getOuterDrawCommand();
+            this.startAtom?.execOuterDrawCommand();
+            this.endAtom?.execOuterDrawCommand();
         }
     }
 
@@ -440,8 +448,8 @@ export class Bond extends Entity {
         this.lifeStage = EntityLifeStage.Destroyed;
 
         // bonds need to redraw after connecting bond was removed
-        this.startAtom?.getOuterDrawCommand();
-        this.endAtom?.getOuterDrawCommand();
+        this.startAtom?.execOuterDrawCommand();
+        this.endAtom?.execOuterDrawCommand();
         this.startAtom = undefined;
         this.endAtom = undefined;
 

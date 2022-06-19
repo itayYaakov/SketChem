@@ -123,14 +123,14 @@ export class EditorHandler {
             if (!stateAtomsIds.has(id)) {
                 atom.destroy([], false);
             }
-            atom.getOuterDrawCommand();
+            atom.execOuterDrawCommand();
         });
 
         this.bondsMap.forEach((bond, id) => {
             if (!stateBondsIds.has(id)) {
                 bond.destroy([], false);
             }
-            bond.getOuterDrawCommand();
+            bond.execOuterDrawCommand();
         });
 
         const end = performance.now();
@@ -324,7 +324,7 @@ export class EditorHandler {
 
     drawAll() {
         this.atomsMap.forEach((atom) => {
-            atom.getOuterDrawCommand();
+            atom.execOuterDrawCommand();
         });
         // !!! also for bonds
     }

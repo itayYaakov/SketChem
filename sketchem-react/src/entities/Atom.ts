@@ -196,7 +196,7 @@ export class Atom extends Entity {
             if (ignoreNotify.includes(bond.getId())) {
                 return;
             }
-            bond.getOuterDrawCommand();
+            bond.execOuterDrawCommand();
         });
     }
 
@@ -278,7 +278,7 @@ export class Atom extends Entity {
         this.drawHover();
     }
 
-    getOuterDrawCommand() {
+    execOuterDrawCommand() {
         if (this.lifeStage !== EntityLifeStage.Initialized) return;
         this.calculateImplicitHydrogen();
         this.draw();

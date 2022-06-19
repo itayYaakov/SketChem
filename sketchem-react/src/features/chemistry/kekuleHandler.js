@@ -87,7 +87,7 @@ export const drawMol = (mol) => {
         node.setCoord2D({ x: pos.x, y: pos.y });
 
         const atom = new Atom({ nodeObj: node });
-        atom.getOuterDrawCommand();
+        atom.execOuterDrawCommand();
     }
     // iterate all connectors(bonds)
     for (let i = 0, l = mol.getConnectorCount(); i < l; i += 1) {

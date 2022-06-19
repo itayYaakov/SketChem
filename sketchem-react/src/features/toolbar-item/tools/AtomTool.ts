@@ -87,7 +87,7 @@ export class AtomToolBarItem extends EntityBaseTool {
             }
         }
 
-        this.context.startAtom?.getOuterDrawCommand();
+        this.context.startAtom?.execOuterDrawCommand();
 
         // update pressed atom symbol only if it was pressed and there was no drag
         if (

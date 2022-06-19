@@ -212,7 +212,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             console.debug(`Bond ${this.context.bond?.getId()} was destroyed`);
             this.context.bond?.destroy(ignoreAtomRemove);
             this.context.bond = undefined;
-            this.context.startAtom?.getOuterDrawCommand();
+            this.context.startAtom?.execOuterDrawCommand();
             console.log("A-1 Start Atom = ", this.context.startAtom);
             return;
         }
@@ -228,7 +228,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
                 return;
             }
         }
-        this.context.startAtom.getOuterDrawCommand();
+        this.context.startAtom.execOuterDrawCommand();
 
         // specify that at some point the atom was dragged
         this.context.dragged = true;
@@ -241,11 +241,11 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             if (this.context.endAtom && this.context.endAtomIsPredefined !== true) {
                 this.context.endAtom.updateAttributes({ center: endAtomCenter.get() });
             } else {
-                this.context.endAtom?.getOuterDrawCommand();
+                this.context.endAtom?.execOuterDrawCommand();
                 this.context.endAtom = this.createAtom(endAtomCenter);
                 this.context.endAtomIsPredefined = false;
             }
-            this.context.endAtom.getOuterDrawCommand();
+            this.context.endAtom.execOuterDrawCommand();
         }
         // // if mouse is not moved to an existing atom and end atom is not created yet
         // if (!this.mouseMovedToAnExistingAtom(mouseCurrentLocation) && this.context.endAtom === undefined) {
@@ -307,7 +307,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         } as IBond;
 
         const bond = new Bond(bondArgs);
-        bond.getOuterDrawCommand();
+        bond.execOuterDrawCommand();
 
         return bond;
     }
@@ -319,6 +319,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             return;
         }
 
+        const { getAtomById } = EntitiesMapsStorage;
         const bondAttributes: Partial<BondAttributes> = this.context.bond.getAttributes();
         const { atomStartId: currentBondStartAtomId, atomEndId: currentBondEndAtomId } = bondAttributes;
 
@@ -332,18 +333,17 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
             delete bondAttributes.atomStartId;
         }
 
-        if (currentBondStartAtomId !== this.context.endAtom.getId()) {
+        if (currentBondEndAtomId !== this.context.endAtom.getId()) {
             bondAttributes.atomEndId = this.context.endAtom.getId();
         } else {
             delete bondAttributes.atomEndId;
             // only move the bond if end atom id hasn't changed and it's not predefined
             if (this.context.endAtomIsPredefined === false) {
-                this.context.bond.getOuterDrawCommand();
+                this.context.bond.execOuterDrawCommand();
             }
         }
 
         if (Object.keys(bondAttributes).length > 0) {
-            this.context.bond.getConnectedAtoms().forEach((atom) => atom.getOuterDrawCommand());
             this.context.bond.updateAttributes(bondAttributes);
         }
     }
