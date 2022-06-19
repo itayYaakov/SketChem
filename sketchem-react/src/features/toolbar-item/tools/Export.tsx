@@ -1,20 +1,14 @@
-import { useAppDispatch } from "@app/hooks";
 import * as ToolsConstants from "@constants/tools.constants";
-import { SaveFileAction } from "@src/types";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import styles from "@styles/index.module.scss";
 import { exportFileFromMolecule } from "@utils/KekuleUtils";
 import clsx from "clsx";
 import React, { useState } from "react";
-import { Button, Container, Form, Modal, Row, Tabs } from "react-bootstrap";
-import SelectSearch from "react-select-search";
+import { Button, Container, Form, Modal, Row } from "react-bootstrap";
 
 import { DialogProps, DialogToolbarItem, ToolbarItemButton } from "../ToolbarItem";
-import { actions } from "../toolbarItemsSlice";
 import { RegisterToolbarButtonWithName } from "../ToolsButtonMapper.helper";
 import { RegisterToolbarWithName } from "./ToolsMapper.helper";
-
-const isLibsEnabled = false;
 
 function SupportedFiles(props: any) {
     /**

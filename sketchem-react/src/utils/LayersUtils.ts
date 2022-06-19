@@ -1,8 +1,6 @@
-import "@svgdotjs/svg.filter.js";
-
 import { LayersNames } from "@constants/enum.constants";
 import { IdUtils } from "@src/utils/IdUtils";
-import { G, Gradient, Svg } from "@svgdotjs/svg.js";
+import { G, Svg } from "@svgdotjs/svg.js";
 
 /* 
 Each layer will hold different types of objects, and the order will be as follow:
