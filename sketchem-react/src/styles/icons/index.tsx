@@ -6,6 +6,7 @@ import React from "react";
 // bonds
 import { ReactComponent as BondDoubleIcon } from "./bond_double.svg";
 import { ReactComponent as BondSingleIcon } from "./bond_single.svg";
+import { ReactComponent as BondSingleOrDoubleIcon } from "./bond_single_or_double.svg";
 import { ReactComponent as BondTripleIcon } from "./bond_triple.svg";
 import { ReactComponent as BondWedgeBackIcon } from "./bond_wedge_back.svg";
 import { ReactComponent as BondWedgeFrontIcon } from "./bond_wedge_front.svg";
@@ -47,6 +48,7 @@ IconsMap.set(ToolsConstants.ToolsNames.SelectLasso, SelectLassoIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondDouble, BondDoubleIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondSingle, BondSingleIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondTriple, BondTripleIcon);
+IconsMap.set(ToolsConstants.SubToolsNames.BondSingleOrDouble, BondSingleOrDoubleIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondWedgeBack, BondWedgeBackIcon);
 IconsMap.set(ToolsConstants.SubToolsNames.BondWedgeFront, BondWedgeFrontIcon);
 

@@ -59,6 +59,10 @@ export abstract class Entity {
 
     abstract myType: EntityType;
 
+    abstract getKekuleNode(): any;
+
+    abstract updateKekuleNode(): void;
+
     updateBbox(shape: Shape) {
         this.bbox = shape.bbox();
     }

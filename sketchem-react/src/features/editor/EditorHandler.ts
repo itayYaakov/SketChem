@@ -145,9 +145,17 @@ export class EditorHandler {
         });
     }
 
+    isEmpty() {
+        return this.atomsMap.size === 0 && this.bondsMap.size === 0;
+    }
+
     updateAllKekuleNodes() {
         this.atomsMap.forEach((atom) => {
             atom.updateKekuleNode();
+        });
+
+        this.bondsMap.forEach((bond) => {
+            bond.updateKekuleNode();
         });
     }
 

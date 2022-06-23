@@ -16,6 +16,7 @@ extend(Svg, {
         const zoomMax = options.zoomMax ?? Number.MAX_VALUE;
         const doWheelZoom = options.wheelZoom ?? true;
         const doPinchZoom = options.pinchZoom ?? true;
+        const touchpadFactor = options.touchpadFactor ?? 1;
         const doPanning = options.panning ?? true;
         const panButton = options.panButton ?? 0;
         const oneFingerPan = options.oneFingerPan ?? false;
@@ -137,6 +138,9 @@ extend(Svg, {
         const wheelZoom = function (ev) {
             ev.preventDefault();
 
+            // empiric value, seems to work well:
+            const isPinch = Math.abs(ev.deltaY) < 50;
+
             // When wheeling on a mouse,
             // - chrome by default uses deltaY = 53, deltaMode = 0 (pixel)
             // - firefox by default uses deltaY = 3, deltaMode = 1 (line)
@@ -160,6 +164,8 @@ extend(Svg, {
                     normalizedPixelDeltaY = ev.deltaY;
                     break;
             }
+
+            if (isPinch) normalizedPixelDeltaY *= touchpadFactor;
 
             let lvl = Math.pow(1 + zoomFactor, (-1 * normalizedPixelDeltaY) / 100) * this.zoom();
             const p = this.point(ev.clientX, ev.clientY);

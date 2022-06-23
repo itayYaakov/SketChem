@@ -561,9 +561,12 @@ export class Atom extends Entity {
     }
 
     updateKekuleNode() {
-        this.nodeObj.setCoord2D({ x: this.attributes.center.x, y: this.attributes.center.y });
-        this.nodeObj.setCharge(this.attributes.charge);
-        this.nodeObj.setSymbol(this.attributes.symbol);
+        if (!this.nodeObj) {
+            console.error("no kekule node");
+        }
+        this.nodeObj?.setCoord2D({ x: this.attributes.center.x, y: this.attributes.center.y });
+        this.nodeObj?.setCharge(this.attributes.charge);
+        this.nodeObj?.setSymbol(this.attributes.symbol);
     }
 
     getCenter() {

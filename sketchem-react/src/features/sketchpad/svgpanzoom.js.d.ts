@@ -17,6 +17,7 @@ interface marginOptions {
 interface options {
     panning?: boolean;
     pinchZoom?: boolean;
+    touchpadFactor?: number;
     wheelZoom?: boolean;
     panButton?: MouseButton;
     oneFingerPan?: boolean;

@@ -71,8 +71,6 @@ export enum BondOrder {
     SingleOrAromatic = 6,
     DoubleOrAromatic = 7,
     Any = 8,
-    WedgeFront = 50,
-    WedgeBack = 50,
 }
 
 export enum EntityType {

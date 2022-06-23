@@ -96,6 +96,8 @@ export interface IBondAttributes {
 export interface IBondCache {
     startPosition: Vector2;
     endPosition: Vector2;
+    startPositionCloser: Vector2;
+    endPositionCloser: Vector2;
     color1: string;
     color2: string;
     angleRad: number;

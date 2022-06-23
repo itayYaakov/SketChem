@@ -190,10 +190,12 @@ function SketchPad(props: Props) {
             zoomMin: 0.2,
             zoomMax: 20,
             zoomFactor: 0.05,
-            // {top, left, right, bottom}
-            // margins: { top: 0, left: 0, right: 3000, bottom: 3000 },
-            // wheelZoomDeltaModeLinePixels: 9,
-            // wheelZoomDeltaModeScreenPixels: 27,
+            touchpadFactor: 10,
+            oneFingerPan: true,
+            // wheelZoomDeltaModeLinePixels ?? 17;
+            // wheelZoomDeltaModeScreenPixels ?? 53;
+            wheelZoomDeltaModeLinePixels: 25,
+            wheelZoomDeltaModeScreenPixels: 100,
             panButton: 1,
             // panning: false,
         });

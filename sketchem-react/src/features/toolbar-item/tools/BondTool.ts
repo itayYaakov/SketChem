@@ -127,6 +127,18 @@ const tripleBond: BondToolButton = {
     },
     keyboardKeys: ["C"],
 };
+
+const singleOrDoubleBond: BondToolButton = {
+    name: "Bond Single or Double",
+    subToolName: ToolsConstants.SubToolsNames.BondSingleOrDouble,
+    toolName: ToolsConstants.ToolsNames.Bond,
+    attributes: {
+        bondOrder: BondOrder.SingleOrDouble,
+        bondStereo: BondStereoKekule.NONE,
+    },
+    keyboardKeys: ["D"],
+};
+
 const wedgeFrontBond: BondToolButton = {
     name: "Bond Wedge Front",
     subToolName: ToolsConstants.SubToolsNames.BondWedgeFront,
@@ -151,7 +163,8 @@ const wedgeBackBond: BondToolButton = {
 RegisterToolbarButtonWithName(doubleBond);
 RegisterToolbarButtonWithName(singleBond);
 RegisterToolbarButtonWithName(tripleBond);
+RegisterToolbarButtonWithName(singleOrDoubleBond);
 RegisterToolbarButtonWithName(wedgeBackBond);
 RegisterToolbarButtonWithName(wedgeFrontBond);
 
-export { doubleBond, singleBond, tripleBond, wedgeBackBond, wedgeFrontBond };
+export { doubleBond, singleBond, singleOrDoubleBond, tripleBond, wedgeBackBond, wedgeFrontBond };

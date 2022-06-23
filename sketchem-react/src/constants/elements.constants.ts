@@ -1657,8 +1657,8 @@ const elementsArray: Array<PtElement> = [
 const elementsBySymbolMap = new Map<string, PtElement>();
 const elementsByAtomicNumberMap = new Map<number, PtElement>();
 const elementsByXYMap = new Map<string, PtElement>();
-// Kekule.js at the moment only support atoms up to 112
-const MaxAtomicNumber = 112;
+// Kekule.js at the moment only support atoms up to 111
+const MaxAtomicNumber = 111;
 
 elementsArray.forEach((element) => {
     elementsBySymbolMap.set(element.symbol, element);

@@ -1,4 +1,5 @@
 import type { IBondCache } from "@src/types";
+import Vector2 from "@src/utils/mathsTs/Vector2";
 import { PathArray } from "@svgdotjs/svg.js";
 
 const BondPadding = 16;
@@ -48,20 +49,20 @@ const createBondWedgeFrontPointsArray = (cache: IBondCache) => {
     return pathArray;
 };
 
-const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 2 | 3) => {
+const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 1.5 | 2 | 3) => {
     const pointArray: any[] = [];
     let noise = 0;
     if (Math.abs(cache.angleDeg % 90) < 0.00001) {
         noise = deltaNoise;
     }
 
-    if (lines === 1 || lines === 3) {
+    if (lines === 1 || lines === 1.5 || lines === 3) {
         pointArray.push(["M", cache.startPosition.x, cache.startPosition.y]);
         pointArray.push(["L", cache.endPosition.x + noise, cache.endPosition.y + noise]);
     }
 
-    if (lines === 2 || lines === 3) {
-        let distance = HalfBondPadding * 0.8;
+    if (lines === 2 || lines === 1.5 || lines === 3) {
+        let distance = HalfBondPadding * 0.6;
         if (lines === 2) distance /= 2;
 
         const dx = distance * Math.cos(-cache.angleRad);
@@ -77,10 +78,42 @@ const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 2 | 3) => {
     return pathArray;
 };
 
+const createSingleOrDoubleBondPointsArrays = (cache: IBondCache) => {
+    const pointArrays: any[][] = [[], []];
+    let noise = 0;
+    if (Math.abs(cache.angleDeg % 90) < 0.00001) {
+        noise = deltaNoise;
+    }
+
+    pointArrays[0].push(["M", cache.startPosition.x, cache.startPosition.y]);
+    pointArrays[0].push(["L", cache.endPosition.x + noise, cache.endPosition.y + noise]);
+    const distance = HalfBondPadding * 0.8;
+
+    const dx = distance * Math.cos(-cache.angleRad);
+    const dy = distance * Math.sin(-cache.angleRad);
+
+    pointArrays[1].push(["M", cache.startPositionCloser.x - dx, cache.startPositionCloser.y + dy]);
+    pointArrays[1].push(["L", cache.endPositionCloser.x - dx, cache.endPositionCloser.y + dy]);
+    pointArrays[1].push(["M", cache.startPositionCloser.x + dx, cache.startPositionCloser.y - dy]);
+    pointArrays[1].push(["L", cache.endPositionCloser.x + dx, cache.endPositionCloser.y - dy]);
+
+    // const closerStartPosition = Vector2.midpoint(cache.startPosition, cache.endPosition, 0.25);
+    // const closerEndPosition = Vector2.midpoint(cache.startPosition, cache.endPosition, 0.75);
+
+    // pointArrays[1].push(["M", closerStartPosition.x - dx, closerStartPosition.y + dy]);
+    // pointArrays[1].push(["L", closerEndPosition.x - dx, closerEndPosition.y + dy]);
+    // pointArrays[1].push(["M", closerStartPosition.x + dx, closerStartPosition.y - dy]);
+    // pointArrays[1].push(["L", closerEndPosition.x + dx, closerEndPosition.y - dy]);
+
+    const pathArrays = [new PathArray(pointArrays[0]), new PathArray(pointArrays[1])];
+    return pathArrays;
+};
+
 export const BondConstants = {
     padding: BondPadding,
     wedgeStroke: BondWedgeStroke,
     createRegularBondPointsArray,
+    createSingleOrDoubleBondPointsArrays,
     createBondWedgeBackPointsArray,
     createBondWedgeFrontPointsArray,
     poly_clip_id: "poly_bond",

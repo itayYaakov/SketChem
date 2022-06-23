@@ -36,6 +36,10 @@ function ExportFile(props: DialogProps & { title: string }) {
     console.log(format);
 
     const loadText = (download: boolean) => {
+        if (editor.isEmpty()) {
+            onHide();
+            return;
+        }
         editor.updateAllKekuleNodes();
         const content = exportFileFromMolecule(format);
         if (download) {
