@@ -17,6 +17,7 @@ module.exports = {
     ignorePatterns: [
         "build/*",
         "public/*",
+        "local/*",
         "src/features/counter/*",
         "src/features/to/",
         "src/_actions/user.action.ts",

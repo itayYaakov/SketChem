@@ -20,7 +20,6 @@ class Unredo implements ActiveToolbarItem {
             case ToolsConstants.ToolsNames.Clear:
             case ToolsConstants.ToolsNames.Copy:
             case ToolsConstants.ToolsNames.Empty:
-            case ToolsConstants.ToolsNames.Erase:
             case ToolsConstants.ToolsNames.Export:
             case ToolsConstants.ToolsNames.Import:
             case ToolsConstants.ToolsNames.Paste:

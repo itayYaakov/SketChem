@@ -220,12 +220,14 @@ export class Bond extends Entity {
         this.cache.distance = this.cache.startPosition.distance(this.cache.endPosition);
 
         const hoverTopLeft = {
-            x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(this.cache.angleRad),
-            y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(this.cache.angleRad),
+            // x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(this.cache.angleRad),
+            // y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(this.cache.angleRad),
+            x: startPositionHover.x - (BondConstants.HoverSelectPadding / 2) * Math.cos(this.cache.angleRad),
+            y: startPositionHover.y - (BondConstants.HoverSelectPadding / 2) * Math.sin(this.cache.angleRad),
         };
 
         this.hoverOrSelectShape
-            ?.width(BondConstants.padding)
+            ?.width(BondConstants.HoverSelectPadding)
             .height(distanceForHoverShape)
             .x(hoverTopLeft.x)
             .y(hoverTopLeft.y)

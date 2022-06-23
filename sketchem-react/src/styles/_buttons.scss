@@ -86,8 +86,11 @@ $hover-active-border-width: 5px;
 
     &:disabled,
     &.disabled {
-        color: $disabled-color;
+        // color: $disabled-color;
         background-color: $disabled-background;
+        svg {
+            filter: invert(223%) sepia(51%) saturate(28%) hue-rotate(299deg) brightness(84%) contrast(37%)
+        }
     }
 }
 
@@ -95,9 +98,10 @@ $hover-active-border-width: 5px;
     @include toolbar_icon_button_variant(c.$black,
         c.$white,
         c.$white,
-        #e0e0e0,
+        c.$gray-300,
         c.$purple-600,
         c.$blue-600,
+        c.$gray-300,
         );
 }
 

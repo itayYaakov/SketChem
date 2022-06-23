@@ -60,8 +60,8 @@ IconsMap.set(ToolsConstants.SubToolsNames.ChargePlus, ChargePlus);
 IconsMap.set(ToolsConstants.ToolsNames.Undo, UndoIcon);
 IconsMap.set(ToolsConstants.ToolsNames.Redo, RedoIcon);
 
-const IconSize = "2rem";
-const IconFontSize = "1.5rem";
+const IconSize = "2.5rem";
+const IconFontSize = "2rem";
 
 // function generateAtomIcon(tool: AtomToolbarItemButton): JSX.Element {
 function generateAtomIcon(tool: AtomToolbarItemButton): (props: any) => JSX.Element {

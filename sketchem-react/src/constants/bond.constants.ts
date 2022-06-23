@@ -3,7 +3,9 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { PathArray } from "@svgdotjs/svg.js";
 
 const BondPadding = 16;
-const HalfBondPadding = BondPadding / 2;
+const SmallerBondPadding = BondPadding * 0.8;
+const HoverSelectPadding = BondPadding * 1.2;
+const HalfBondPadding = BondPadding * 0.5;
 const BondWedgeStroke = 2;
 const BondWedgeBarsPadding = 4;
 
@@ -19,7 +21,7 @@ const createBondWedgeBackPointsArray = (cache: IBondCache) => {
     const tempY = cache.startPosition.y;
 
     for (let i = 1; i <= sectors; i += 1) {
-        const tempBarHeight = (i / sectors) * BondPadding;
+        const tempBarHeight = (i / sectors) * SmallerBondPadding;
         const tempPoint = {
             x: tempX + (i / sectors) * length,
             y1: tempY - tempBarHeight / 2,
@@ -37,8 +39,8 @@ const createBondWedgeBackPointsArray = (cache: IBondCache) => {
 const createBondWedgeFrontPointsArray = (cache: IBondCache) => {
     const pointArray: any[] = [];
 
-    const dx = HalfBondPadding * Math.cos(-cache.angleRad);
-    const dy = HalfBondPadding * Math.sin(-cache.angleRad);
+    const dx = HalfBondPadding * Math.cos(-cache.angleRad) * 0.8;
+    const dy = HalfBondPadding * Math.sin(-cache.angleRad) * 0.8;
 
     pointArray.push(["M", cache.startPosition.x, cache.startPosition.y]);
     pointArray.push(["L", cache.endPosition.x - dx, cache.endPosition.y + dy]);
@@ -49,20 +51,20 @@ const createBondWedgeFrontPointsArray = (cache: IBondCache) => {
     return pathArray;
 };
 
-const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 1.5 | 2 | 3) => {
+const createRegularBondPointsArray = (cache: IBondCache, lines: 1 | 2 | 3) => {
     const pointArray: any[] = [];
     let noise = 0;
     if (Math.abs(cache.angleDeg % 90) < 0.00001) {
         noise = deltaNoise;
     }
 
-    if (lines === 1 || lines === 1.5 || lines === 3) {
+    if (lines === 1 || lines === 3) {
         pointArray.push(["M", cache.startPosition.x, cache.startPosition.y]);
         pointArray.push(["L", cache.endPosition.x + noise, cache.endPosition.y + noise]);
     }
 
-    if (lines === 2 || lines === 1.5 || lines === 3) {
-        let distance = HalfBondPadding * 0.6;
+    if (lines === 2 || lines === 3) {
+        let distance = HalfBondPadding;
         if (lines === 2) distance /= 2;
 
         const dx = distance * Math.cos(-cache.angleRad);
@@ -111,6 +113,7 @@ const createSingleOrDoubleBondPointsArrays = (cache: IBondCache) => {
 
 export const BondConstants = {
     padding: BondPadding,
+    HoverSelectPadding,
     wedgeStroke: BondWedgeStroke,
     createRegularBondPointsArray,
     createSingleOrDoubleBondPointsArrays,
