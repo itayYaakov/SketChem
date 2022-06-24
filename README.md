@@ -10,9 +10,9 @@ Demo - [SketChem Demo](https://itayyaakov.github.io/SketChem/)
 
 ## Preview 
 <p align="center">
-  <img width="800" src="https://user-images.githubusercontent.com/35079630/175395996-e89a2bf9-cf93-41a4-ba76-b77c3d0b8169.png">  
-  <img width="800" src="https://user-images.githubusercontent.com/35079630/175396475-efec5100-8be6-4826-b4e4-b8cd14979449.png">
-  <img width="400" src="https://user-images.githubusercontent.com/35079630/175397434-b567cd00-c9cd-491a-a282-caa4d8188d56.png">
+  <img width="700" src="https://user-images.githubusercontent.com/35079630/175395996-e89a2bf9-cf93-41a4-ba76-b77c3d0b8169.png">  
+  <img width="700" src="https://user-images.githubusercontent.com/35079630/175396475-efec5100-8be6-4826-b4e4-b8cd14979449.png">
+  <img height="300" src="https://user-images.githubusercontent.com/35079630/175397434-b567cd00-c9cd-491a-a282-caa4d8188d56.png">
 </p>
 
 ## What is unique about SketChem?
@@ -24,18 +24,18 @@ Both are imported as WebAssembly modules.
 All the calculations are done on the client side with the help of WebAssembly.
 
 #### 3. Unbelievable number of formats
-Almost any chemical structure can be imported or exported when you are using SketChem.
+With 145+ different formats, almost any chemical structure can be imported or exported when you are using SketChem.
 
 ## Development
 In order to use SketChem, you need to install the following dependencies:
 1. Npm: [npm](https://www.npmjs.com/)
 2. Yarn: `npm install --global yarn`
 
-To Build the application, run the following command:  
+To Build the application, run the following commands:  
 1. `git clone https://github.com/itayYaakov/SketChem.git`
 2. `cd sketchem-react`
   
-To run the application, run the following command:  
+To run the application, run the following commands:  
 1. `yarn install`  
 2. `yarn build`  
 3. `cd build`  
@@ -47,7 +47,7 @@ Or you can run the application in the development mode:
 2. `yarn start`  
 3. open http://localhost:3000/  
   
-To rebuild kekule.js library dependencies, run the following command:  
+To rebuild kekule.js library dependencies, run the following commands:  
 1. `git clone https://github.com/itayYaakov/Kekule.js.git`
 2. `cd Kekule.js`
 3. `yarn install` (only required for the first time)
@@ -82,6 +82,7 @@ You can also:
 
 Not enough? I hear you!:
 * **Easy change** - select atoms or bonds and apply a new charge/label/bond type by simply clicking the desired button.
+* **Implict hydrogen** - smart guessing of an atom's implicy hydrogen based on its neighbors, label and charge.
 * **Gradient** - bonds are colored based on their connected atoms' colors.
 * **Valence Error** - breaking some chemistry laws? red warning will appear
 <p align="center">
