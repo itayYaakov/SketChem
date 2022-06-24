@@ -81,8 +81,8 @@ You can also:
 * **Select Rectangle** - select a group of atoms or bonds by drawing a rectangle.
 
 Not enough? I hear you!:
-* **Easy change** - select atoms or bonds and apply a new charge/label/bond type by simply clicking the desired button.
-* **Implict hydrogen** - smart guessing of an atom's implicy hydrogen based on its neighbors, label and charge.
+* **Easy Change** - select atoms or bonds and apply a new charge/label/bond type by simply clicking the desired button.
+* **Implict Hydrogen** - smart guessing of an atom's implicy hydrogen based on its neighbors, label and charge.
 * **Gradient** - bonds are colored based on their connected atoms' colors.
 * **Valence Error** - breaking some chemistry laws? red warning will appear
 <p align="center">
