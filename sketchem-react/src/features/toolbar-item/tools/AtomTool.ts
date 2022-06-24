@@ -46,16 +46,18 @@ export class AtomToolBarItem extends EntityBaseTool {
 
     changeSelectionAtoms(editor: EditorHandler) {
         const mySymbol = this.atomElement.symbol;
-
+        let changed = 0;
         const updateAtomAttributes = (atom: Atom) => {
             atom.updateAttributes({
                 symbol: mySymbol,
             });
+            changed += 1;
         };
 
         editor.applyFunctionToAtoms(updateAtomAttributes, true);
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
+        if (changed) editor.createHistoryUpdate();
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {

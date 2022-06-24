@@ -202,7 +202,15 @@ class ChainToolBar extends BondTool {
         }
     }
 
+    onMouseLeave(eventHolder: MouseEventCallBackProperties) {
+        this.doCancel(eventHolder);
+    }
+
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        this.doCancel(eventHolder);
+    }
+
+    doCancel(eventHolder: MouseEventCallBackProperties) {
         const { editor } = eventHolder;
         this.createChain();
         this.cancel();

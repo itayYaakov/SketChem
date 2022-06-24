@@ -151,9 +151,9 @@ abstract class SelectTemplate implements ActiveToolbarItem {
             const replacedAtom = atomWasPressed;
             if (!replacedAtom) return undefined;
             replacedAtom.setVisualState(EntityVisualState.Merge);
-            console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
+            // console.log("A this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
             this.mergeAtomsAction.push({ replacedAtom, replacingAtom: atom });
-            console.log("B this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
+            // console.log("B this.mergeAtomsAction.push. size=", this.mergeAtomsAction.length);
             return replacedAtom;
         }
         return undefined;
@@ -310,14 +310,14 @@ abstract class SelectTemplate implements ActiveToolbarItem {
 
             const alreadyMergesAtoms: number[] = Array.from(shouldMoveAtomsIds);
             const shouldMoveBondsIdsArray = Array.from(shouldMoveBondsIds);
-            performance.mark("beforeMergeAtoms");
+            // performance.mark("beforeMergeAtoms");
             shouldMoveAtoms.forEach((atom) => {
                 atom.moveByDelta(delta, shouldMoveBondsIdsArray);
                 const newMergedAtom = this.searchAnAtomToMergeWith(atom, alreadyMergesAtoms);
                 if (newMergedAtom) alreadyMergesAtoms.push(newMergedAtom.getId());
             });
-            performance.mark("afterMergeAtoms");
-            console.log(performance.measure("mergeAtoms", "beforeMergeAtoms", "afterMergeAtoms"));
+            // performance.mark("afterMergeAtoms");
+            // console.log(performance.measure("mergeAtoms", "beforeMergeAtoms", "afterMergeAtoms"));
 
             shouldMoveBonds.forEach((bond) => {
                 bond.moveByDelta(delta, false);

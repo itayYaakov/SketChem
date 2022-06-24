@@ -152,6 +152,9 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
                     case BondOrder.Triple:
                         newBondOrder = BondOrder.Single;
                         break;
+                    case BondOrder.SingleOrDouble:
+                        newBondOrder = BondOrder.Single;
+                        break;
                     default:
                         return true;
                 }

@@ -175,6 +175,8 @@ export default class Vector2 {
         return this;
     }
 
+    equals = (b: Vector2): boolean => this.x === b.x && this.y === b.y;
+
     /**
      * Calculates the angle product of the two-element vectors `this` and `b`
      *

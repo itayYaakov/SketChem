@@ -11,6 +11,7 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { Circle, G, Gradient, Path, PathArray, Rect } from "@svgdotjs/svg.js";
 import { BondAttributes, IBond, IBondCache } from "@types";
 import { AngleUtils } from "@utils/AngleUtils";
+import _ from "lodash";
 
 // !!! MOVE TO REDUX??
 import { Atom } from "./Atom";
@@ -198,8 +199,8 @@ export class Bond extends Entity {
         if (distanceCenters > 0.9 * EditorConstants.Scale) {
             delta = delta.scaleNew(EditorConstants.Scale / distanceCenters);
         }
-        const deltaX = 0.1 * delta.x;
-        const deltaY = 0.1 * delta.y;
+        const deltaX = 0.12 * delta.x;
+        const deltaY = 0.12 * delta.y;
 
         this.cache.startPosition = startPositionBase.addValues(deltaX, deltaY);
         this.cache.endPosition = endPositionBase.addValues(-deltaX, -deltaY);
@@ -220,8 +221,6 @@ export class Bond extends Entity {
         this.cache.distance = this.cache.startPosition.distance(this.cache.endPosition);
 
         const hoverTopLeft = {
-            // x: startPositionHover.x - (BondConstants.padding / 2) * Math.cos(this.cache.angleRad),
-            // y: startPositionHover.y - (BondConstants.padding / 2) * Math.sin(this.cache.angleRad),
             x: startPositionHover.x - (BondConstants.HoverSelectPadding / 2) * Math.cos(this.cache.angleRad),
             y: startPositionHover.y - (BondConstants.HoverSelectPadding / 2) * Math.sin(this.cache.angleRad),
         };
@@ -527,7 +526,7 @@ export class Bond extends Entity {
     }
 
     getAttributes() {
-        return { ...this.attributes };
+        return _.cloneDeep(this.attributes);
     }
 
     static generateNewId() {

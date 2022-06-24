@@ -3,6 +3,7 @@ import { actions } from "@features/chemistry/chemistrySlice";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { Atom, Bond, Entity } from "@src/entities";
 import { ChemistryState, EntityEventContext, EntityEventsFunctions } from "@src/types";
+import _ from "lodash";
 
 interface EntityMaps {
     selected: Map<number, Entity>;
@@ -24,19 +25,36 @@ export class EditorHandler {
 
     anchor?: Entity | Atom | Bond;
 
-    copiedAtoms: Map<number, Atom>;
+    private _copied!: ChemistryState;
 
-    copiedBonds: Map<number, Bond>;
+    public get copied(): ChemistryState {
+        //  return a shallow copy of the object
+        return _.cloneDeep(this._copied);
+    }
+
+    public set copied(value: ChemistryState) {
+        this._copied = value;
+    }
 
     constructor(dispatch?: any) {
-        console.log("I'm created editor handler!!");
         this.dispatch = dispatch;
         this.atomsMap = EntitiesMapsStorage.atomsMap;
         this.bondsMap = EntitiesMapsStorage.bondsMap;
         this.selectedAtoms = new Map<number, Atom>();
         this.selectedBonds = new Map<number, Bond>();
-        this.copiedAtoms = new Map<number, Atom>();
-        this.copiedBonds = new Map<number, Bond>();
+        this.copied = {};
+    }
+
+    getBoundingBox() {
+        const { atomsTree } = EntitiesMapsStorage;
+        // @ts-ignore
+        const { data: atomTreeData } = atomsTree;
+        return {
+            minX: atomTreeData?.minX ?? 0,
+            minY: atomTreeData?.minY ?? 0,
+            maxX: atomTreeData?.maxX ?? 0,
+            maxY: atomTreeData?.maxY ?? 0,
+        };
     }
 
     setDispatch(dispatch: any) {
@@ -188,24 +206,43 @@ export class EditorHandler {
     }
 
     updateCopiedContents() {
-        this.copiedAtoms = new Map(this.selectedAtoms);
-        this.copiedBonds = new Map(this.selectedBonds);
+        const copiedAtoms = new Map(this.selectedAtoms);
+        const copiedBonds = new Map(this.selectedBonds);
         // make sure both start and end atoms of bonds are copied
-        this.copiedBonds.forEach((bond) => {
+        copiedBonds.forEach((bond) => {
             const { startAtom } = bond;
             const { endAtom } = bond;
-            if (startAtom && !this.copiedAtoms.has(startAtom.getId())) {
-                this.copiedAtoms.set(startAtom.getId(), startAtom);
+            if (startAtom && !copiedAtoms.has(startAtom.getId())) {
+                copiedAtoms.set(startAtom.getId(), startAtom);
             }
-            if (endAtom && !this.copiedAtoms.has(endAtom.getId())) {
-                this.copiedAtoms.set(endAtom.getId(), endAtom);
+            if (endAtom && !copiedAtoms.has(endAtom.getId())) {
+                copiedAtoms.set(endAtom.getId(), endAtom);
             }
         });
+
+        // copiedBonds: Map<number, Bond>
+        const result: ChemistryState = {
+            atoms: [],
+            bonds: [],
+        };
+        copiedAtoms.forEach((atom, id) => {
+            result.atoms!.push({
+                id,
+                attributes: atom.getAttributes(),
+            });
+        });
+        copiedBonds.forEach((bond, id) => {
+            result.bonds!.push({
+                id,
+                attributes: bond.getAttributes(),
+            });
+        });
+
+        this.copied = result;
     }
 
     resetCopiedContents() {
-        this.copiedAtoms.clear();
-        this.copiedBonds.clear();
+        this.copied = {};
     }
 
     getMaps(type: EntityType): EntityMaps {

@@ -29,6 +29,7 @@ module.exports = {
         "arrow-parens": "off",
         "no-console": "off",
         "import/prefer-default-export": "off",
+        "no-underscore-dangle": "off",
         "class-methods-use-this": "off",
         "no-param-reassign": ["error", { props: true, ignorePropertyModificationsFor: ["state"] }],
         // "array-element-newline": ["error", { multiline: true, minItems: 3 }],

@@ -16,10 +16,9 @@ class Paste implements ActiveToolbarItem {
         if (!editor) {
             throw new Error("Paste.onActivate: missing attributes or editor");
         }
-        const ca = editor.copiedAtoms;
-        const cb = editor.copiedBonds;
+        const { atoms: ca, bonds: cb } = editor.copied;
 
-        if (ca.size === 0 || cb.size === 0) {
+        if (!ca || ca.length === 0 || !cb || cb.length === 0) {
             store.dispatch(actions.asyncDispatchSelect());
             return;
         }
@@ -27,25 +26,35 @@ class Paste implements ActiveToolbarItem {
         const createdAtoms = new Map<number, Atom>();
         const createdBonds = new Map<number, Bond>();
 
-        const delta = new Vector2(300, 300);
+        const editorBoundingBox = editor.getBoundingBox();
 
         const mappedAtomsIds = new Map<number, number>();
 
+        let pastedMinX = Number.MAX_SAFE_INTEGER;
+        let pastedMaxX = Number.MIN_SAFE_INTEGER;
+        let pastedMinY = Number.MAX_SAFE_INTEGER;
+        let pastedMaxY = Number.MIN_SAFE_INTEGER;
+
         ca.forEach((a) => {
-            const attributes = a.getAttributes();
+            const { attributes, id: oldId } = a;
             const newId = Atom.generateNewId();
-            mappedAtomsIds.set(attributes.id, newId);
+            mappedAtomsIds.set(oldId, newId);
             attributes.id = newId;
             const args: IAtom = {
                 props: attributes,
             };
+
+            pastedMinX = Math.min(pastedMinX, attributes.center.x);
+            pastedMaxX = Math.max(pastedMaxX, attributes.center.x);
+            pastedMinY = Math.min(pastedMinY, attributes.center.y);
+            pastedMaxY = Math.max(pastedMaxY, attributes.center.y);
 
             const newAtom = new Atom(args);
             createdAtoms.set(newAtom.getId(), newAtom);
         });
 
         cb.forEach((b) => {
-            const attributes = b.getAttributes();
+            const { attributes } = b;
             attributes.id = Bond.generateNewId();
             const newAtomStartId = mappedAtomsIds.get(attributes.atomStartId);
             const newAtomEndId = mappedAtomsIds.get(attributes.atomEndId);
@@ -64,6 +73,8 @@ class Paste implements ActiveToolbarItem {
 
         const movedBondsIds = Array.from(createdBonds.keys());
 
+        const delta = new Vector2(editorBoundingBox.maxX * 1.1 - pastedMinX, editorBoundingBox.minY - pastedMinY);
+
         createdAtoms.forEach((a) => {
             a.moveByDelta(delta, movedBondsIds);
             a.execOuterDrawCommand();
@@ -74,7 +85,6 @@ class Paste implements ActiveToolbarItem {
             b.execOuterDrawCommand();
         });
 
-        editor.resetCopiedContents();
         editor.resetSelectedAtoms();
         editor.resetSelectedBonds();
         editor.createHistoryUpdate();

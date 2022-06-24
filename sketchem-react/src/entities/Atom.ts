@@ -11,6 +11,7 @@ import styles from "@styles/index.module.scss";
 import { Circle, Line, Rect, Text } from "@svgdotjs/svg.js";
 import { AtomAttributes, IAtom } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
+import _ from "lodash";
 
 import type { Bond } from "./Bond";
 import { Entity } from "./Entity";
@@ -504,7 +505,10 @@ export class Atom extends Entity {
     }
 
     updateAttributes(newAttributes: Partial<AtomAttributes>, ignoreNotifyBondsIds: number[] = []) {
-        const moved = newAttributes.center !== undefined && newAttributes.center !== this.attributes.center;
+        const moved =
+            newAttributes.center !== undefined &&
+            (newAttributes.center.x !== this.attributes.center.x ||
+                newAttributes.center.y !== this.attributes.center.y);
         const labelChanged = newAttributes.symbol !== undefined && newAttributes.symbol !== this.attributes.symbol;
         const chargeChanged = newAttributes.charge !== undefined && newAttributes.charge !== this.attributes.charge;
 
@@ -529,9 +533,10 @@ export class Atom extends Entity {
         }
 
         if (moved) {
+            this.draw();
+
             // doesn't work well
             // this.moveDrawings(oldCenter);
-            this.draw();
         }
     }
 
@@ -582,7 +587,7 @@ export class Atom extends Entity {
     }
 
     getAttributes() {
-        return { ...this.attributes };
+        return _.cloneDeep(this.attributes);
     }
 
     static generateNewId() {

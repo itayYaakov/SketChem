@@ -3,7 +3,7 @@ import Vector2 from "@src/utils/mathsTs/Vector2";
 import { PathArray } from "@svgdotjs/svg.js";
 
 const BondPadding = 16;
-const SmallerBondPadding = BondPadding * 0.8;
+const SmallerBondPadding = BondPadding * 0.7;
 const HoverSelectPadding = BondPadding * 1.2;
 const HalfBondPadding = BondPadding * 0.5;
 const BondWedgeStroke = 2;
@@ -20,7 +20,8 @@ const createBondWedgeBackPointsArray = (cache: IBondCache) => {
     const tempX = cache.startPosition.x;
     const tempY = cache.startPosition.y;
 
-    for (let i = 1; i <= sectors; i += 1) {
+    // for (let i = 1; i <= sectors; i += 1) {
+    for (let i = 0; i <= sectors; i += 1) {
         const tempBarHeight = (i / sectors) * SmallerBondPadding;
         const tempPoint = {
             x: tempX + (i / sectors) * length,
@@ -39,8 +40,8 @@ const createBondWedgeBackPointsArray = (cache: IBondCache) => {
 const createBondWedgeFrontPointsArray = (cache: IBondCache) => {
     const pointArray: any[] = [];
 
-    const dx = HalfBondPadding * Math.cos(-cache.angleRad) * 0.8;
-    const dy = HalfBondPadding * Math.sin(-cache.angleRad) * 0.8;
+    const dx = HalfBondPadding * Math.cos(-cache.angleRad) * 0.7;
+    const dy = HalfBondPadding * Math.sin(-cache.angleRad) * 0.7;
 
     pointArray.push(["M", cache.startPosition.x, cache.startPosition.y]);
     pointArray.push(["L", cache.endPosition.x - dx, cache.endPosition.y + dy]);
