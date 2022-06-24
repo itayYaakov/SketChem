@@ -26,6 +26,9 @@ All the calculations are done on the client side with the help of WebAssembly.
 #### 3. Unbelievable number of formats
 With 145+ different formats, almost any chemical structure can be imported or exported when you are using SketChem.
 
+#### 3. Beautifuly designed
+The sketchpad is based on svg objects, therefor everything you see is vector based. This allow you to zoom in to the tiniest details and still view a crisp colrful display.
+
 ## Development
 In order to use SketChem, you need to install the following dependencies:
 1. Npm: [npm](https://www.npmjs.com/)
