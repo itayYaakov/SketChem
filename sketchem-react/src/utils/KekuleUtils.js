@@ -10,15 +10,15 @@ import { EntitiesMapsStorage } from "@features/shared/storage";
 
 let chemDocument = 8;
 chemDocument = new Kekule.ChemDocument(1);
-const mol = new Kekule.Molecule();
-chemDocument.appendChild(mol);
+const MOL = new Kekule.Molecule();
+chemDocument.appendChild(MOL);
 
 export function getChemDocument() {
     return chemDocument;
 }
 
 export function getMolObject() {
-    return mol;
+    return MOL;
 }
 
 export function getFileFormatsOptions(rawKekuleFormats) {
@@ -65,9 +65,38 @@ export function getKekule() {
     return Kekule;
 }
 
+function calculateCoordIfNeeded(srcMol) {
+    const dimension = 2;
+
+    if (srcMol.nodesHasCoordOfMode(Kekule.CoordMode.COORD3D, true, true)) return srcMol;
+
+    let targetMol = srcMol;
+    const serviceName = dimension === 2 ? Kekule.Calculator.Services.GEN2D : Kekule.Calculator.Services.GEN3D;
+    const calculator = Kekule.Calculator.generateStructure(
+        srcMol,
+        serviceName,
+        { sync: true, modifySource: true },
+        (generatedMol) => {
+            targetMol = generatedMol;
+        },
+        (err) => {
+            if (err) {
+                console.log(err);
+            }
+            targetMol = srcMol;
+        },
+        (msgData) => {
+            console.log(msgData);
+            targetMol = srcMol;
+        }
+    );
+    return targetMol;
+}
+
 export function importMoleculeFromFile(file, format) {
     try {
-        const fileMol = Kekule.IO.loadFormatData(file, format);
+        let fileMol = Kekule.IO.loadFormatData(file, format);
+        fileMol = calculateCoordIfNeeded(fileMol);
         chemDocument.appendChild(fileMol);
         return fileMol;
     } catch (error) {
@@ -94,8 +123,8 @@ function transformMoleculeBoundingBox(chemDoc) {
     const scale = 1 / EditorConstants.Scale;
 
     // transfer all points from bbox to targetBoundingBox
-    for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
-        const node = mol.getNodeAt(i);
+    for (let i = 0, l = MOL.getNodeCount(); i < l; i += 1) {
+        const node = MOL.getNodeAt(i);
         const { x, y } = node.absCoord2D;
         const newX = (x - bbox.minX) * scale + targetBoundingBox.minX;
         const newY = -(y - bbox.maxY) * scale + targetBoundingBox.minY;
@@ -270,7 +299,7 @@ export function registerAtomFromAttributes(attributes) {
     // symbol: string;
     // color: string;
     const atom = new Kekule.Atom();
-    mol.appendNode(atom);
+    MOL.appendNode(atom);
 
     atom.id = attributes.id;
     const { symbol, charge, center } = attributes;
@@ -293,7 +322,7 @@ export function registerBondFromAttributes(attributes) {
     const endAtom = EntitiesMapsStorage.getAtomById(atomEndId).getKekuleNode();
 
     const bond = new Kekule.Bond();
-    mol.appendConnector(bond);
+    MOL.appendConnector(bond);
 
     bond.setId(id);
     bond.setBondOrder(order);

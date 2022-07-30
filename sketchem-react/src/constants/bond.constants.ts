@@ -1,5 +1,4 @@
 import type { IBondCache } from "@src/types";
-import Vector2 from "@src/utils/mathsTs/Vector2";
 import { PathArray } from "@svgdotjs/svg.js";
 
 const BondPadding = 16;
