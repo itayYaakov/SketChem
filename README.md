@@ -92,6 +92,39 @@ Not enough? I hear you!:
   <img width="300" src="https://user-images.githubusercontent.com/35079630/175400083-384f55dd-8403-4725-a042-e76766f48a70.png">  
 </p>
 
+## Hotkey list
+
+ | Function | Symbol |
+ | --- | --- |
+ | Single Bond | <kbd>1</kbd> |
+ | Double Bond | <kbd>2</kbd> |
+ | Triple Bond | <kbd>3</kbd> |
+ | Single Or Double Bond | <kbd>4</kbd> |
+ | Wedge Front Bond | <kbd>5</kbd> |
+ | Wedge Back Bond | <kbd>6</kbd> |
+ | Select - Box | <kbd>Q</kbd> |
+ | Select - Lasso | <kbd>W</kbd> |
+ | Chain | <kbd>E</kbd> |
+ | Periodic Table | <kbd>R</kbd> |
+ | Charge Minus | <kbd>Z</kbd> |
+ | Charge Plus | <kbd>X</kbd> |
+ | Erase | <kbd>Del</kbd>, <kbd>Backspace</kbd>, <kbd>Clear</kbd> |
+ | Export | <kbd>Ctrl</kbd> + <kbd>S</kbd> |
+ | Import | <kbd>Ctrl</kbd> + <kbd>O</kbd> |
+ | Clear | <kbd>Shift</kbd> + <kbd>N</kbd> |
+ | Copy | <kbd>Ctrl</kbd> + <kbd>C</kbd> |
+ | Paste | <kbd>Ctrl</kbd> + <kbd>V</kbd> |
+ | Undo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> |
+ | Redo | <kbd>Ctrl</kbd> + <kbd>Y</kbd> |
+ | Hydrogen Atom | <kbd>H</kbd> |
+ | Carbon Atom | <kbd>C</kbd> |
+ | Nitrogen Atom | <kbd>N</kbd> |
+ | Oxygen Atom | <kbd>O</kbd> |
+ | Fluorine Atom | <kbd>F</kbd> |
+ | Sulphur Atom | <kbd>S</kbd> |
+ | Phosphorus Atom | <kbd>P</kbd> |
+ | Iodine | <kbd>I</kbd> |
+
 
 ## Contributing
 You can contribute to Sketchem by opening an issue or creating a pull request on GitHub.
