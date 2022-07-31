@@ -11,7 +11,7 @@ import { Atom, Bond } from "../../entities";
 const getBoundingBox = (mol) => {
     // {x2: maxX, x1: minX, y2: maxY, y1: minY}
     let box = mol.getContainerBox2D();
-    if (!box || !box.minX || !box.minY || !box.maxX || !box.maxY) box = mol.getContainerBox3D();
+    if (!box || !box.x1 || !box.x2 || !box.y1 || !box.y2) box = mol.getContainerBox3D();
     const { x1: minX, y1: minY, x2: maxX, y2: maxY } = box;
     return { minX, minY, maxX, maxY };
 };
@@ -43,7 +43,7 @@ export const drawMol = (mol) => {
             throw new Error("Invalid atom coord, please check molecule file");
         const pos = new Vector2(x, -y).scaleSelf(molScale).addSelf(pointsDelta);
 
-        // console.log(`${i}. old: ${x},${y} new: ${pos.x},${pos.y}`);
+        console.log(`${i}. old: ${x},${y} new: ${pos.x},${pos.y}`);
         // const pos = new Vector2(x, -y);
         // pos.scaleNew(molScale);
         // pos.add(pointsDelta);
