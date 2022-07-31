@@ -134,5 +134,5 @@ export default function getToolbarIconByName(tool: ToolbarItemButton, ...props: 
     if (!Icon) {
         return <div />;
     }
-    return <Icon width={IconSize} height={IconSize} title={name} fill="#424242" stroke="#424242" {...props} />;
+    return <Icon width={IconSize} height={IconSize} fill="#424242" stroke="#424242" {...props} />;
 }

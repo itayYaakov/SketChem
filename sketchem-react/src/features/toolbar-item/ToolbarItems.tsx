@@ -87,6 +87,8 @@ export function ToolbarItems(props: Props) {
         <div className={clsx(styles[thisClassName], thisClassName, styles[className])}>
             {modifiedToolbarItemsList.map((item) => {
                 const name = item.subToolName ?? item.toolName;
+                let title = item.name;
+                if (item.keyboardKeys) title = `${item.name} (${item.keyboardKeys})`;
                 const isActive = currentToolbarName === name;
                 const activeClass = isActive ? styles.toolbar_icon_button_active : "";
                 const disabled = isUnredoDisabled(item, undoDisabled, redoDisabled);
@@ -96,8 +98,8 @@ export function ToolbarItems(props: Props) {
                         type="button"
                         onClick={(e) => onToolbarClick(e, item)}
                         key={name}
-                        aria-label={name}
-                        title={name}
+                        aria-label={title}
+                        title={title}
                         disabled={disabled}
                         className={clsx(
                             styles.toolbar_icon_button,
