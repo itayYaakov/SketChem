@@ -163,6 +163,10 @@ export abstract class Entity {
         this.hoverOrSelectShape.off();
     }
 
+    getLifeStage() {
+        return this.lifeStage;
+    }
+
     getId() {
         return this.attributes.id;
     }

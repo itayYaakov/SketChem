@@ -26,8 +26,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugExportMolToConsole, expor
 
 const ExportMolToConsoleTool = new SimpleToolbarItemButtonBuilder(
     "export mol to console (debug) ",
-    ToolsConstants.ToolsNames.DebugExportMolToConsole,
-    ["A"]
+    ToolsConstants.ToolsNames.DebugExportMolToConsole
 );
 
 RegisterToolbarButtonWithName(ExportMolToConsoleTool);

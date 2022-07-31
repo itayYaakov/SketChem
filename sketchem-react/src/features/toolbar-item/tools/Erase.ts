@@ -48,7 +48,11 @@ class EraseBox extends BoxSelect {
 const eraseBoxTool = new EraseBox();
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Erase, eraseBoxTool);
 
-const eraseBox = new SimpleToolbarItemButtonBuilder("Erase Box", ToolsConstants.ToolsNames.Erase, ["B"]);
+const eraseBox = new SimpleToolbarItemButtonBuilder(
+    "Erase Box",
+    ToolsConstants.ToolsNames.Erase,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Erase)
+);
 
 RegisterToolbarButtonWithName(eraseBox);
 

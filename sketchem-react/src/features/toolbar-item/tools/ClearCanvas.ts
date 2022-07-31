@@ -25,7 +25,11 @@ const clearCanvasTool = new ClearCanvas();
 
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Clear, clearCanvasTool);
 
-const clearCanvas = new SimpleToolbarItemButtonBuilder("Clear Canvas", ToolsConstants.ToolsNames.Clear, ["B"]);
+const clearCanvas = new SimpleToolbarItemButtonBuilder(
+    "Clear Canvas",
+    ToolsConstants.ToolsNames.Clear,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Clear)
+);
 
 RegisterToolbarButtonWithName(clearCanvas);
 

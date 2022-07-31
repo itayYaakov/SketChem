@@ -30,13 +30,13 @@ function resizeEvent(svgObj: Svg, initialZoomRatio?: number) {
         const viewBoxHeight = 1000;
         const viewBoxWidth = Math.ceil(viewBoxHeight * ratio * 1.01);
         svgObj.viewbox(0, 0, viewBoxWidth, viewBoxHeight);
-        console.log("A The zomm level is:", svgObj.zoom());
+        // console.log("A The zomm level is:", svgObj.zoom());
         svgObj.zoom(1);
-        console.log("B The zomm level is:", svgObj.zoom());
+        // console.log("B The zomm level is:", svgObj.zoom());
     } else {
-        console.log("C The zomm level is:", svgObj.zoom());
+        // console.log("C The zomm level is:", svgObj.zoom());
         svgObj.zoom(pixelRatio / initialZoomRatio);
-        console.log("D The zomm level is:", svgObj.zoom());
+        // console.log("D The zomm level is:", svgObj.zoom());
     }
     // draw.attr({ preserveAspectRatio: "xMaxYMax meet" });
 }
@@ -49,8 +49,12 @@ function SketchPad(props: Props) {
     const activeToolbarButton = useRef<ActiveToolbarItem | undefined>(undefined);
     const previousToolbarContext = useRef<ToolbarAction | undefined>(undefined);
     const currentToolbarContext = useSelector(getToolbarItemContext);
+    let mouseDownLocation: Vector2 | undefined;
+
     if (currentToolbarContext.toolName) {
         if (currentToolbarContext !== previousToolbarContext.current) {
+            mouseDownLocation = undefined;
+            activeToolbarButton?.current?.onDeactivate?.();
             const currentToolbar = GetToolbarByName(currentToolbarContext.toolName);
             if (currentToolbar) {
                 toolbarButtonRef.current = currentToolbar;
@@ -76,6 +80,8 @@ function SketchPad(props: Props) {
                 previousToolContext: previousToolbarContext.current,
             } as LaunchAttrs);
             previousToolbarContext.current = currentToolbarContext;
+            // console.log("The current toolbar context is:", currentToolbarContext);
+            // console.log("The previous toolbar context is:", previousToolbarContext.current);
         }
     }, [currentToolbarContext]);
 
@@ -83,7 +89,6 @@ function SketchPad(props: Props) {
 
     const setMouseEventsListeners = (function mouseEventsHandler() {
         let previousMouseLocation: Vector2 | undefined;
-        let mouseDownLocation: Vector2 | undefined;
 
         function calculateLocation(e: MouseEvent): Vector2 {
             if (!svgRef.current) return Vector2.zero();
@@ -170,7 +175,7 @@ function SketchPad(props: Props) {
     })();
 
     function setupSvg() {
-        console.log("I was set up svg");
+        // console.log("I was set up svg");
         const draw = SVG().addTo(divDomElement.current).size("100%", "100%");
         svgRef.current = draw;
         draw.addClass(clsx(styles.sketchpad));
@@ -199,31 +204,6 @@ function SketchPad(props: Props) {
             panButton: 1,
             // panning: false,
         });
-
-        // const vbox = draw.viewbox();
-        // const factor = 1.03;
-        // const xMin = vbox.x * factor;
-        // const xMax = vbox.x2 / factor;
-        // const yMin = vbox.y * factor;
-        // const yMax = vbox.y2 / factor;
-
-        // draw.rect(xMax - xMin, yMax - yMin)
-        //     .move(xMin, yMin)
-        //     .stroke({ color: "#00ff00", width: 10 });
-
-        // draw.rect(80, 80).move(50, 50).fill({ color: "#0000cd" });
-
-        // draw.line(xMin, yMin, xMin, yMax).stroke({ color: "#00ff00", width: 10 });
-        // draw.line(xMin, yMin, xMax, yMin).stroke({ color: "#dd3f1b", width: 10 });
-        // draw.line(xMin, yMax, xMax, yMax).stroke({ color: "#00aaff", width: 10 });
-        // draw.line(xMax, yMin, xMax, yMax).stroke({ color: "#00fbcd", width: 10 });
-        // draw.line(20, 20, 20, 3980).stroke({ color: "#00ff00", width: 10 });
-        // draw.line(20, 20, 3980, 20).stroke({ color: "#dd3f1b", width: 10 });
-        // draw.line(20, 3980, 3980, 3980).stroke({ color: "#00aaff", width: 10 });
-        // draw.line(3980, 4, 3980, 3980).stroke({ color: "#00fbcd", width: 10 });
-        // const draw = SVG().addTo(divDomElement.current).size("100%", "100%").zoom(1);
-
-        // svgRef.current.css({ overflow: "hidden", position: "relative" });
 
         setMouseEventsListeners(svgRef.current, true);
 

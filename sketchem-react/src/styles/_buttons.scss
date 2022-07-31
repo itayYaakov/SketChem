@@ -103,6 +103,7 @@ $hover-active-border-width: 5px;
         c.$blue-600,
         c.$gray-300,
         );
+
 }
 
 @mixin toolbar_icon_button_shadow($shadow-sizes1, $shadow-sizes2) {
@@ -113,6 +114,10 @@ $hover-active-border-width: 5px;
 
 .toolbar_icon_button {
     @include toolbar_icon_button();
+
+    &:focus-visible,&:focus{
+        outline: none;
+    }            
 }
 
 .toolbar_icon_button_active {}

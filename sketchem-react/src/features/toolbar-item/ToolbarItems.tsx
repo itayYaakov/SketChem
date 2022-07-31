@@ -10,7 +10,8 @@ import * as ToolsConstants from "@constants/tools.constants";
 import IconByName from "@styles/icons";
 import styles from "@styles/index.module.scss";
 import clsx from "clsx";
-import React from "react";
+import hotkeys from "hotkeys-js";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 import { ToolbarItemButton } from "./ToolbarItem";
@@ -54,8 +55,6 @@ export function ToolbarItems(props: Props) {
     const frequentAtoms = useSelector(getToolbarFrequentAtoms);
     const undoDisabled = !useSelector(isChemistryUndoEnabled);
     const redoDisabled = !useSelector(isChemistryRedoEnabled);
-    // const undoDisabled = false;
-    // const redoDisabled = true;
 
     // programmatically add the frequent atoms to the toolbar
     if (direction === Direction.Right) {
@@ -70,6 +69,20 @@ export function ToolbarItems(props: Props) {
         SentDispatchEventWhenToolbarItemIsChanges(dispatch, toolbarItem.subToolName ?? toolbarItem.toolName);
     };
 
+    const setKeyboardPressEvent = (item: ToolbarItemButton) => {
+        const disabled = isUnredoDisabled(item, undoDisabled, redoDisabled);
+        if (!item.keyboardKeys || disabled) return;
+        hotkeys(item.keyboardKeys, (event: any, handler: any) => {
+            event.preventDefault();
+            console.log(handler.key);
+            if (!item.keyboardKeys) return;
+            SentDispatchEventWhenToolbarItemIsChanges(
+                dispatch,
+                ToolsConstants.getNextToolByShortcut(item.keyboardKeys, currentToolbarName)
+            );
+        });
+    };
+
     return (
         <div className={clsx(styles[thisClassName], thisClassName, styles[className])}>
             {modifiedToolbarItemsList.map((item) => {
@@ -77,6 +90,7 @@ export function ToolbarItems(props: Props) {
                 const isActive = currentToolbarName === name;
                 const activeClass = isActive ? styles.toolbar_icon_button_active : "";
                 const disabled = isUnredoDisabled(item, undoDisabled, redoDisabled);
+                if (!disabled) setKeyboardPressEvent(item);
                 return (
                     <button
                         type="button"

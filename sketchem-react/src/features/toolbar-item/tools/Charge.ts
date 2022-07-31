@@ -67,7 +67,7 @@ const ChargeMinus: ChargeToolbarItemButton = {
     subToolName: ToolsConstants.SubToolsNames.ChargeMinus,
     toolName: ToolsConstants.ToolsNames.Charge,
     attributes: { charge: -1 },
-    keyboardKeys: ["A"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.ChargeMinus),
 };
 
 const ChargePlus: ChargeToolbarItemButton = {
@@ -75,7 +75,7 @@ const ChargePlus: ChargeToolbarItemButton = {
     subToolName: ToolsConstants.SubToolsNames.ChargePlus,
     toolName: ToolsConstants.ToolsNames.Charge,
     attributes: { charge: 1 },
-    keyboardKeys: ["A"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.ChargePlus),
 };
 
 RegisterToolbarButtonWithName(ChargeMinus);

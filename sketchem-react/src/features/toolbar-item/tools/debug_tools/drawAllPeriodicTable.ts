@@ -43,8 +43,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawAllPeriodic, drawAllP
 
 const DrawAllPeriodic = new SimpleToolbarItemButtonBuilder(
     "draw all periodic (debug) ",
-    ToolsConstants.ToolsNames.DebugDrawAllPeriodic,
-    ["A"]
+    ToolsConstants.ToolsNames.DebugDrawAllPeriodic
 );
 
 RegisterToolbarButtonWithName(DrawAllPeriodic);

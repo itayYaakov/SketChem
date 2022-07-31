@@ -57,8 +57,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugLoadExampleMol, drawMolTo
 
 const DrawMol = new SimpleToolbarItemButtonBuilder(
     "draw example .mol (debug)",
-    ToolsConstants.ToolsNames.DebugLoadExampleMol,
-    ["A"]
+    ToolsConstants.ToolsNames.DebugLoadExampleMol
 );
 
 RegisterToolbarButtonWithName(DrawMol);

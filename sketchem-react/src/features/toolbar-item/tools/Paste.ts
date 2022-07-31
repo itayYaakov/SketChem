@@ -96,7 +96,11 @@ class Paste implements ActiveToolbarItem {
 const pasteTool = new Paste();
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Paste, pasteTool);
 
-const paste = new SimpleToolbarItemButtonBuilder("Paste", ToolsConstants.ToolsNames.Paste, ["B"]);
+const paste = new SimpleToolbarItemButtonBuilder(
+    "Paste",
+    ToolsConstants.ToolsNames.Paste,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Paste)
+);
 
 RegisterToolbarButtonWithName(paste);
 

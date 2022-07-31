@@ -28,6 +28,10 @@ export class AtomToolBarItem extends EntityBaseTool {
         };
     }
 
+    onDeactivate() {
+        this.init();
+    }
+
     onActivate(attrs?: LaunchAttrs) {
         if (!attrs) return;
         const { toolAttributes, editor } = attrs;
@@ -114,15 +118,18 @@ export function generateAtomsButtons(atoms: string[]) {
     const defaultAtomButtons: AtomToolbarItemButton[] = [];
     atoms.forEach((label) => {
         const element = ElementsData.elementsBySymbolMap.get(label);
+        const customName = `${label} Atom`;
         const newButton: AtomToolbarItemButton = {
-            name: `${label} Atom`,
-            subToolName: `${label} Atom`,
+            name: customName,
+            subToolName: customName,
             toolName: ToolsConstants.ToolsNames.Atom,
             attributes: {
                 label,
                 color: element?.customColor ?? element?.cpkColor ?? element?.jmolColor ?? "#000000",
             },
-            keyboardKeys: ["A"],
+            keyboardKeys:
+                ToolsConstants.ToolsShortcutsMapByToolName.get(customName) ??
+                ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Atom),
         };
         if (!IsToolbarButtonExists(newButton)) {
             RegisterToolbarButtonWithName(newButton);

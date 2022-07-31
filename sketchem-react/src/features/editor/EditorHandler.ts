@@ -1,4 +1,4 @@
-import { EntityType, EntityVisualState } from "@constants/enum.constants";
+import { EntityLifeStage, EntityType, EntityVisualState } from "@constants/enum.constants";
 import { actions } from "@features/chemistry/chemistrySlice";
 import { EntitiesMapsStorage } from "@features/shared/storage";
 import { Atom, Bond, Entity } from "@src/entities";
@@ -92,6 +92,7 @@ export class EditorHandler {
             bond.destroy([], false);
             changed += 1;
         });
+        this.hovered = undefined;
 
         return changed;
     }
@@ -185,7 +186,14 @@ export class EditorHandler {
         const candidate = this.hovered;
         if (candidate && candidate.myType === EntityType.Atom) {
             // temporal hack - since we cant import Atom and use instance of
-            if (this.isHovered()) return candidate as Atom;
+            if (this.isHovered()) {
+                const resultCandidate = candidate as Atom;
+                if (resultCandidate.getLifeStage() > EntityLifeStage.Initialized) {
+                    this.hovered = undefined;
+                    return undefined;
+                }
+                return resultCandidate;
+            }
         }
         return undefined;
     }
@@ -194,7 +202,14 @@ export class EditorHandler {
         const candidate = this.hovered;
         if (candidate && candidate.myType === EntityType.Bond) {
             // temporal hack - since we cant import Atom and use instance of
-            if (this.isHovered()) return candidate as Bond;
+            if (this.isHovered()) {
+                const resultCandidate = candidate as Bond;
+                if (resultCandidate.getLifeStage() > EntityLifeStage.Initialized) {
+                    this.hovered = undefined;
+                    return undefined;
+                }
+                return resultCandidate;
+            }
         }
         return undefined;
     }

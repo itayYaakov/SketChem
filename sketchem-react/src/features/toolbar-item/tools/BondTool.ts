@@ -19,7 +19,13 @@ export class BondTool extends EntityBaseTool {
         this.symbol = "C";
     }
 
+    onDeactivate() {
+        console.log("onDeactivate: BondTool");
+        this.init();
+    }
+
     onActivate(attrs?: LaunchAttrs) {
+        console.log("onActivate: BondTool");
         if (!attrs) return;
         const { toolAttributes, editor } = attrs;
         if (!toolAttributes || !editor) {
@@ -35,6 +41,7 @@ export class BondTool extends EntityBaseTool {
     }
 
     onMouseDown(eventHolder: MouseEventCallBackProperties) {
+        // console.log("on mouse down");
         this.init();
         const { mouseDownLocation } = eventHolder;
 
@@ -44,13 +51,32 @@ export class BondTool extends EntityBaseTool {
 
         this.mode = MouseMode.EmptyPress;
         this.context.startAtom = this.createAtom(mouseDownLocation);
+        // console.log(
+        //     "BondTool.onMouseDown: startAtom created with id: ",
+        //     this.context.startAtom.getId(),
+        //     "lifestage",
+        //     this.context.startAtom.getLifeStage()
+        // );
         this.context.startAtomIsPredefined = false;
+
+        // if (this.context.startAtom.getLifeStage() > 2) {
+        //     console.error("I'm dead");
+        // }
     }
 
     onMouseUp(eventHolder: MouseEventCallBackProperties) {
+        // console.log("on mouse up");
+        if (!this.context || !this.context.startAtom) return;
+
         const { editor } = eventHolder;
 
         this.context.startAtom?.execOuterDrawCommand();
+        // console.log(
+        //     "BondTool.onMouseUp: startAtom created with id: ",
+        //     this.context.startAtom.getId(),
+        //     "lifestage",
+        //     this.context.startAtom.getLifeStage()
+        // );
         this.context.endAtom?.execOuterDrawCommand();
 
         if (this.mode === MouseMode.Default) {
@@ -105,7 +131,7 @@ const singleBond: BondToolButton = {
         bondOrder: BondOrder.Single,
         bondStereo: BondStereoKekule.NONE,
     },
-    keyboardKeys: ["A"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondSingle),
 };
 const doubleBond: BondToolButton = {
     name: "Bond Double",
@@ -115,7 +141,7 @@ const doubleBond: BondToolButton = {
         bondOrder: BondOrder.Double,
         bondStereo: BondStereoKekule.NONE,
     },
-    keyboardKeys: ["B"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondDouble),
 };
 const tripleBond: BondToolButton = {
     name: "Bond Triple",
@@ -125,7 +151,7 @@ const tripleBond: BondToolButton = {
         bondOrder: BondOrder.Triple,
         bondStereo: BondStereoKekule.NONE,
     },
-    keyboardKeys: ["C"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondTriple),
 };
 
 const singleOrDoubleBond: BondToolButton = {
@@ -136,7 +162,7 @@ const singleOrDoubleBond: BondToolButton = {
         bondOrder: BondOrder.SingleOrDouble,
         bondStereo: BondStereoKekule.NONE,
     },
-    keyboardKeys: ["D"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondSingleOrDouble),
 };
 
 const wedgeFrontBond: BondToolButton = {
@@ -147,7 +173,7 @@ const wedgeFrontBond: BondToolButton = {
         bondOrder: BondOrder.Single,
         bondStereo: BondStereoKekule.UP,
     },
-    keyboardKeys: ["D"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondWedgeFront),
 };
 const wedgeBackBond: BondToolButton = {
     name: "Bond Wedge Back",
@@ -157,7 +183,7 @@ const wedgeBackBond: BondToolButton = {
         bondOrder: BondOrder.Single,
         bondStereo: BondStereoKekule.DOWN,
     },
-    keyboardKeys: ["D"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.SubToolsNames.BondWedgeBack),
 };
 
 RegisterToolbarButtonWithName(doubleBond);

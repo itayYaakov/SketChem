@@ -40,7 +40,7 @@ export interface SimpleToolbarItemButton {
 
     subToolName?: ToolsConstants.SubToolsNames | string;
 
-    keyboardKeys?: string[];
+    keyboardKeys?: string;
 }
 
 export interface ToolbarItemButton extends SimpleToolbarItemButton {
@@ -52,9 +52,9 @@ export class SimpleToolbarItemButtonBuilder implements SimpleToolbarItemButton {
 
     toolName: ToolsConstants.ToolsNames;
 
-    keyboardKeys?: string[];
+    keyboardKeys?: string;
 
-    constructor(name: string, toolName: ToolsConstants.ToolsNames, keyboardKeys?: string[]) {
+    constructor(name: string, toolName: ToolsConstants.ToolsNames, keyboardKeys?: string) {
         this.name = name;
         this.toolName = toolName;
         this.keyboardKeys = keyboardKeys;

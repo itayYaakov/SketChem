@@ -240,7 +240,7 @@ const Chain: BondToolButton = {
         bondOrder: BondOrder.Single,
         bondStereo: BondStereoKekule.NONE,
     },
-    keyboardKeys: ["A"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Chain),
 };
 
 RegisterToolbarButtonWithName(Chain);

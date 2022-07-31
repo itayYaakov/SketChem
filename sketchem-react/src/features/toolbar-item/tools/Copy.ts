@@ -25,7 +25,11 @@ class Copy implements ActiveToolbarItem {
 const copyTool = new Copy();
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Copy, copyTool);
 
-const copy = new SimpleToolbarItemButtonBuilder("Copy", ToolsConstants.ToolsNames.Copy, ["B"]);
+const copy = new SimpleToolbarItemButtonBuilder(
+    "Copy",
+    ToolsConstants.ToolsNames.Copy,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Copy)
+);
 
 RegisterToolbarButtonWithName(copy);
 

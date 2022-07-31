@@ -57,8 +57,16 @@ const redoTool = new Unredo(true);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Undo, undoTool);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.Redo, redoTool);
 
-const undo = new SimpleToolbarItemButtonBuilder("Undo", ToolsConstants.ToolsNames.Undo, ["B"]);
-const redo = new SimpleToolbarItemButtonBuilder("Redo", ToolsConstants.ToolsNames.Redo, ["B"]);
+const undo = new SimpleToolbarItemButtonBuilder(
+    "Undo",
+    ToolsConstants.ToolsNames.Undo,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Undo)
+);
+const redo = new SimpleToolbarItemButtonBuilder(
+    "Redo",
+    ToolsConstants.ToolsNames.Redo,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Redo)
+);
 
 RegisterToolbarButtonWithName(undo);
 RegisterToolbarButtonWithName(redo);

@@ -66,6 +66,15 @@ abstract class SelectTemplate implements ActiveToolbarItem {
         this.movesItem = undefined;
     }
 
+    onDeactivate() {
+        this.selectionMode = SelectionMode.Empty;
+        this.resetAnchor();
+        this.mergeAtomsAction = [];
+        this.movesItem = undefined;
+
+        this.removeShape();
+    }
+
     onActivate(attrs?: LaunchAttrs) {
         if (!attrs) return;
         const { editor } = attrs;
@@ -563,8 +572,16 @@ const lassoSelectTool = new LassoSelect();
 RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectBox, boxSelectTool);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.SelectLasso, lassoSelectTool);
 
-const boxSelect = new SimpleToolbarItemButtonBuilder("Box Select", ToolsConstants.ToolsNames.SelectBox, ["A"]);
-const lassoSelect = new SimpleToolbarItemButtonBuilder("Lasso Select", ToolsConstants.ToolsNames.SelectLasso, ["A"]);
+const boxSelect = new SimpleToolbarItemButtonBuilder(
+    "Box Select",
+    ToolsConstants.ToolsNames.SelectBox,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.SelectBox)
+);
+const lassoSelect = new SimpleToolbarItemButtonBuilder(
+    "Lasso Select",
+    ToolsConstants.ToolsNames.SelectLasso,
+    ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.SelectLasso)
+);
 
 RegisterToolbarButtonWithName(boxSelect);
 RegisterToolbarButtonWithName(lassoSelect);

@@ -97,15 +97,10 @@ const bondsDrawTree = new DrawTree(bondsTree, "#00a9f3", 12, bondsMap);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawAtomTree, atomsDrawTree);
 RegisterToolbarWithName(ToolsConstants.ToolsNames.DebugDrawBondTree, bondsDrawTree);
 
-const DrawAtoms = new SimpleToolbarItemButtonBuilder(
-    "draw atoms (debug)",
-    ToolsConstants.ToolsNames.DebugDrawAtomTree,
-    ["A"]
-);
+const DrawAtoms = new SimpleToolbarItemButtonBuilder("draw atoms (debug)", ToolsConstants.ToolsNames.DebugDrawAtomTree);
 const DrawBonds = new SimpleToolbarItemButtonBuilder(
     "draw bonds (debug) ",
-    ToolsConstants.ToolsNames.DebugDrawBondTree,
-    ["A"]
+    ToolsConstants.ToolsNames.DebugDrawBondTree
 );
 
 RegisterToolbarButtonWithName(DrawAtoms);

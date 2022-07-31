@@ -189,35 +189,42 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
     }
 
     onMouseMove(eventHolder: MouseEventCallBackProperties) {
+        if (!this.context) return;
+        if (this.context.startAtom && this.context.startAtom.getLifeStage() > 2) {
+            console.error("I'm dead 2");
+        }
+
+        // console.log(this.context);
+
         const { mouseDownLocation, mouseCurrentLocation, editor } = eventHolder;
 
-        console.log("A-4 Start Atom = ", this.context.startAtom);
+        // console.log("A-4 Start Atom = ", this.context.startAtom);
         if (this.mode !== MouseMode.AtomPressed && this.mode !== MouseMode.EmptyPress) return;
         editor.setHoverMode(true, true, false);
-        console.log("A-3 Start Atom = ", this.context.startAtom);
+        // console.log("A-3 Start Atom = ", this.context.startAtom);
         const distance = mouseCurrentLocation.distance(mouseDownLocation);
-        console.log("A-2 Start Atom = ", this.context.startAtom);
+        // console.log("A-2 Start Atom = ", this.context.startAtom);
 
         if (distance < ToolsConstants.ValidMouseMoveDistance) {
             if (this.context.dragged === false) return;
             const ignoreAtomRemove = this.destroyAtomsCreatedByMe("both");
 
-            console.debug(`Bond ${this.context.bond?.getId()} was destroyed`);
+            // console.debug(`Bond ${this.context.bond?.getId()} was destroyed`);
             this.context.bond?.destroy(ignoreAtomRemove);
             this.context.bond = undefined;
             this.context.startAtom?.execOuterDrawCommand();
-            console.log("A-1 Start Atom = ", this.context.startAtom);
+            // console.log("A-1 Start Atom = ", this.context.startAtom);
             return;
         }
 
-        console.log("A0 Start Atom = ", this.context.startAtom);
+        // console.log("A0 Start Atom = ", this.context.startAtom);
         if (!this.context.startAtom) {
-            console.log("A Start Atom = ", this.context.startAtom);
+            // console.log("A Start Atom = ", this.context.startAtom);
             this.context.startAtom = this.createAtom(mouseDownLocation);
-            console.log("B Start Atom = ", this.context.startAtom);
+            // console.log("B Start Atom = ", this.context.startAtom);
             this.context.startAtomIsPredefined = false;
             if (!this.context.startAtom) {
-                console.log("C Start Atom = ", this.context.startAtom);
+                // console.log("C Start Atom = ", this.context.startAtom);
                 return;
             }
         }
@@ -251,7 +258,7 @@ export abstract class EntityBaseTool implements ActiveToolbarItem {
         //     console.error("end atom is undefined - shuoldn't be possible");
         // }
 
-        console.log(`B I'm moved and bond equals ${this.context?.bond?.getId()}`);
+        // console.log(`B I'm moved and bond equals ${this.context?.bond?.getId()}`);
         this.createMoveAndHandleBond();
     }
 

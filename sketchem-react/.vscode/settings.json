@@ -32,5 +32,9 @@
         "node_modules/": true,
         "public/": true
     },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "eslint.validate": ["javascript", "typescript"],    
     "explorer.fileNesting.enabled": true
 }

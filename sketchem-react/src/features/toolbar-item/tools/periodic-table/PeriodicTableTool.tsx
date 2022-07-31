@@ -73,7 +73,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.PeriodicTable, {
 const PeriodicTableTool: ToolbarItemButton = {
     name: "Periodic Table",
     toolName: ToolsConstants.ToolsNames.PeriodicTable,
-    keyboardKeys: ["D"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.PeriodicTable),
 };
 
 RegisterToolbarButtonWithName(PeriodicTableTool);

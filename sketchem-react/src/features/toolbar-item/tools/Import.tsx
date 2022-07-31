@@ -220,7 +220,7 @@ RegisterToolbarWithName(ToolsConstants.ToolsNames.Import, {
 const Import: ToolbarItemButton = {
     name: "Import",
     toolName: ToolsConstants.ToolsNames.Import,
-    keyboardKeys: ["D"],
+    keyboardKeys: ToolsConstants.ToolsShortcutsMapByToolName.get(ToolsConstants.ToolsNames.Import),
 };
 
 RegisterToolbarButtonWithName(Import);
