@@ -13,7 +13,7 @@ import { SVG, Svg } from "@svgdotjs/svg.js";
 import { MouseEventCallBackProperties, ToolbarAction } from "@types";
 import Vector2 from "@utils/mathsTs/Vector2";
 import clsx from "clsx";
-import * as _ from "lodash";
+import _ from "lodash";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 

@@ -5,6 +5,7 @@
 import { EditorConstants } from "@constants/editor.constant";
 import { BondOrder } from "@constants/enum.constants";
 import { EntitiesMapsStorage } from "@features/shared/storage";
+import _ from "lodash";
 
 // Kekule.js is imported in ./public/index.html
 
@@ -107,7 +108,9 @@ export function importMoleculeFromFile(file, format) {
 
 function getBoundingBox(molec) {
     // {x2: maxX, x1: minX, y2: maxY, y1: minY}
-    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = molec.getContainerBox2D();
+    let box = molec.getContainerBox2D();
+    if (!box || !box.minX || !box.minY || !box.maxX || !box.maxY) box = molec.getContainerBox3D();
+    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = box;
     const xDelta = maxX - minX;
     const yDelta = maxY - minY;
     return { minX, minY, maxX, maxY, xDelta, yDelta };
@@ -125,7 +128,7 @@ function transformMoleculeBoundingBox(chemDoc) {
     // transfer all points from bbox to targetBoundingBox
     for (let i = 0, l = MOL.getNodeCount(); i < l; i += 1) {
         const node = MOL.getNodeAt(i);
-        const { x, y } = node.absCoord2D;
+        const { x, y } = _.isEmpty(node.absCoord2D) ? node.absCoord3D : node.absCoord2D;
         const newX = (x - bbox.minX) * scale + targetBoundingBox.minX;
         const newY = -(y - bbox.maxY) * scale + targetBoundingBox.minY;
         node.setCoord2D({ x: newX, y: newY });

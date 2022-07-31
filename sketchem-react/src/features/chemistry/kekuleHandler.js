@@ -4,12 +4,15 @@ import { LayersNames } from "@constants/enum.constants";
 import * as KekuleUtils from "@src/utils/KekuleUtils";
 import { LayersUtils } from "@src/utils/LayersUtils";
 import Vector2 from "@utils/mathsTs/Vector2";
+import _ from "lodash";
 
 import { Atom, Bond } from "../../entities";
 
 const getBoundingBox = (mol) => {
     // {x2: maxX, x1: minX, y2: maxY, y1: minY}
-    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = mol.getContainerBox2D();
+    let box = mol.getContainerBox2D();
+    if (!box || !box.minX || !box.minY || !box.maxX || !box.maxY) box = mol.getContainerBox3D();
+    const { x1: minX, y1: minY, x2: maxX, y2: maxY } = box;
     return { minX, minY, maxX, maxY };
 };
 
@@ -35,9 +38,12 @@ export const drawMol = (mol) => {
     const pointsDelta = targetCenterPoint.subNew(sourceCenterPoint);
     for (let i = 0, l = mol.getNodeCount(); i < l; i += 1) {
         const node = mol.getNodeAt(i);
-        const { x, y } = node.absCoord2D;
-        if (Number.isNaN(x) || Number.isNaN(y)) throw new Error("Invalid atom coord, please check molecule file");
+        const { x, y } = _.isEmpty(node.absCoord2D) ? node.absCoord3D : node.absCoord2D;
+        if (x === undefined || y === undefined || Number.isNaN(x) || Number.isNaN(y))
+            throw new Error("Invalid atom coord, please check molecule file");
         const pos = new Vector2(x, -y).scaleSelf(molScale).addSelf(pointsDelta);
+
+        // console.log(`${i}. old: ${x},${y} new: ${pos.x},${pos.y}`);
         // const pos = new Vector2(x, -y);
         // pos.scaleNew(molScale);
         // pos.add(pointsDelta);

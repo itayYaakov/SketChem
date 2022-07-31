@@ -481,7 +481,7 @@ export class Bond extends Entity {
         const moved = newAttributes.atomEndId !== undefined || newAttributes.atomStartId !== undefined;
         const redraw = newAttributes.order !== undefined || newAttributes.stereo !== undefined;
 
-        // !!! not really moved - just changed atom end id or start id
+        // not really moved - just changed atom end id or start id
         if (moved) {
             // console.debug(`Kekule destroy bond ${this.attributes.id}`);
             KekuleUtils.destroy(this.connectorObj);
@@ -491,6 +491,7 @@ export class Bond extends Entity {
             this.draw();
         }
         if (redraw) {
+            this.updateKekuleNode();
             this.drawStereoAndOrder();
             // !!! should only draw the valence actually
             this.startAtom?.execOuterDrawCommand();
